@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Robby Brosman</title>
+  <meta name="description" content="Robby Brosman — Seattle. Bikes, food, and building random stuff." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Rubik+Mono+One&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Layer 1: animated Delaunay mesh (pure decoration) -->
+  <canvas id="mesh" aria-hidden="true"></canvas>
+
+  <!-- Layer 3: foreground intro content -->
+  <header class="intro">
+    <a class="logo" href="/" aria-label="Robby Brosman — home">
+      <!-- RB bind-rune placeholder (final mark lands in Step 3) -->
+      <svg viewBox="0 0 40 48" width="40" height="48" role="img" aria-label="RB monogram">
+        <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round">
+          <line x1="12" y1="4" x2="12" y2="44" />
+          <path d="M12 8 L26 15 L12 22" />
+          <path d="M12 24 L28 31 L12 38" />
+        </g>
+      </svg>
+    </a>
+    <h1>Hi, I&rsquo;m Robby.</h1>
+    <p class="blurb">
+      I live in Seattle. I like
+      <a href="https://www.strava.com/athletes/robbybrosman" target="_blank" rel="noopener">bikes</a>
+      and <a href="https://robbybro.com/food/" target="_blank" rel="noopener">food</a>
+      and building random stuff.
+    </p>
+    <nav class="social" aria-label="Elsewhere">
+      <a href="https://www.linkedin.com/in/robbybrosman" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+          <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0ZM.5 8h4V24h-4V8Zm7.5 0h3.8v2.2h.05c.53-1 1.83-2.2 3.77-2.2 4.03 0 4.78 2.65 4.78 6.1V24h-4v-6.9c0-1.65-.03-3.77-2.3-3.77-2.3 0-2.65 1.8-2.65 3.65V24h-4V8Z"/>
+        </svg>
+      </a>
+    </nav>
+  </header>
+
+  <!-- Layer 2: project tiles (independent overlay, injected by main.js) -->
+  <main id="tiles" aria-label="Projects"></main>
+
+  <!-- Layer 4: fullscreen modal (single reused instance) -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="document">
+      <button class="modal-close" data-close aria-label="Close">&times;</button>
+      <div class="modal-shot"><img id="modal-img" alt="" /></div>
+      <div class="modal-body">
+        <h2 id="modal-title"></h2>
+        <p id="modal-blurb"></p>
+        <a id="modal-link" class="modal-link" target="_blank" rel="noopener">Visit &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js" type="module"></script>
+</body>
+</html>
