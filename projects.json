@@ -6,7 +6,10 @@
     "link": "https://robbybro.com/food/",
     "accent": "#e4572e",
     "screenshot": "assets/shots/food.png",
-    "pos": [0.62, 0.14]
+    "pos": [
+      0.5,
+      0.28
+    ]
   },
   {
     "slug": "guitar",
@@ -15,16 +18,22 @@
     "link": "https://robbybro.com/guitar/",
     "accent": "#f4a259",
     "screenshot": "assets/shots/guitar.png",
-    "pos": [0.84, 0.27]
+    "pos": [
+      0.66,
+      0.36
+    ]
   },
   {
     "slug": "masala",
     "name": "Masala",
-    "blurb": "TODO — blurb pending.",
+    "blurb": "A spice-blend atlas — orbit a constellation of masalas, read their tasting notes, and tune your own mix.",
     "link": "https://robbybro.com/masala/",
     "accent": "#d64550",
     "screenshot": "assets/shots/masala.png",
-    "pos": [0.70, 0.45]
+    "pos": [
+      0.36,
+      0.31
+    ]
   },
   {
     "slug": "plates",
@@ -33,7 +42,10 @@
     "link": "https://robbybro.com/plates/",
     "accent": "#5b8cff",
     "screenshot": "assets/shots/plates.png",
-    "pos": [0.90, 0.58]
+    "pos": [
+      0.7,
+      0.54
+    ]
   },
   {
     "slug": "basic-bitch",
@@ -42,7 +54,10 @@
     "link": "https://robbybro.com/basic-bitch/",
     "accent": "#ff5c9e",
     "screenshot": "assets/shots/basic-bitch.png",
-    "pos": [0.56, 0.70]
+    "pos": [
+      0.5,
+      0.48
+    ]
   },
   {
     "slug": "marzocco-water",
@@ -51,7 +66,10 @@
     "link": "https://robbybro.com/marzocco-water/",
     "accent": "#2dd4bf",
     "screenshot": "assets/shots/marzocco-water.png",
-    "pos": [0.80, 0.82]
+    "pos": [
+      0.62,
+      0.7
+    ]
   },
   {
     "slug": "muggins",
@@ -60,7 +78,10 @@
     "link": "https://robbybro.com/muggins/",
     "accent": "#7c5cff",
     "screenshot": "assets/shots/muggins.png",
-    "pos": [0.36, 0.85]
+    "pos": [
+      0.34,
+      0.64
+    ]
   },
   {
     "slug": "ssbbb",
@@ -69,7 +90,10 @@
     "link": "https://robbybro.com/ssbbb/",
     "accent": "#00c2a8",
     "screenshot": "assets/shots/ssbbb.png",
-    "pos": [0.14, 0.74]
+    "pos": [
+      0.3,
+      0.45
+    ]
   },
   {
     "slug": "focet",
@@ -77,6 +101,9 @@
     "blurb": "Label your liquid. Not deployed yet — coming soon.",
     "link": null,
     "accent": "#94a3b8",
-    "pos": [0.47, 0.93]
+    "pos": [
+      0.47,
+      0.72
+    ]
   }
 ]

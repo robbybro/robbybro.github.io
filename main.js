@@ -98,7 +98,7 @@ function buildMesh() {
   canvas.width = W * DPR; canvas.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  const cell = Math.max(78, Math.min(150, Math.round(Math.hypot(W, H) / 16)));
+  const cell = Math.max(156, Math.min(300, Math.round(Math.hypot(W, H) / 8)));
   const cols = Math.ceil(W / cell) + 2;
   const rows = Math.ceil(H / cell) + 2;
   verts = [];
@@ -185,8 +185,11 @@ window.addEventListener("resize", () => {
  * Keyboard users get invisible focusable proxies in #tiles (mouse ignores them).
  */
 const PALETTE_FALLBACK = ["#7c5cff", "#00c2a8", "#ff6b6b", "#ffb84d", "#5b8cff", "#ff5c9e", "#2dd4bf", "#e4572e"];
-const REST_SCALE = 1.14;   // project triangles sit slightly proud of the mesh
-const ACTIVE_SCALE = 1.62; // hover/focus expansion
+// 1.0 is deliberate: at rest a project triangle fills its host mesh triangle
+// EXACTLY, so it reads as part of the background rather than pasted on top.
+// Anything >1 makes it bulge over its neighbours and breaks the illusion.
+const REST_SCALE = 1.0;
+const ACTIVE_SCALE = 1.45; // only on hover/focus, where lifting out is the point
 
 let projects = [];
 let projectTris = [];  // {triIdx, p, img, poly}
@@ -225,30 +228,59 @@ function homeArea(tr) {
   return Math.abs((b.hx - a.hx) * (c.hy - a.hy) - (c.hx - a.hx) * (b.hy - a.hy)) / 2;
 }
 
+/* Live bounds of the intro copy — project triangles must never cover it.
+ * Measured rather than hardcoded so it stays correct at every breakpoint. */
+function introBox() {
+  const el = document.querySelector(".intro");
+  if (!el) return null;
+  const r = el.getBoundingClientRect();
+  const PAD = 12;
+  return { x0: r.left - PAD, y0: r.top - PAD, x1: r.right + PAD, y1: r.bottom + PAD };
+}
+
+function triHomeBox(tr) {
+  const vs = [verts[tr.i], verts[tr.j], verts[tr.k]];
+  const xs = vs.map((v) => v.hx), ys = vs.map((v) => v.hy);
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+}
+
 function assignProjectTriangles() {
   projectTris = [];
   for (const tr of tris) tr.project = null;
   if (!projects.length || !tris.length) return;
 
-  const areas = tris.map(homeArea);
-  const median = [...areas].sort((x, y) => x - y)[Math.floor(areas.length * 0.55)] || 0;
   const claimed = new Set();
+  const intro = introBox();
 
+  // Grow ONE contiguous cluster around the centre instead of searching per
+  // project — a per-project search strands outliers on the far side of the
+  // viewport once the middle runs out of candidates.
+  const cx0 = W * 0.55, cy0 = H * 0.52;
+  const pool = tris
+    .map((tr, idx) => {
+      const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
+      const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
+      return { idx, tr, gx, gy, d: (gx - cx0) ** 2 + (gy - cy0) ** 2 };
+    })
+    .filter((o) => {
+      if (!fitsOnScreen(o.tr)) return false;
+      if (!intro) return true;
+      const b = triHomeBox(o.tr); // never sit on top of the intro copy
+      return b.x1 < intro.x0 || b.x0 > intro.x1 || b.y1 < intro.y0 || b.y0 > intro.y1;
+    })
+    .sort((a, b) => a.d - b.d)
+    .slice(0, projects.length);
+
+  // Assign each project the nearest remaining cluster cell to its authored pos,
+  // so the relative arrangement still follows projects.json.
   for (const p of projects) {
     const tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
     const ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
     let best = -1, bestD = Infinity;
-    for (let idx = 0; idx < tris.length; idx++) {
-      const tr = tris[idx];
-      if (tr.project) continue;
-      if (areas[idx] < median) continue;
-      // sharing a vertex with an already-claimed triangle => possible overlap
-      if (claimed.has(tr.i) || claimed.has(tr.j) || claimed.has(tr.k)) continue;
-      if (!fitsOnScreen(tr)) continue; // never pick one the viewport would clip
-      const cx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
-      const cy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
-      const d = (cx - tx) ** 2 + (cy - ty) ** 2;
-      if (d < bestD) { bestD = d; best = idx; }
+    for (const o of pool) {
+      if (o.tr.project) continue;
+      const d = (o.gx - tx) ** 2 + (o.gy - ty) ** 2;
+      if (d < bestD) { bestD = d; best = o.idx; }
     }
     if (best < 0) continue;
     const tr = tris[best];
