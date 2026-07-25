@@ -1,10 +1,82 @@
 [
   {
-    "name": "Basic Bitch",
-    "blurb": "A low-acid lifestyle lab — coffee pH chemistry and a mocktail slot machine, built for Emily.",
-    "link": "https://robbybro.com/basic-bitch/",
+    "slug": "food",
+    "name": "robby.food",
+    "blurb": "An atlas of food and drink recommendations — a try list and a true list for every place worth eating.",
+    "link": "https://robbybro.com/food/",
     "accent": "#e4572e",
+    "screenshot": "assets/shots/food.png",
+    "pos": [0.62, 0.14]
+  },
+  {
+    "slug": "guitar",
+    "name": "Guitar Studio",
+    "blurb": "Notes, lessons, and client tracking for teaching guitar.",
+    "link": "https://robbybro.com/guitar/",
+    "accent": "#f4a259",
+    "screenshot": "assets/shots/guitar.png",
+    "pos": [0.84, 0.27]
+  },
+  {
+    "slug": "masala",
+    "name": "Masala",
+    "blurb": "TODO — blurb pending.",
+    "link": "https://robbybro.com/masala/",
+    "accent": "#d64550",
+    "screenshot": "assets/shots/masala.png",
+    "pos": [0.70, 0.45]
+  },
+  {
+    "slug": "plates",
+    "name": "Plates",
+    "blurb": "Barbell math without the barbell math — pick a total and see exactly which plates go on each side.",
+    "link": "https://robbybro.com/plates/",
+    "accent": "#5b8cff",
+    "screenshot": "assets/shots/plates.png",
+    "pos": [0.90, 0.58]
+  },
+  {
+    "slug": "basic-bitch",
+    "name": "Basic Bitch",
+    "blurb": "A low-acid lifestyle lab — coffee pH chemistry, a mocktail slot machine, and reflux-friendly ingredient roulette.",
+    "link": "https://robbybro.com/basic-bitch/",
+    "accent": "#ff5c9e",
     "screenshot": "assets/shots/basic-bitch.png",
-    "pos": [0.72, 0.62]
+    "pos": [0.56, 0.70]
+  },
+  {
+    "slug": "marzocco-water",
+    "name": "Linea Mini Water Lab",
+    "blurb": "DIY espresso water calculator — Epsom salt and baking soda dosing inside La Marzocco's water spec.",
+    "link": "https://robbybro.com/marzocco-water/",
+    "accent": "#2dd4bf",
+    "screenshot": "assets/shots/marzocco-water.png",
+    "pos": [0.80, 0.82]
+  },
+  {
+    "slug": "muggins",
+    "name": "Muggins",
+    "blurb": "Cribbage rules are trash. Muggins makes them better.",
+    "link": "https://robbybro.com/muggins/",
+    "accent": "#7c5cff",
+    "screenshot": "assets/shots/muggins.png",
+    "pos": [0.36, 0.85]
+  },
+  {
+    "slug": "ssbbb",
+    "name": "Seattle Smash Burger Bike Bingo",
+    "blurb": "Burgers, bikes, sunshine, uninhibited gluttony. A summer bingo board where every route is four burger joints long.",
+    "link": "https://robbybro.com/ssbbb/",
+    "accent": "#00c2a8",
+    "screenshot": "assets/shots/ssbbb.png",
+    "pos": [0.14, 0.74]
+  },
+  {
+    "slug": "focet",
+    "name": "Focet",
+    "blurb": "Label your liquid. Not deployed yet — coming soon.",
+    "link": null,
+    "accent": "#94a3b8",
+    "pos": [0.47, 0.93]
   }
 ]

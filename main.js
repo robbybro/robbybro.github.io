@@ -136,6 +136,7 @@ function draw(t) {
   }
   ctx.lineJoin = "round";
   for (const tr of tris) {
+    if (tr.project) continue; // project triangles draw in their own pass, on top
     const a = verts[tr.i], b = verts[tr.j], c = verts[tr.k];
     ctx.beginPath();
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.closePath();
@@ -145,6 +146,7 @@ function draw(t) {
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+  for (let i = 0; i < projectTris.length; i++) drawProjectTri(projectTris[i], i);
 }
 
 /* ----------------- animation loop: ~30fps, pause when hidden ----------------- */
@@ -166,40 +168,213 @@ document.addEventListener("visibilitychange", () => (document.hidden ? stop() : 
 let resizeT;
 window.addEventListener("resize", () => {
   clearTimeout(resizeT);
-  resizeT = setTimeout(() => { buildMesh(); if (reduceMotion) draw(0); }, 150);
+  resizeT = setTimeout(() => {
+    buildMesh();
+    assignProjectTriangles(); // triangles are viewport-derived, so re-pick them
+    if (reduceMotion) draw(0);
+  }, 150);
 });
 
-/* ----------------------------- Tiles ----------------------------- */
+/* --------------------- Project triangles (in the mesh) ---------------------
+ * A project is not an element floating above the canvas — it IS one of the
+ * mesh's triangles, drawn in the same pass, waving with the same field.
+ * Guarantees that keep them usable:
+ *   - only triangles with above-median area are eligible (room for a screenshot)
+ *   - no two project triangles may share a vertex, so they can never overlap
+ *   - their vertices get damped amplitude, so the artwork inside stays legible
+ * Keyboard users get invisible focusable proxies in #tiles (mouse ignores them).
+ */
 const PALETTE_FALLBACK = ["#7c5cff", "#00c2a8", "#ff6b6b", "#ffb84d", "#5b8cff", "#ff5c9e", "#2dd4bf", "#e4572e"];
+const REST_SCALE = 1.14;   // project triangles sit slightly proud of the mesh
+const ACTIVE_SCALE = 1.62; // hover/focus expansion
 
-function placeTiles(projects) {
+let projects = [];
+let projectTris = [];  // {triIdx, p, img, poly}
+let hoverIdx = -1;
+let focusIdx = -1;
+const imgCache = new Map();
+
+function imgFor(p) {
+  if (!p.screenshot) return null;
+  if (imgCache.has(p.screenshot)) return imgCache.get(p.screenshot);
+  const im = new Image();
+  im.decoding = "async";
+  im.src = p.screenshot;
+  im.addEventListener("load", () => { if (reduceMotion) draw(0); });
+  imgCache.set(p.screenshot, im);
+  return im;
+}
+
+/* A project triangle must sit fully inside the viewport even when expanded,
+ * with room under it for the hover label — otherwise the edge crops it. */
+function fitsOnScreen(tr) {
+  const vs = [verts[tr.i], verts[tr.j], verts[tr.k]];
+  const gx = (vs[0].hx + vs[1].hx + vs[2].hx) / 3;
+  const gy = (vs[0].hy + vs[1].hy + vs[2].hy) / 3;
+  const PAD = 14, LABEL = 44;
+  for (const v of vs) {
+    const x = gx + (v.hx - gx) * ACTIVE_SCALE;
+    const y = gy + (v.hy - gy) * ACTIVE_SCALE;
+    if (x < PAD || x > W - PAD || y < PAD || y > H - LABEL) return false;
+  }
+  return true;
+}
+
+function homeArea(tr) {
+  const a = verts[tr.i], b = verts[tr.j], c = verts[tr.k];
+  return Math.abs((b.hx - a.hx) * (c.hy - a.hy) - (c.hx - a.hx) * (b.hy - a.hy)) / 2;
+}
+
+function assignProjectTriangles() {
+  projectTris = [];
+  for (const tr of tris) tr.project = null;
+  if (!projects.length || !tris.length) return;
+
+  const areas = tris.map(homeArea);
+  const median = [...areas].sort((x, y) => x - y)[Math.floor(areas.length * 0.55)] || 0;
+  const claimed = new Set();
+
+  for (const p of projects) {
+    const tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
+    const ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
+    let best = -1, bestD = Infinity;
+    for (let idx = 0; idx < tris.length; idx++) {
+      const tr = tris[idx];
+      if (tr.project) continue;
+      if (areas[idx] < median) continue;
+      // sharing a vertex with an already-claimed triangle => possible overlap
+      if (claimed.has(tr.i) || claimed.has(tr.j) || claimed.has(tr.k)) continue;
+      if (!fitsOnScreen(tr)) continue; // never pick one the viewport would clip
+      const cx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
+      const cy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
+      const d = (cx - tx) ** 2 + (cy - ty) ** 2;
+      if (d < bestD) { bestD = d; best = idx; }
+    }
+    if (best < 0) continue;
+    const tr = tris[best];
+    tr.project = p;
+    for (const v of [tr.i, tr.j, tr.k]) {
+      claimed.add(v);
+      verts[v].amp *= 0.4; // damp the wave so the screenshot stays readable
+    }
+    projectTris.push({ triIdx: best, p, img: imgFor(p), poly: null });
+  }
+  syncFocusProxies();
+}
+
+function drawProjectTri(pt, i) {
+  const tr = tris[pt.triIdx];
+  const a = verts[tr.i], b = verts[tr.j], c = verts[tr.k];
+  const gx = (a.x + b.x + c.x) / 3, gy = (a.y + b.y + c.y) / 3;
+  const active = i === hoverIdx || i === focusIdx;
+  const s = active ? ACTIVE_SCALE : REST_SCALE;
+  const P = [a, b, c].map((v) => [gx + (v.x - gx) * s, gy + (v.y - gy) * s]);
+  pt.poly = P;
+
+  const xs = P.map((q) => q[0]), ys = P.map((q) => q[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const accent = pt.p.accent || PALETTE_FALLBACK[i % PALETTE_FALLBACK.length];
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); ctx.lineTo(P[2][0], P[2][1]);
+  ctx.closePath();
+  ctx.clip();
+
+  const im = pt.img;
+  if (im && im.complete && im.naturalWidth) {
+    const bw = maxX - minX, bh = maxY - minY;
+    const sc = Math.max(bw / im.naturalWidth, bh / im.naturalHeight);
+    const dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
+    ctx.drawImage(im, minX + (bw - dw) / 2, minY + (bh - dh) / 2, dw, dh);
+    ctx.fillStyle = active ? "rgba(8,11,20,0.12)" : "rgba(8,11,20,0.46)";
+    ctx.fillRect(minX, minY, bw, bh);
+  } else {
+    ctx.fillStyle = accent;
+    ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
+    ctx.fillStyle = "rgba(8,11,20,0.28)";
+    ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
+  }
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); ctx.lineTo(P[2][0], P[2][1]);
+  ctx.closePath();
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = active ? 3 : 1.75;
+  ctx.stroke();
+
+  // title sits under the triangle's fat edge, never inside the acute apex
+  const label = active ? pt.p.name : null;
+  if (label) {
+    ctx.font = '700 15px "Open Sans", system-ui, sans-serif';
+    ctx.textAlign = "center";
+    const tw = ctx.measureText(label).width;
+    const ly = maxY + 22;
+    ctx.fillStyle = "rgba(8,11,20,0.92)";
+    ctx.strokeStyle = "rgba(255,255,255,0.16)";
+    ctx.lineWidth = 1;
+    const bx = gx - tw / 2 - 10, bw2 = tw + 20;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, ly - 17, bw2, 26, 8);
+    else ctx.rect(bx, ly - 17, bw2, 26);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.fillText(label, gx, ly);
+  }
+}
+
+function pointInPoly(x, y, P) {
+  if (!P) return false;
+  const [[x1, y1], [x2, y2], [x3, y3]] = P;
+  const d = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  if (!d) return false;
+  const l1 = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / d;
+  const l2 = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / d;
+  return l1 >= 0 && l2 >= 0 && l1 + l2 <= 1;
+}
+
+function hitTest(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  const x = clientX - r.left, y = clientY - r.top;
+  for (let i = projectTris.length - 1; i >= 0; i--) {
+    if (pointInPoly(x, y, projectTris[i].poly)) return i;
+  }
+  return -1;
+}
+
+canvas.addEventListener("mousemove", (e) => {
+  const h = hitTest(e.clientX, e.clientY);
+  if (h === hoverIdx) return;
+  hoverIdx = h;
+  canvas.style.cursor = h >= 0 ? "pointer" : "";
+  if (reduceMotion) draw(0);
+});
+canvas.addEventListener("mouseleave", () => {
+  if (hoverIdx === -1) return;
+  hoverIdx = -1; canvas.style.cursor = "";
+  if (reduceMotion) draw(0);
+});
+canvas.addEventListener("click", (e) => {
+  const h = hitTest(e.clientX, e.clientY);
+  if (h >= 0) openModal(projectTris[h].p);
+});
+
+/* Invisible, focusable proxies so the triangles are keyboard-reachable (AC8). */
+function syncFocusProxies() {
   const host = document.getElementById("tiles");
   host.innerHTML = "";
-  projects.forEach((p, idx) => {
-    const pos = p.pos || [0.5, 0.5];
-    const accent = p.accent || PALETTE_FALLBACK[idx % PALETTE_FALLBACK.length];
-    const wrap = document.createElement("div");
-    wrap.className = "tile-wrap";
-
+  projectTris.forEach((pt, i) => {
     const a = document.createElement("a");
-    a.className = "tile";
-    a.style.setProperty("--accent", accent);
-    a.style.left = pos[0] * 100 + "%";
-    a.style.top = pos[1] * 100 + "%";
-    a.href = p.link && p.link !== "private" ? p.link : "#";
-    a.setAttribute("aria-label", p.name + " — " + p.blurb);
-    a.innerHTML = `<span class="glyph">${(p.name || "?")[0]}</span>`;
-
-    const label = document.createElement("span");
-    label.className = "tile-label";
-    label.textContent = p.name;
-    label.style.left = pos[0] * 100 + "%";
-    label.style.top = `calc(${pos[1] * 100}% + ${(p.size || 132) * 0.6}px)`;
-
-    a.addEventListener("click", (e) => { e.preventDefault(); openModal(p); });
-    wrap.appendChild(a);
-    wrap.appendChild(label);
-    host.appendChild(wrap);
+    a.className = "tile-proxy";
+    a.href = pt.p.link || "#";
+    a.setAttribute("aria-label", pt.p.name + " — " + (pt.p.blurb || ""));
+    a.addEventListener("focus", () => { focusIdx = i; if (reduceMotion) draw(0); });
+    a.addEventListener("blur", () => { if (focusIdx === i) focusIdx = -1; if (reduceMotion) draw(0); });
+    a.addEventListener("click", (e) => { e.preventDefault(); openModal(pt.p); });
+    host.appendChild(a);
   });
 }
 
@@ -248,5 +423,9 @@ start();
 
 fetch("projects.json")
   .then((r) => r.json())
-  .then(placeTiles)
+  .then((data) => {
+    projects = data;
+    assignProjectTriangles();
+    if (reduceMotion) draw(0);
+  })
   .catch((err) => console.error("projects.json failed to load", err));

@@ -72,56 +72,29 @@ html, body {
 .social a { color: var(--ink); display: inline-flex; filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); transition: color .2s, transform .2s; }
 .social a:hover { color: var(--accent); transform: translateY(-2px); }
 
-/* Layer 2 — project tiles */
-#tiles { position: fixed; inset: 0; z-index: 2; }
-
-.tile {
-  position: absolute;
-  width: var(--size, 132px);
-  height: var(--size, 132px);
-  transform: translate(-50%, -50%) scale(1);
-  transform-origin: center;
-  clip-path: polygon(50% 4%, 96% 94%, 4% 94%); /* triangle */
-  background: var(--accent);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  text-decoration: none;
-  color: #fff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  transition: transform .18s ease, filter .18s ease;
-  outline: none;
-}
-.tile:hover, .tile:focus-visible { transform: translate(-50%, -50%) scale(1.06); filter: brightness(1.08); z-index: 5; }
-.tile:focus-visible { filter: brightness(1.15); }
-
-.tile .glyph {
-  font-family: "Rubik Mono One", monospace;
-  font-size: calc(var(--size, 132px) * 0.24);
-  transform: translateY(28%); /* nudge into the fat part of the triangle */
-  color: #fff;
-  text-shadow: 0 2px 6px rgba(0,0,0,.5);
-}
-
-/* hover label — rectangular, never inside the acute clip */
-.tile-label {
-  position: absolute;
-  z-index: 6;
-  transform: translate(-50%, 0);
-  background: rgba(8, 11, 20, 0.92);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  white-space: nowrap;
+/* Layer 2 — project triangles live IN the canvas mesh (see main.js).
+   #tiles now holds only invisible keyboard proxies, so it must never
+   intercept pointer events — the canvas needs them for hover/click. */
+#tiles {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity .15s;
-  border: 1px solid rgba(255,255,255,.14);
 }
-.tile-wrap:hover .tile-label,
-.tile:focus-visible + .tile-label { opacity: 1; }
+
+/* Focusable but visually absent; the canvas renders the focus state. */
+.tile-proxy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.tile-proxy:focus-visible {
+  outline: none; /* the triangle itself expands + brightens on focus */
+}
 
 /* Layer 4 — modal */
 .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
@@ -159,5 +132,5 @@ html, body {
 .modal-link[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .tile, .tile:hover, .modal-link, .social a { transition: none; }
+  .modal-link, .social a { transition: none; }
 }
