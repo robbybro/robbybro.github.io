@@ -7,9 +7,10 @@
     "accent": "#e4572e",
     "screenshot": "assets/shots/food.png",
     "pos": [
-      0.5,
-      0.28
-    ]
+      0.55,
+      0.16
+    ],
+    "short": "robby.food"
   },
   {
     "slug": "guitar",
@@ -19,9 +20,10 @@
     "accent": "#f4a259",
     "screenshot": "assets/shots/guitar.png",
     "pos": [
-      0.66,
-      0.36
-    ]
+      0.8,
+      0.26
+    ],
+    "short": "Guitar"
   },
   {
     "slug": "masala",
@@ -31,9 +33,10 @@
     "accent": "#d64550",
     "screenshot": "assets/shots/masala.png",
     "pos": [
-      0.36,
-      0.31
-    ]
+      0.38,
+      0.3
+    ],
+    "short": "Masala"
   },
   {
     "slug": "plates",
@@ -43,9 +46,10 @@
     "accent": "#5b8cff",
     "screenshot": "assets/shots/plates.png",
     "pos": [
-      0.7,
-      0.54
-    ]
+      0.86,
+      0.56
+    ],
+    "short": "Plates"
   },
   {
     "slug": "basic-bitch",
@@ -55,9 +59,10 @@
     "accent": "#ff5c9e",
     "screenshot": "assets/shots/basic-bitch.png",
     "pos": [
-      0.5,
-      0.48
-    ]
+      0.58,
+      0.44
+    ],
+    "short": "Basic Bitch"
   },
   {
     "slug": "marzocco-water",
@@ -67,9 +72,10 @@
     "accent": "#2dd4bf",
     "screenshot": "assets/shots/marzocco-water.png",
     "pos": [
-      0.62,
-      0.7
-    ]
+      0.7,
+      0.8
+    ],
+    "short": "Water Lab"
   },
   {
     "slug": "muggins",
@@ -79,9 +85,10 @@
     "accent": "#7c5cff",
     "screenshot": "assets/shots/muggins.png",
     "pos": [
-      0.34,
-      0.64
-    ]
+      0.42,
+      0.68
+    ],
+    "short": "Muggins"
   },
   {
     "slug": "ssbbb",
@@ -91,9 +98,10 @@
     "accent": "#00c2a8",
     "screenshot": "assets/shots/ssbbb.png",
     "pos": [
-      0.3,
-      0.45
-    ]
+      0.2,
+      0.6
+    ],
+    "short": "SSBBB"
   },
   {
     "slug": "focet",
@@ -102,8 +110,9 @@
     "link": null,
     "accent": "#94a3b8",
     "pos": [
-      0.47,
-      0.72
-    ]
+      0.55,
+      0.9
+    ],
+    "short": "Focet"
   }
 ]

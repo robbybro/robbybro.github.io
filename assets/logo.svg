@@ -1,13 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140" role="img" aria-label="RB bind-rune">
   <!-- Bind-rune: backwards R (left) and B (right) sharing one stave.
        Left  = upper bowl + free lower leg  -> reversed R
-       Right = upper bowl + lower bowl      -> B -->
+       Right = upper bowl + lower bowl      -> B
+       Top and bottom halves are EQUAL (10-70 / 70-130), and every diagonal
+       runs at the same slope, so both bowls have identical proportions and
+       the R's leg matches them. -->
   <g fill="none" stroke="currentColor" stroke-width="7"
      stroke-linecap="round" stroke-linejoin="round">
-    <path d="M50 8 V132" />
-    <path d="M50 8 L14 44 L50 80" />
-    <path d="M50 8 L86 44 L50 80" />
-    <path d="M50 80 L14 116" />
-    <path d="M50 80 L86 116 L50 132" />
+    <path d="M50 10 V130" />
+    <path d="M50 10 L14 40 L50 70" />
+    <path d="M50 10 L86 40 L50 70" />
+    <path d="M50 70 L14 100" />
+    <path d="M50 70 L86 100 L50 130" />
   </g>
 </svg>

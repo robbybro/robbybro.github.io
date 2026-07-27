@@ -98,7 +98,10 @@ function buildMesh() {
   canvas.width = W * DPR; canvas.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  const cell = Math.max(156, Math.min(300, Math.round(Math.hypot(W, H) / 8)));
+  // /10, not the /8 of the first pass: at /8 nine non-touching project
+  // triangles literally don't fit next to the intro (the placement pool
+  // starves and the no-corner rule collapses). Still ~1.6x the original size.
+  const cell = Math.max(130, Math.min(240, Math.round(Math.hypot(W, H) / 10)));
   const cols = Math.ceil(W / cell) + 2;
   const rows = Math.ceil(H / cell) + 2;
   verts = [];
@@ -185,40 +188,26 @@ window.addEventListener("resize", () => {
  * Keyboard users get invisible focusable proxies in #tiles (mouse ignores them).
  */
 const PALETTE_FALLBACK = ["#7c5cff", "#00c2a8", "#ff6b6b", "#ffb84d", "#5b8cff", "#ff5c9e", "#2dd4bf", "#e4572e"];
-// 1.0 is deliberate: at rest a project triangle fills its host mesh triangle
-// EXACTLY, so it reads as part of the background rather than pasted on top.
-// Anything >1 makes it bulge over its neighbours and breaks the illusion.
-const REST_SCALE = 1.0;
-const ACTIVE_SCALE = 1.45; // only on hover/focus, where lifting out is the point
+// A project triangle always fills its host mesh triangle EXACTLY — no rest
+// bulge, no hover growth (Robby killed the expansion). Hover feedback is
+// purely the veil lifting + border weight. ACCENT matches the intro-link
+// underline so the whole page carries one complementary color.
+const ACCENT = "#7c5cff";
 
 let projects = [];
-let projectTris = [];  // {triIdx, p, img, poly}
+let projectTris = [];  // {triIdx, p, poly}
 let hoverIdx = -1;
 let focusIdx = -1;
-const imgCache = new Map();
 
-function imgFor(p) {
-  if (!p.screenshot) return null;
-  if (imgCache.has(p.screenshot)) return imgCache.get(p.screenshot);
-  const im = new Image();
-  im.decoding = "async";
-  im.src = p.screenshot;
-  im.addEventListener("load", () => { if (reduceMotion) draw(0); });
-  imgCache.set(p.screenshot, im);
-  return im;
-}
-
-/* A project triangle must sit fully inside the viewport even when expanded,
- * with room under it for the hover label — otherwise the edge crops it. */
+/* A project triangle must stay fully inside the viewport, with room under it
+ * for the hover label. The wave displaces each vertex by up to its amp, so the
+ * check must include that reach — resting position alone lets edge triangles
+ * animate off-screen (that clipped Plates/Water Lab in review). */
 function fitsOnScreen(tr) {
-  const vs = [verts[tr.i], verts[tr.j], verts[tr.k]];
-  const gx = (vs[0].hx + vs[1].hx + vs[2].hx) / 3;
-  const gy = (vs[0].hy + vs[1].hy + vs[2].hy) / 3;
   const PAD = 14, LABEL = 44;
-  for (const v of vs) {
-    const x = gx + (v.hx - gx) * ACTIVE_SCALE;
-    const y = gy + (v.hy - gy) * ACTIVE_SCALE;
-    if (x < PAD || x > W - PAD || y < PAD || y > H - LABEL) return false;
+  for (const v of [verts[tr.i], verts[tr.j], verts[tr.k]]) {
+    const m = v.amp * 0.45; // claimed verts damp to 0.4x, so this is the real swing
+    if (v.hx - m < PAD || v.hx + m > W - PAD || v.hy - m < PAD || v.hy + m > H - LABEL) return false;
   }
   return true;
 }
@@ -244,54 +233,101 @@ function triHomeBox(tr) {
   return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
 }
 
+/* Adjacency rule (Robby): project triangles are spread out — a triangle may
+ * share at most ONE full edge with one other project triangle (a loose pair),
+ * and may never touch another at just a corner. So: 0 shared vertices, or
+ * exactly 2 with a single partner that isn't already paired. */
+function sharedVerts(t1, t2) {
+  let n = 0;
+  for (const v of [t1.i, t1.j, t1.k]) {
+    if (v === t2.i || v === t2.j || v === t2.k) n++;
+  }
+  return n;
+}
+
 function assignProjectTriangles() {
   projectTris = [];
   for (const tr of tris) tr.project = null;
   if (!projects.length || !tris.length) return;
 
-  const claimed = new Set();
   const intro = introBox();
+  const placed = []; // {tr, paired}
 
-  // Grow ONE contiguous cluster around the centre instead of searching per
-  // project — a per-project search strands outliers on the far side of the
-  // viewport once the middle runs out of candidates.
-  const cx0 = W * 0.55, cy0 = H * 0.52;
-  const pool = tris
-    .map((tr, idx) => {
-      const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
-      const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
-      return { idx, tr, gx, gy, d: (gx - cx0) ** 2 + (gy - cy0) ** 2 };
-    })
-    .filter((o) => {
-      if (!fitsOnScreen(o.tr)) return false;
-      if (!intro) return true;
-      const b = triHomeBox(o.tr); // never sit on top of the intro copy
-      return b.x1 < intro.x0 || b.x0 > intro.x1 || b.y1 < intro.y0 || b.y0 > intro.y1;
-    })
-    .sort((a, b) => a.d - b.d)
-    .slice(0, projects.length);
+  /* Constraints relax GRADUALLY as the pool starves (small viewports).
+   * The adjacency rule is the last thing to go, not the first:
+   *   level 0: on-screen + off-intro + pair rule + no corner touches + KISS gap
+   *   level 1: drop the KISS visual-distance floor
+   *   level 2: allow corner touches (still at most one shared edge)
+   *   level 3: any on-screen, off-intro triangle
+   *   level 4: anything (true last resort)
+   * A flat "level 1 = no rules" fallback is what produced the chained blobs. */
+  function acceptable(tr, level) {
+    if (level < 4 && !fitsOnScreen(tr)) return false;
+    if (level < 4 && intro) {
+      const b = triHomeBox(tr); // never sit on top of the intro copy
+      const clear = b.x1 < intro.x0 || b.x0 > intro.x1 || b.y1 < intro.y0 || b.y0 > intro.y1;
+      if (!clear) return false;
+    }
+    if (level >= 3) return true;
+    let partner = null;
+    for (const q of placed) {
+      const s = sharedVerts(tr, q.tr);
+      if (s >= 2) {
+        if (partner || q.paired) return false; // second edge, or partner already paired
+        partner = q;
+        continue;
+      }
+      if (s === 1) {
+        if (level < 2) return false; // corner-only touch
+        continue;
+      }
+      if (level < 1) {
+        // s === 0: unrelated triangles must also keep visual distance — two
+        // separate vertices sitting 15px apart read as a corner touch anyway
+        const KISS = 56;
+        for (const a of [tr.i, tr.j, tr.k]) {
+          for (const b of [q.tr.i, q.tr.j, q.tr.k]) {
+            if (Math.hypot(verts[a].hx - verts[b].hx, verts[a].hy - verts[b].hy) < KISS) return false;
+          }
+        }
+      }
+    }
+    return { partner };
+  }
 
-  // Assign each project the nearest remaining cluster cell to its authored pos,
-  // so the relative arrangement still follows projects.json.
   for (const p of projects) {
     const tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
     const ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
-    let best = -1, bestD = Infinity;
-    for (const o of pool) {
-      if (o.tr.project) continue;
-      const d = (o.gx - tx) ** 2 + (o.gy - ty) ** 2;
-      if (d < bestD) { bestD = d; best = o.idx; }
+    let best = -1, bestRes = null, bestLevel = -1;
+    for (let level = 0; level < 5 && best < 0; level++) {
+      let bestD = Infinity;
+      for (let idx = 0; idx < tris.length; idx++) {
+        const tr = tris[idx];
+        if (tr.project) continue;
+        const res = acceptable(tr, level);
+        if (!res) continue;
+        const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
+        const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
+        const d = (gx - tx) ** 2 + (gy - ty) ** 2;
+        if (d < bestD) { bestD = d; best = idx; bestRes = res; bestLevel = level; }
+      }
     }
     if (best < 0) continue;
     const tr = tris[best];
     tr.project = p;
+    const entry = { tr, paired: false };
+    if (bestRes && bestRes.partner) { entry.paired = true; bestRes.partner.paired = true; }
+    placed.push(entry);
+    p.__level = bestLevel; // audit: which constraint tier placed it
     for (const v of [tr.i, tr.j, tr.k]) {
-      claimed.add(v);
-      verts[v].amp *= 0.4; // damp the wave so the screenshot stays readable
+      if (verts[v].damped) continue; // an edge-shared vertex must not damp twice
+      verts[v].damped = true;
+      verts[v].amp *= 0.4; // calm the wave so the title stays readable
     }
-    projectTris.push({ triIdx: best, p, img: imgFor(p), poly: null });
+    projectTris.push({ triIdx: best, p, poly: null });
   }
   syncFocusProxies();
+  window.__mesh = { verts, tris, projectTris, sharedVerts }; // debug hook
 }
 
 function drawProjectTri(pt, i) {
@@ -299,49 +335,33 @@ function drawProjectTri(pt, i) {
   const a = verts[tr.i], b = verts[tr.j], c = verts[tr.k];
   const gx = (a.x + b.x + c.x) / 3, gy = (a.y + b.y + c.y) / 3;
   const active = i === hoverIdx || i === focusIdx;
-  const s = active ? ACTIVE_SCALE : REST_SCALE;
-  const P = [a, b, c].map((v) => [gx + (v.x - gx) * s, gy + (v.y - gy) * s]);
+  const P = [a, b, c].map((v) => [v.x, v.y]);
   pt.poly = P;
 
-  const xs = P.map((q) => q[0]), ys = P.map((q) => q[1]);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const accent = pt.p.accent || PALETTE_FALLBACK[i % PALETTE_FALLBACK.length];
-
-  ctx.save();
   ctx.beginPath();
   ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); ctx.lineTo(P[2][0], P[2][1]);
   ctx.closePath();
-  ctx.clip();
-
-  const im = pt.img;
-  if (im && im.complete && im.naturalWidth) {
-    const bw = maxX - minX, bh = maxY - minY;
-    const sc = Math.max(bw / im.naturalWidth, bh / im.naturalHeight);
-    const dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
-    ctx.drawImage(im, minX + (bw - dw) / 2, minY + (bh - dh) / 2, dw, dh);
-    ctx.fillStyle = active ? "rgba(8,11,20,0.12)" : "rgba(8,11,20,0.46)";
-    ctx.fillRect(minX, minY, bw, bh);
-  } else {
-    ctx.fillStyle = accent;
-    ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
-    ctx.fillStyle = "rgba(8,11,20,0.28)";
-    ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
-  }
-  ctx.restore();
-
-  ctx.beginPath();
-  ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); ctx.lineTo(P[2][0], P[2][1]);
-  ctx.closePath();
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = active ? 3 : 1.75;
+  // accent glass over the mesh; hover lifts the veil (no size change)
+  ctx.fillStyle = active ? "rgba(124,92,255,0.40)" : "rgba(124,92,255,0.14)";
+  ctx.fill();
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = active ? 2.5 : 1.5;
   ctx.stroke();
 
-  // title sits under the triangle's fat edge, never inside the acute apex
-  const label = active ? pt.p.name : null;
-  if (label) {
+  // short name lives inside the triangle, at the centroid (its widest region)
+  const short = pt.p.short || pt.p.name;
+  ctx.font = `700 ${active ? 15 : 13}px "Open Sans", system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = active ? "#ffffff" : "rgba(244,246,251,0.82)";
+  ctx.fillText(short, gx, gy);
+  ctx.textBaseline = "alphabetic";
+
+  // full name + affordance under the fat edge on hover/focus only
+  if (active) {
+    const label = pt.p.name;
+    const maxY = Math.max(P[0][1], P[1][1], P[2][1]);
     ctx.font = '700 15px "Open Sans", system-ui, sans-serif';
-    ctx.textAlign = "center";
     const tw = ctx.measureText(label).width;
     const ly = maxY + 22;
     ctx.fillStyle = "rgba(8,11,20,0.92)";
