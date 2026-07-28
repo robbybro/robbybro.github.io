@@ -135,7 +135,8 @@ html, body {
 .modal-close:hover { background: var(--accent); }
 .modal-shot { background: #0b0f1a; }
 .modal-shot img { display: block; width: 100%; height: auto; }
-.modal-shot:empty, .modal-shot img:not([src]) { display: none; }
+.modal-shot img + img { border-top: 1px solid rgba(255,255,255,.1); }
+.modal-shot:empty { display: none; }
 .modal-body { padding: clamp(1.2rem, 3vw, 2rem); }
 .modal-body h2 { font-family: "Rubik Mono One", monospace; font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0 0 .6rem; }
 .modal-body p { font-size: 1.1rem; line-height: 1.55; color: var(--ink-dim); margin: 0 0 1.4rem; }
@@ -145,6 +146,12 @@ html, body {
 }
 .modal-link:hover { filter: brightness(1.12); }
 .modal-link[hidden] { display: none; }
+.modal-link.disabled {
+  background: #2a2f3d;
+  color: #8b93a5;
+  pointer-events: none;
+  cursor: default;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .modal-link, .social a { transition: none; }

@@ -149,7 +149,7 @@ function draw(t) {
     ctx.lineWidth = 1;
     ctx.stroke();
   }
-  for (let i = 0; i < projectTris.length; i++) drawProjectTri(projectTris[i], i);
+  for (let i = 0; i < projectTris.length; i++) drawProjectTri(projectTris[i], i, t);
 }
 
 /* ----------------- animation loop: ~30fps, pause when hidden ----------------- */
@@ -327,10 +327,26 @@ function assignProjectTriangles() {
     projectTris.push({ triIdx: best, p, poly: null });
   }
   syncFocusProxies();
-  window.__mesh = { verts, tris, projectTris, sharedVerts }; // debug hook
+  window.__mesh = { verts, tris, projectTris, sharedVerts, draw, openModal }; // debug hook
 }
 
-function drawProjectTri(pt, i) {
+/* Wrap a label to fit maxWidth, up to 3 lines (Espresso Machine Water
+ * Chemistry has to live inside a triangle). */
+function wrapLabel(text, font, maxWidth) {
+  ctx.font = font;
+  const words = text.split(" ");
+  const lines = [];
+  let cur = "";
+  for (const w of words) {
+    const trial = cur ? cur + " " + w : w;
+    if (ctx.measureText(trial).width <= maxWidth || !cur) cur = trial;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, 3);
+}
+
+function drawProjectTri(pt, i, t) {
   const tr = tris[pt.triIdx];
   const a = verts[tr.i], b = verts[tr.j], c = verts[tr.k];
   const gx = (a.x + b.x + c.x) / 3, gy = (a.y + b.y + c.y) / 3;
@@ -348,13 +364,33 @@ function drawProjectTri(pt, i) {
   ctx.lineWidth = active ? 2.5 : 1.5;
   ctx.stroke();
 
-  // short name lives inside the triangle, at the centroid (its widest region)
+  // icon + short name stack at the centroid (the triangle's widest region);
+  // an icon ARRAY cycles over time (robby.food flips through food emoji)
+  let icon = pt.p.icon;
+  if (Array.isArray(icon)) {
+    icon = reduceMotion ? icon[0] : icon[Math.floor(t / 1400) % icon.length];
+  }
   const short = pt.p.short || pt.p.name;
-  ctx.font = `700 ${active ? 15 : 13}px "Open Sans", system-ui, sans-serif`;
+  const font = `700 ${active ? 14 : 12.5}px "Open Sans", system-ui, sans-serif`;
+  const bboxW = Math.max(...P.map((q) => q[0])) - Math.min(...P.map((q) => q[0]));
+  const lines = wrapLabel(short, font, Math.max(70, bboxW * 0.5));
+  const lineH = active ? 18 : 16;
+  const blockH = (icon ? 26 : 0) + lines.length * lineH;
+  let y = gy - blockH / 2;
+
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  if (icon) {
+    ctx.font = `${active ? 24 : 20}px "Open Sans", system-ui, sans-serif`;
+    ctx.fillText(icon, gx, y + 12);
+    y += 28;
+  }
+  ctx.font = font;
   ctx.fillStyle = active ? "#ffffff" : "rgba(244,246,251,0.82)";
-  ctx.fillText(short, gx, gy);
+  for (const line of lines) {
+    ctx.fillText(line, gx, y + lineH / 2);
+    y += lineH;
+  }
   ctx.textBaseline = "alphabetic";
 
   // full name + affordance under the fat edge on hover/focus only
@@ -432,7 +468,7 @@ function syncFocusProxies() {
 
 /* ----------------------------- Modal ----------------------------- */
 const modal = document.getElementById("modal");
-const modalImg = document.getElementById("modal-img");
+const modalShot = document.querySelector(".modal-shot");
 const modalTitle = document.getElementById("modal-title");
 const modalBlurb = document.getElementById("modal-blurb");
 const modalLink = document.getElementById("modal-link");
@@ -442,12 +478,33 @@ function openModal(p) {
   lastFocus = document.activeElement;
   modalTitle.textContent = p.name;
   modalBlurb.textContent = p.blurb || "";
-  const hasShot = !!p.screenshot;
-  modalImg.parentElement.style.display = hasShot ? "" : "none";
-  if (hasShot) { modalImg.src = p.screenshot; modalImg.alt = p.name + " screenshot"; }
-  const hasLink = p.link && p.link !== "private";
-  modalLink.hidden = !hasLink;
-  if (hasLink) modalLink.href = p.link;
+
+  // photos: [] beats screenshot; either renders as stacked images
+  const shots = p.photos || (p.screenshot ? [p.screenshot] : []);
+  modalShot.innerHTML = "";
+  modalShot.style.display = shots.length ? "" : "none";
+  shots.forEach((src, n) => {
+    const im = document.createElement("img");
+    im.src = src;
+    im.alt = p.name + (shots.length > 1 ? ` photo ${n + 1}` : " screenshot");
+    modalShot.appendChild(im);
+  });
+
+  // link states: real URL -> Visit; "internal" -> grayed non-button; else hidden
+  if (p.link === "internal") {
+    modalLink.hidden = false;
+    modalLink.textContent = "Internal Only";
+    modalLink.classList.add("disabled");
+    modalLink.removeAttribute("href");
+  } else if (p.link && p.link !== "private") {
+    modalLink.hidden = false;
+    modalLink.textContent = "Visit →";
+    modalLink.classList.remove("disabled");
+    modalLink.href = p.link;
+  } else {
+    modalLink.hidden = true;
+  }
+
   modal.hidden = false;
   document.querySelector(".modal-close").focus();
   document.addEventListener("keydown", onKey);

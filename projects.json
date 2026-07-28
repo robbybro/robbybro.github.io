@@ -2,117 +2,131 @@
   {
     "slug": "food",
     "name": "robby.food",
-    "blurb": "An atlas of food and drink recommendations — a try list and a true list for every place worth eating.",
+    "short": "robby.food",
+    "icon": [
+      "🍔",
+      "🌯",
+      "🍕",
+      "🍦",
+      "☕",
+      "🌮",
+      "🍜",
+      "🍩",
+      "🍺"
+    ],
+    "blurb": "I love to eat. From Taco Bell to fine dining, I’m a big fan of trying new places and have amassed a pretty large list of restaurants. Regions are split into 2 lists. Try are things I’ve heard about and want to try. True is things I’ve tried and liked. There’s also a barrage of coffee, beer, cocktails, and even a few specialty grocery stores in there.",
     "link": "https://robbybro.com/food/",
-    "accent": "#e4572e",
     "screenshot": "assets/shots/food.png",
     "pos": [
       0.55,
       0.16
-    ],
-    "short": "robby.food"
+    ]
   },
   {
     "slug": "guitar",
-    "name": "Guitar Studio",
-    "blurb": "Notes, lessons, and client tracking for teaching guitar.",
+    "name": "Pedalboard",
+    "short": "Guitar",
+    "icon": "🎸",
+    "blurb": "I play guitar (poorly) and have a Line6 HX Stomp, which routes most of my desk audio. I built a working pedal board around it: the Stomp comes in as a plain USB audio interface, and everything you hear is hand-rolled Web Audio with zero audio libraries — an overdrive and a distortion whose clipping curves are generated from math (no samples), a tape-style delay that filters each repeat darker, and a convolution reverb whose impulse response is synthesized at runtime. Pedals true-bypass by crossfading parallel signal paths like real hardware, and a sample-accurate metronome listens back through the input, detects your note onsets with an adaptive threshold, and grades every hit early/late/on-time against the beat.",
     "link": "https://robbybro.com/guitar/",
-    "accent": "#f4a259",
     "screenshot": "assets/shots/guitar.png",
     "pos": [
       0.8,
       0.26
-    ],
-    "short": "Guitar"
+    ]
   },
   {
     "slug": "masala",
     "name": "Masala",
-    "blurb": "A spice-blend atlas — orbit a constellation of masalas, read their tasting notes, and tune your own mix.",
+    "short": "Masala",
+    "icon": "🌶️",
+    "blurb": "Find, visualize, and tweak spice blends in 3D space realtime. Every axis is an individual component (ex: cinnamon, cardamom, etc) and blends are plotted along that. Now you can see how far Garam Masala is from Herbs de Provence, and quick reference on how to make either.",
     "link": "https://robbybro.com/masala/",
-    "accent": "#d64550",
     "screenshot": "assets/shots/masala.png",
     "pos": [
       0.38,
       0.3
-    ],
-    "short": "Masala"
+    ]
   },
   {
     "slug": "plates",
     "name": "Plates",
-    "blurb": "Barbell math without the barbell math — pick a total and see exactly which plates go on each side.",
+    "short": "Plates",
+    "icon": "🏋️",
+    "blurb": "I got a squat rack setup but had to get a shorter 25lb bar to fit it in my garage. I get it mixed up with the standard 45lb bar a lot so I vibe coded this app from my phone in my garage using Jules.",
     "link": "https://robbybro.com/plates/",
-    "accent": "#5b8cff",
     "screenshot": "assets/shots/plates.png",
     "pos": [
       0.86,
       0.56
-    ],
-    "short": "Plates"
+    ]
   },
   {
     "slug": "basic-bitch",
     "name": "Basic Bitch",
-    "blurb": "A low-acid lifestyle lab — coffee pH chemistry, a mocktail slot machine, and reflux-friendly ingredient roulette.",
+    "short": "Basic Bitch",
+    "icon": "🧪",
+    "blurb": "My fiance is a Dietician and was diagnosed with LPR (acid reflux with extra steps) and we’ve been adapting to a lower acid lifestyle. I built this tool to determine coffee pH chemistry, a mocktail slot machine, and reflux-friendly ingredient roulette for inspiration when we get stuck and want to try something new.",
     "link": "https://robbybro.com/basic-bitch/",
-    "accent": "#ff5c9e",
     "screenshot": "assets/shots/basic-bitch.png",
     "pos": [
       0.58,
       0.44
-    ],
-    "short": "Basic Bitch"
+    ]
   },
   {
     "slug": "marzocco-water",
     "name": "Linea Mini Water Lab",
-    "blurb": "DIY espresso water calculator — Epsom salt and baking soda dosing inside La Marzocco's water spec.",
+    "short": "Espresso Machine Water Chemistry",
+    "icon": "☕",
+    "blurb": "I used to homebrew and went down a water rabbit hole to optimize the flavor of my beer and efficiency of my brewing methods. I got way too deep into coffee awhile back and ended up with a La Marzocco Linea Mini. I took what I knew from beer and applied it to espresso water, creating this calculator to dial in flavor profiles and maximize machine longevity.",
     "link": "https://robbybro.com/marzocco-water/",
-    "accent": "#2dd4bf",
     "screenshot": "assets/shots/marzocco-water.png",
     "pos": [
       0.7,
       0.8
-    ],
-    "short": "Water Lab"
+    ]
   },
   {
     "slug": "muggins",
     "name": "Muggins",
-    "blurb": "Cribbage rules are trash. Muggins makes them better.",
+    "short": "Muggins",
+    "icon": "♠️",
+    "blurb": "My friends tried to teach me Cribbage but there are so many weird rules it felt like they were literally making them up. I built this to score my hand.",
     "link": "https://robbybro.com/muggins/",
-    "accent": "#7c5cff",
     "screenshot": "assets/shots/muggins.png",
     "pos": [
       0.42,
       0.68
-    ],
-    "short": "Muggins"
+    ]
   },
   {
     "slug": "ssbbb",
     "name": "Seattle Smash Burger Bike Bingo",
-    "blurb": "Burgers, bikes, sunshine, uninhibited gluttony. A summer bingo board where every route is four burger joints long.",
+    "short": "SSBBB",
+    "icon": "🍔",
+    "blurb": "A bike race I hosted in 2025. I mapped every reputable smash burger in Seattle and built a graph algorithm to generate a bingo board with relatively equivalent min/mid/max distances for each path chosen. Teams consisted of 2 riders who had to eat a total of 4 burgers to get a “bingo”. Winner got a golden spatula.",
     "link": "https://robbybro.com/ssbbb/",
-    "accent": "#00c2a8",
     "screenshot": "assets/shots/ssbbb.png",
     "pos": [
       0.2,
       0.6
-    ],
-    "short": "SSBBB"
+    ]
   },
   {
     "slug": "focet",
     "name": "Focet",
-    "blurb": "Label your liquid. Not deployed yet — coming soon.",
-    "link": null,
-    "accent": "#94a3b8",
+    "short": "The Flow Network",
+    "icon": "🍺",
+    "blurb": "2017 ExtraHop CTO Award winner, a wifi enabled kegerator that tracked and visualized beer flow in real time using network packets sniffed by an ExtraHop ECA.",
+    "link": "internal",
+    "photos": [
+      "assets/shots/focet-kegerator.jpg",
+      "assets/shots/focet-kegbot.jpg"
+    ],
     "pos": [
       0.55,
       0.9
-    ],
-    "short": "Focet"
+    ]
   }
 ]
