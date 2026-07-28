@@ -95,16 +95,69 @@ let W = 0, H = 0, DPR = 1;
 let verts = [];   // {hx,hy,x,y,phase,amp}
 let tris = [];    // {i,j,k,color}
 
+/* On phones the viewport can't hold the header plus every project triangle,
+ * and the squeeze only worsens as projects are added. So on narrow screens
+ * the mesh becomes a TALL scrollable field: header on top, triangles below,
+ * height scaling with the project count. Desktop stays viewport-fixed. */
+let heightBoost = 1; // layout() raises this until the placement rules hold
+
+function meshHeight() {
+  let base = window.innerHeight;
+  if (window.innerWidth <= 800 && projects.length) {
+    const el = document.querySelector(".intro");
+    const introBottom = el ? el.getBoundingClientRect().bottom + window.scrollY : 0;
+    // ~1.6 cell-rows per project: a placed triangle blocks most of two rows
+    // of a ~2.5-column phone mesh (its whole vertex ring), pairs block less
+    base = Math.max(base, Math.round(introBottom + projects.length * cellSize() * 1.6 + 100));
+  }
+  return Math.round(base * heightBoost);
+}
+
+/* Build + place, growing the field until the adjacency contract holds.
+ * Any viewport can starve once enough projects exist (desktop included) —
+ * scroll room is the universal pressure valve, not a mobile special case. */
+function layout() {
+  heightBoost = 1;
+  for (let i = 0; i < 6; i++) {
+    buildMesh();
+    assignProjectTriangles();
+    // judge the OUTCOME, not the solver tier: a relaxed-tier placement that
+    // produced zero corner touches is fine and shouldn't cost page height
+    let corners = 0;
+    for (let a = 0; a < projectTris.length; a++)
+      for (let b = a + 1; b < projectTris.length; b++)
+        if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) === 1) corners++;
+    const worst = Math.max(0, ...projectTris.map((pt) => pt.p.__level));
+    if (corners === 0 && worst <= 2) break;
+    if (i % 2 === 1) heightBoost *= 1.25; // two jitter rolls per height tier
+  }
+  if (reduceMotion) draw(0);
+}
+
+/* Cell size follows the VIEWPORT, not the mesh — a tall scrolling mesh would
+ * otherwise inflate hypot() until cells outgrow the phone's width and no
+ * triangle passes the on-screen fit check. */
+function cellSize() {
+  return Math.max(120, Math.min(250, Math.round(Math.hypot(window.innerWidth, window.innerHeight) / 10)));
+}
+
 function buildMesh() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  W = window.innerWidth; H = window.innerHeight;
+  W = window.innerWidth; H = meshHeight();
   canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.height = H + "px";
+  // a taller-than-viewport mesh must scroll with the page; a viewport mesh stays fixed
+  const scrolls = H > window.innerHeight + 1;
+  canvas.style.position = scrolls ? "absolute" : "fixed";
+  const tilesEl = document.getElementById("tiles");
+  tilesEl.style.position = scrolls ? "absolute" : "fixed";
+  tilesEl.style.height = H + "px";
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  // /10 for pool depth + an above-median area floor for content triangles:
-  // "bigger content triangles" comes from the floor (no slivers), while the
-  // finer mesh keeps enough candidates that ten non-touching placements fit.
-  const cell = Math.max(140, Math.min(250, Math.round(Math.hypot(W, H) / 10)));
+  // /10 of the viewport for pool depth + an above-median area floor for
+  // content triangles: "bigger content triangles" comes from the floor (no
+  // slivers), while the finer mesh keeps enough candidates for placement.
+  const cell = cellSize();
   const cols = Math.ceil(W / cell) + 2;
   const rows = Math.ceil(H / cell) + 2;
   verts = [];
@@ -174,11 +227,7 @@ document.addEventListener("visibilitychange", () => (document.hidden ? stop() : 
 let resizeT;
 window.addEventListener("resize", () => {
   clearTimeout(resizeT);
-  resizeT = setTimeout(() => {
-    buildMesh();
-    assignProjectTriangles(); // triangles are viewport-derived, so re-pick them
-    if (reduceMotion) draw(0);
-  }, 150);
+  resizeT = setTimeout(layout, 150); // viewport-derived, so re-place everything
 });
 
 /* --------------------- Project triangles (in the mesh) ---------------------
@@ -252,7 +301,8 @@ function introBox() {
   if (!el) return null;
   const r = el.getBoundingClientRect();
   const PAD = 12;
-  return { x0: r.left - PAD, y0: r.top - PAD, x1: r.right + PAD, y1: r.bottom + PAD };
+  const sy = window.scrollY; // mesh coords are page coords when it scrolls
+  return { x0: r.left - PAD, y0: r.top + sy - PAD, x1: r.right + PAD, y1: r.bottom + sy + PAD };
 }
 
 function triHomeBox(tr) {
@@ -361,7 +411,7 @@ function assignProjectTriangles() {
     projectTris.push({ triIdx: best, p, poly: null });
   }
   syncFocusProxies();
-  window.__mesh = { verts, tris, projectTris, sharedVerts, draw, openModal }; // debug hook
+  window.__mesh = { verts, tris, projectTris, sharedVerts, draw, openModal, buildMesh, assignProjectTriangles, layout }; // debug hook
 }
 
 /* Wrap a label to fit maxWidth, up to 3 lines (Espresso Machine Water
@@ -548,16 +598,13 @@ start();
 
 document.getElementById("reroll").addEventListener("click", () => {
   hoverIdx = -1;
-  buildMesh();
-  assignProjectTriangles(); // fresh jitter -> a whole new map
-  if (reduceMotion) draw(0);
+  layout(); // fresh jitter -> a whole new map
 });
 
 fetch("projects.json")
   .then((r) => r.json())
   .then((data) => {
     projects = data;
-    assignProjectTriangles();
-    if (reduceMotion) draw(0);
+    layout();
   })
   .catch((err) => console.error("projects.json failed to load", err));
