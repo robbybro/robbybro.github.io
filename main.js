@@ -58,13 +58,16 @@ function triangulate(points) {
 }
 
 /* ----------------------------- Palette ----------------------------- */
-// Placeholder modern palette (finalized in Step 3). Deep, low-key mesh tones so
-// foreground text stays readable; project tiles carry the bright accents.
-const STOPS = [
-  [26, 32, 58],   // deep indigo
-  [40, 30, 72],   // violet
-  [22, 48, 66],   // teal-navy
-  [46, 26, 54],   // plum
+// Baja Fade (after Rumpl's Wrap Sack colorway): indigo -> purple -> fuchsia ->
+// coral -> orange -> gold, run as a diagonal gradient from the top-left
+// (dark, where the intro text sits) to the bottom-right (gold).
+const BAJA = [
+  [31, 42, 99],    // indigo
+  [91, 45, 142],   // purple
+  [176, 51, 140],  // fuchsia
+  [232, 78, 95],   // coral
+  [244, 123, 53],  // orange
+  [255, 197, 63],  // gold
 ];
 function mix(c1, c2, t) {
   return [
@@ -74,12 +77,12 @@ function mix(c1, c2, t) {
   ];
 }
 function triColor(cx, cy, w, h, seed) {
-  const fx = cx / w, fy = cy / h;
-  const g = (fx * 0.6 + fy * 0.4 + STOPS.length) % STOPS.length;
-  const i = Math.floor(g), t = g - i;
-  const base = mix(STOPS[i], STOPS[(i + 1) % STOPS.length], t);
+  const f = Math.min(0.999, Math.max(0, (cx / w + cy / h) / 2)); // diagonal fade
+  const g = f * (BAJA.length - 1);
+  const i = Math.floor(g);
+  const base = mix(BAJA[i], BAJA[i + 1], g - i);
   const j = ((Math.sin(seed * 12.9898) * 43758.5453) % 1 + 1) % 1; // deterministic jitter
-  const v = 1 + (j - 0.5) * 0.16;
+  const v = 1 + (j - 0.5) * 0.12;
   return `rgb(${Math.min(255, base[0] * v) | 0},${Math.min(255, base[1] * v) | 0},${Math.min(255, base[2] * v) | 0})`;
 }
 
@@ -98,10 +101,10 @@ function buildMesh() {
   canvas.width = W * DPR; canvas.height = H * DPR;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-  // /10, not the /8 of the first pass: at /8 nine non-touching project
-  // triangles literally don't fit next to the intro (the placement pool
-  // starves and the no-corner rule collapses). Still ~1.6x the original size.
-  const cell = Math.max(130, Math.min(240, Math.round(Math.hypot(W, H) / 10)));
+  // /10 for pool depth + an above-median area floor for content triangles:
+  // "bigger content triangles" comes from the floor (no slivers), while the
+  // finer mesh keeps enough candidates that ten non-touching placements fit.
+  const cell = Math.max(140, Math.min(250, Math.round(Math.hypot(W, H) / 10)));
   const cols = Math.ceil(W / cell) + 2;
   const rows = Math.ceil(H / cell) + 2;
   verts = [];
@@ -145,7 +148,7 @@ function draw(t) {
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.closePath();
     ctx.fillStyle = tr.color;
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.035)";
+    ctx.strokeStyle = "rgba(255,246,223,0.08)";
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -187,12 +190,31 @@ window.addEventListener("resize", () => {
  *   - their vertices get damped amplitude, so the artwork inside stays legible
  * Keyboard users get invisible focusable proxies in #tiles (mouse ignores them).
  */
-const PALETTE_FALLBACK = ["#7c5cff", "#00c2a8", "#ff6b6b", "#ffb84d", "#5b8cff", "#ff5c9e", "#2dd4bf", "#e4572e"];
 // A project triangle always fills its host mesh triangle EXACTLY — no rest
-// bulge, no hover growth (Robby killed the expansion). Hover feedback is
-// purely the veil lifting + border weight. ACCENT matches the intro-link
-// underline so the whole page carries one complementary color.
+// bulge, no hover growth (Robby killed the expansion). Rest border = the
+// intro-underline purple; hover border flips to Baja gold + pointer cursor
+// as the "this is clickable" signal. Fill is butter-cream so the tiled
+// emoji background and dark title stay readable against the Baja mesh.
 const ACCENT = "#7c5cff";
+const HOVER_BORDER = "#ffb300";
+const CREAM = "#fff6df";
+const INK_ON_CREAM = "#23204a";
+
+/* Tiny repeating emoji background for a project triangle (~5pt glyphs). */
+const patternCache = new Map();
+function emojiPattern(emoji) {
+  if (patternCache.has(emoji)) return patternCache.get(emoji);
+  const c = document.createElement("canvas");
+  c.width = c.height = 18;
+  const pc = c.getContext("2d");
+  pc.font = "9px system-ui";
+  pc.textAlign = "center";
+  pc.textBaseline = "middle";
+  pc.fillText(emoji, 9, 10);
+  const pat = ctx.createPattern(c, "repeat");
+  patternCache.set(emoji, pat);
+  return pat;
+}
 
 let projects = [];
 let projectTris = [];  // {triIdx, p, poly}
@@ -252,16 +274,19 @@ function assignProjectTriangles() {
 
   const intro = introBox();
   const placed = []; // {tr, paired}
+  const areas = tris.map(homeArea);
+  const bigEnough = [...areas].sort((x, y) => x - y)[Math.floor(areas.length * 0.55)] || 0;
 
   /* Constraints relax GRADUALLY as the pool starves (small viewports).
    * The adjacency rule is the last thing to go, not the first:
-   *   level 0: on-screen + off-intro + pair rule + no corner touches + KISS gap
+   *   level 0: above-median area + on-screen + off-intro + pair rule + no corner touches + KISS gap
    *   level 1: drop the KISS visual-distance floor
-   *   level 2: allow corner touches (still at most one shared edge)
+   *   level 2: drop the area floor; allow corner touches (still at most one shared edge)
    *   level 3: any on-screen, off-intro triangle
    *   level 4: anything (true last resort)
    * A flat "level 1 = no rules" fallback is what produced the chained blobs. */
-  function acceptable(tr, level) {
+  function acceptable(idx, tr, level) {
+    if (level < 2 && areas[idx] < bigEnough) return false; // content needs room
     if (level < 4 && !fitsOnScreen(tr)) return false;
     if (level < 4 && intro) {
       const b = triHomeBox(tr); // never sit on top of the intro copy
@@ -284,7 +309,7 @@ function assignProjectTriangles() {
       if (level < 1) {
         // s === 0: unrelated triangles must also keep visual distance — two
         // separate vertices sitting 15px apart read as a corner touch anyway
-        const KISS = 56;
+        const KISS = 44;
         for (const a of [tr.i, tr.j, tr.k]) {
           for (const b of [q.tr.i, q.tr.j, q.tr.k]) {
             if (Math.hypot(verts[a].hx - verts[b].hx, verts[a].hy - verts[b].hy) < KISS) return false;
@@ -304,11 +329,14 @@ function assignProjectTriangles() {
       for (let idx = 0; idx < tris.length; idx++) {
         const tr = tris[idx];
         if (tr.project) continue;
-        const res = acceptable(tr, level);
+        const res = acceptable(idx, tr, level);
         if (!res) continue;
         const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
         const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
-        const d = (gx - tx) ** 2 + (gy - ty) ** 2;
+        let d = (gx - tx) ** 2 + (gy - ty) ** 2;
+        // pairs pack the plane more efficiently than singletons (a pair
+        // blocks one shared ring, not two) — prefer them when available
+        if (res && res.partner) d *= 0.45;
         if (d < bestD) { bestD = d; best = idx; bestRes = res; bestLevel = level; }
       }
     }
@@ -357,61 +385,45 @@ function drawProjectTri(pt, i, t) {
   ctx.beginPath();
   ctx.moveTo(P[0][0], P[0][1]); ctx.lineTo(P[1][0], P[1][1]); ctx.lineTo(P[2][0], P[2][1]);
   ctx.closePath();
-  // accent glass over the mesh; hover lifts the veil (no size change)
-  ctx.fillStyle = active ? "rgba(124,92,255,0.40)" : "rgba(124,92,255,0.14)";
+  // butter-cream base, then the tiny tiled emoji wash (same path, two fills)
+  ctx.fillStyle = CREAM;
   ctx.fill();
-  ctx.strokeStyle = ACCENT;
-  ctx.lineWidth = active ? 2.5 : 1.5;
-  ctx.stroke();
-
-  // icon + short name stack at the centroid (the triangle's widest region);
-  // an icon ARRAY cycles over time (robby.food flips through food emoji)
   let icon = pt.p.icon;
   if (Array.isArray(icon)) {
     icon = reduceMotion ? icon[0] : icon[Math.floor(t / 1400) % icon.length];
   }
-  const short = pt.p.short || pt.p.name;
-  const font = `700 ${active ? 14 : 12.5}px "Open Sans", system-ui, sans-serif`;
+  if (icon) {
+    ctx.save();
+    ctx.globalAlpha = 0.32;
+    ctx.fillStyle = emojiPattern(icon);
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.strokeStyle = active ? HOVER_BORDER : ACCENT;
+  ctx.lineWidth = active ? 3 : 1.75;
+  ctx.stroke();
+
+  // title at the centroid; hover swaps the short label for the full name
+  const label = active ? pt.p.name : (pt.p.short || pt.p.name);
+  const font = `700 ${active ? 14.5 : 13}px "Open Sans", system-ui, sans-serif`;
   const bboxW = Math.max(...P.map((q) => q[0])) - Math.min(...P.map((q) => q[0]));
-  const lines = wrapLabel(short, font, Math.max(70, bboxW * 0.5));
-  const lineH = active ? 18 : 16;
-  const blockH = (icon ? 26 : 0) + lines.length * lineH;
-  let y = gy - blockH / 2;
+  const lines = wrapLabel(label, font, Math.max(76, bboxW * 0.52));
+  const lineH = active ? 19 : 17;
+  let y = gy - (lines.length * lineH) / 2;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  if (icon) {
-    ctx.font = `${active ? 24 : 20}px "Open Sans", system-ui, sans-serif`;
-    ctx.fillText(icon, gx, y + 12);
-    y += 28;
-  }
   ctx.font = font;
-  ctx.fillStyle = active ? "#ffffff" : "rgba(244,246,251,0.82)";
   for (const line of lines) {
+    // cream halo keeps the title readable over the emoji tiling
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(255,246,223,0.9)";
+    ctx.strokeText(line, gx, y + lineH / 2);
+    ctx.fillStyle = INK_ON_CREAM;
     ctx.fillText(line, gx, y + lineH / 2);
     y += lineH;
   }
   ctx.textBaseline = "alphabetic";
-
-  // full name + affordance under the fat edge on hover/focus only
-  if (active) {
-    const label = pt.p.name;
-    const maxY = Math.max(P[0][1], P[1][1], P[2][1]);
-    ctx.font = '700 15px "Open Sans", system-ui, sans-serif';
-    const tw = ctx.measureText(label).width;
-    const ly = maxY + 22;
-    ctx.fillStyle = "rgba(8,11,20,0.92)";
-    ctx.strokeStyle = "rgba(255,255,255,0.16)";
-    ctx.lineWidth = 1;
-    const bx = gx - tw / 2 - 10, bw2 = tw + 20;
-    ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(bx, ly - 17, bw2, 26, 8);
-    else ctx.rect(bx, ly - 17, bw2, 26);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.fillText(label, gx, ly);
-  }
 }
 
 function pointInPoly(x, y, P) {
@@ -529,6 +541,13 @@ modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("clic
 /* ----------------------------- Boot ----------------------------- */
 buildMesh();
 start();
+
+document.getElementById("reroll").addEventListener("click", () => {
+  hoverIdx = -1;
+  buildMesh();
+  assignProjectTriangles(); // fresh jitter -> a whole new map
+  if (reduceMotion) draw(0);
+});
 
 fetch("projects.json")
   .then((r) => r.json())

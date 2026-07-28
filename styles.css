@@ -96,6 +96,26 @@ html, body {
   outline: none; /* the triangle itself expands + brightens on focus */
 }
 
+/* Reroll — regenerates the mesh */
+#reroll {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+  font-family: "Rubik Mono One", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  background: #fff6df;
+  color: #23204a;
+  border: 2px solid #7c5cff;
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.15s, transform 0.15s;
+}
+#reroll:hover, #reroll:focus-visible { border-color: #ffb300; transform: translateY(-1px); }
+
 /* Layer 4 — modal */
 .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
 .modal[hidden] { display: none; }

@@ -128,5 +128,18 @@
       0.55,
       0.9
     ]
+  },
+  {
+    "slug": "beelzebub-health",
+    "name": "Beelzebub Health",
+    "short": "Beelzebub",
+    "icon": "🧬",
+    "blurb": "Beelzebub is my always-on Claude assistant living on a Mac mini. A dispatcher wakes every five minutes and fires headless agents on cron schedules — controlling my espresso machine, coaching my training off Strava and Garmin data, keeping my restaurant lists fresh, and nagging us about chores. Every run lands in Postgres, token spend is metered against rolling budgets, the database ships weekly backups to Drive, and this dashboard maps the whole nervous system — sources to skills to jobs to sinks — so it can audit its own health and email me the report every Sunday.",
+    "link": "internal",
+    "screenshot": "assets/shots/beelzebub-health.png",
+    "pos": [
+      0.26,
+      0.44
+    ]
   }
 ]
