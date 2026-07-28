@@ -134,7 +134,7 @@
     "name": "Beelzebub Health",
     "short": "Beelzebub",
     "icon": "🧬",
-    "blurb": "Beelzebub is my always-on Claude assistant living on a Mac mini. A dispatcher wakes every five minutes and fires headless agents on cron schedules — controlling my espresso machine, coaching my training off Strava and Garmin data, keeping my restaurant lists fresh, and nagging us about chores. Every run lands in Postgres, token spend is metered against rolling budgets, the database ships weekly backups to Drive, and this dashboard maps the whole nervous system — sources to skills to jobs to sinks — so it can audit its own health and email me the report every Sunday.",
+    "blurb": "Beelzebub is my always-on Claude assistant living on my mac mini. It controls my espresso machine, plans my trips, keeps track of restaurant and media recommendations, acts as my personal trainer tying my strava and garmin data with manual input from lift days, and helps me plan meals using the cookbooks I already own and piping ingredients to my shopping list in keep. It has several cron jobs adding weekly / monthly chores like watering specific plants and vaccuming to my google keep todo list, is DB backed with redundant backups , and now can audit its own health with a live dashboard and weekly digest.",
     "link": "internal",
     "screenshot": "assets/shots/beelzebub-health.png",
     "pos": [
