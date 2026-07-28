@@ -147,19 +147,17 @@ function layout() {
   for (let i = 0; i < 6; i++) {
     buildMesh();
     assignProjectTriangles();
-    // judge the OUTCOME, not the solver tier. Desktop contract: no corner
-    // touches. Mobile contract: the opposite — ONE contiguous chain.
-    let ok;
-    if (window.innerWidth <= 800) {
-      ok = connectedComponents() === 1;
-    } else {
-      let corners = 0;
-      for (let a = 0; a < projectTris.length; a++)
-        for (let b = a + 1; b < projectTris.length; b++)
-          if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) === 1) corners++;
-      const worst = Math.max(0, ...projectTris.map((pt) => pt.p.__level));
-      ok = corners === 0 && worst <= 2;
-    }
+    // judge the OUTCOME, not the solver tier. The law everywhere: corners
+    // may touch, edges may NOT. Mobile additionally wants one contiguous
+    // corner-connected chain.
+    let edges = 0;
+    for (let a = 0; a < projectTris.length; a++)
+      for (let b = a + 1; b < projectTris.length; b++)
+        if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) >= 2) edges++;
+    const worst = Math.max(0, ...projectTris.map((pt) => pt.p.__level));
+    const ok = window.innerWidth <= 800
+      ? edges === 0 && connectedComponents() === 1
+      : edges === 0 && worst <= 2;
     if (ok) break;
     if (i % 2 === 1) heightBoost *= 1.25; // two jitter rolls per height tier
   }
@@ -371,14 +369,13 @@ function assignProjectTriangles() {
   const areas = tris.map(homeArea);
   const bigEnough = [...areas].sort((x, y) => x - y)[Math.floor(areas.length * 0.55)] || 0;
 
-  /* Constraints relax GRADUALLY as the pool starves (small viewports).
-   * The adjacency rule is the last thing to go, not the first:
-   *   level 0: above-median area + on-screen + off-intro + pair rule + no corner touches + KISS gap
-   *   level 1: drop the KISS visual-distance floor
-   *   level 2: drop the area floor; allow corner touches (still at most one shared edge)
-   *   level 3: any on-screen, off-intro triangle
-   *   level 4: anything (true last resort)
-   * A flat "level 1 = no rules" fallback is what produced the chained blobs. */
+  /* THE adjacency law (Robby, 2026-07-28): project triangles may share
+   * CORNERS — never a full edge. Corner contact is what chains them on
+   * mobile; edge contact is what read as a mushed-together blob.
+   * Constraints still relax gradually as the pool starves:
+   *   level 0-2: no shared edges (area floor drops at 2)
+   *   level 3:   any on-screen, off-intro triangle
+   *   level 4:   anything (true last resort) */
   function acceptable(idx, tr, level) {
     if (level < 2 && areas[idx] < bigEnough) return false; // content needs room
     if (level < 4 && !fitsOnScreen(tr)) return false;
@@ -387,35 +384,11 @@ function assignProjectTriangles() {
       const clear = b.x1 < intro.x0 || b.x0 > intro.x1 || b.y1 < intro.y0 || b.y0 > intro.y1;
       if (!clear) return false;
     }
-    // Mobile WANTS contact: the triangles form one contiguous string down the
-    // page, so corner/edge/KISS rules don't apply — scoring pulls candidates
-    // onto the chain instead.
-    if (mobileLayout) return { partner: null };
     if (level >= 3) return true;
-    let partner = null;
     for (const q of placed) {
-      const s = sharedVerts(tr, q.tr);
-      if (s >= 2) {
-        if (partner || q.paired) return false; // second edge, or partner already paired
-        partner = q;
-        continue;
-      }
-      if (s === 1) {
-        if (level < 2) return false; // corner-only touch
-        continue;
-      }
-      if (level < 1) {
-        // s === 0: unrelated triangles must also keep visual distance — two
-        // separate vertices sitting 15px apart read as a corner touch anyway
-        const KISS = 44;
-        for (const a of [tr.i, tr.j, tr.k]) {
-          for (const b of [q.tr.i, q.tr.j, q.tr.k]) {
-            if (Math.hypot(verts[a].hx - verts[b].hx, verts[a].hy - verts[b].hy) < KISS) return false;
-          }
-        }
-      }
+      if (sharedVerts(tr, q.tr) >= 2) return false; // edges never, corners fine
     }
-    return { partner };
+    return true;
   }
 
   // On phones the authored desktop positions would fan the triangles down
@@ -433,41 +406,37 @@ function assignProjectTriangles() {
       tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
       ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
     }
-    let best = -1, bestRes = null, bestLevel = -1;
+    let best = -1, bestLevel = -1;
+    // Mobile chain-growing is a HARD preference: if any corner-touching
+    // candidate exists at this constraint level, one of them MUST win —
+    // a soft score multiplier still fragmented the chain on bad rolls.
+    const passes = mobileLayout && placed.length ? [true, false] : [false];
     for (let level = 0; level < 5 && best < 0; level++) {
-      let bestD = Infinity;
-      for (let idx = 0; idx < tris.length; idx++) {
-        const tr = tris[idx];
-        if (tr.project) continue;
-        const res = acceptable(idx, tr, level);
-        if (!res) continue;
-        const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
-        const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
-        let d = (gx - tx) ** 2 + (gy - ty) ** 2;
-        if (mobileLayout) {
-          // chain-growing: touching ANY placed triangle beats raw distance,
-          // so the string stays contiguous 1-3 triangles wide
-          if (placed.length) {
+      for (const requireTouch of passes) {
+        let bestD = Infinity;
+        for (let idx = 0; idx < tris.length; idx++) {
+          const tr = tris[idx];
+          if (tr.project) continue;
+          if (!acceptable(idx, tr, level)) continue;
+          if (requireTouch) {
             let touches = false;
             for (const q of placed) {
               if (sharedVerts(tr, q.tr) >= 1) { touches = true; break; }
             }
-            d *= touches ? 0.08 : 1;
+            if (!touches) continue;
           }
-        } else if (res && res.partner) {
-          // pairs pack the plane more efficiently than singletons (a pair
-          // blocks one shared ring, not two) — prefer them when available
-          d *= 0.45;
+          const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
+          const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
+          const d = (gx - tx) ** 2 + (gy - ty) ** 2;
+          if (d < bestD) { bestD = d; best = idx; bestLevel = level; }
         }
-        if (d < bestD) { bestD = d; best = idx; bestRes = res; bestLevel = level; }
+        if (best >= 0) break;
       }
     }
     if (best < 0) continue;
     const tr = tris[best];
     tr.project = p;
-    const entry = { tr, paired: false };
-    if (bestRes && bestRes.partner) { entry.paired = true; bestRes.partner.paired = true; }
-    placed.push(entry);
+    placed.push({ tr });
     p.__level = bestLevel; // audit: which constraint tier placed it
     for (const v of [tr.i, tr.j, tr.k]) {
       if (verts[v].damped) continue; // an edge-shared vertex must not damp twice
@@ -480,8 +449,9 @@ function assignProjectTriangles() {
   window.__mesh = { verts, tris, projectTris, sharedVerts, draw, openModal, buildMesh, assignProjectTriangles, layout }; // debug hook
 }
 
-/* Wrap a label to fit maxWidth, up to 3 lines (Espresso Machine Water
- * Chemistry has to live inside a triangle). */
+/* Wrap a label to fit maxWidth. No line cap — dropping words mangled
+ * "Seattle Smash Burger Bike Bingo"; the caller's font-shrink loop is
+ * what makes long names fit their triangle. */
 function wrapLabel(text, font, maxWidth) {
   ctx.font = font;
   const words = text.split(" ");
@@ -493,7 +463,7 @@ function wrapLabel(text, font, maxWidth) {
     else { lines.push(cur); cur = w; }
   }
   if (cur) lines.push(cur);
-  return lines.slice(0, 3);
+  return lines;
 }
 
 function drawProjectTri(pt, i, t) {
