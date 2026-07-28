@@ -117,12 +117,26 @@ function meshHeight() {
   if (window.innerWidth <= 800 && projects.length) {
     const el = document.querySelector(".intro");
     const introBottom = el ? el.getBoundingClientRect().bottom + window.scrollY : 0;
-    // ~0.95 cell-rows per project: clumped placement (pairs + tight targets)
-    // packs far denser than the old spread; layout()'s growth valve still
-    // catches the unlucky rolls
-    base = Math.max(base, Math.round(introBottom + projects.length * cellSize() * 0.95 + 140));
+    // ~0.6 cell-rows per project: a contiguous chain packs adjacent
+    // triangles, so it needs barely more than half a row each;
+    // layout()'s growth valve still catches the unlucky rolls
+    base = Math.max(base, Math.round(introBottom + projects.length * cellSize() * 0.6 + 160));
   }
   return Math.round(base * heightBoost);
+}
+
+/* How many disconnected groups the project triangles form (shared-vertex
+ * adjacency). Mobile wants exactly one — a contiguous string. */
+function connectedComponents() {
+  const n = projectTris.length;
+  if (!n) return 0;
+  const parent = [...Array(n).keys()];
+  const find = (x) => (parent[x] === x ? x : (parent[x] = find(parent[x])));
+  for (let a = 0; a < n; a++)
+    for (let b = a + 1; b < n; b++)
+      if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) >= 1)
+        parent[find(a)] = find(b);
+  return new Set(parent.map(find)).size;
 }
 
 /* Build + place, growing the field until the adjacency contract holds.
@@ -133,14 +147,20 @@ function layout() {
   for (let i = 0; i < 6; i++) {
     buildMesh();
     assignProjectTriangles();
-    // judge the OUTCOME, not the solver tier: a relaxed-tier placement that
-    // produced zero corner touches is fine and shouldn't cost page height
-    let corners = 0;
-    for (let a = 0; a < projectTris.length; a++)
-      for (let b = a + 1; b < projectTris.length; b++)
-        if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) === 1) corners++;
-    const worst = Math.max(0, ...projectTris.map((pt) => pt.p.__level));
-    if (corners === 0 && worst <= 2) break;
+    // judge the OUTCOME, not the solver tier. Desktop contract: no corner
+    // touches. Mobile contract: the opposite — ONE contiguous chain.
+    let ok;
+    if (window.innerWidth <= 800) {
+      ok = connectedComponents() === 1;
+    } else {
+      let corners = 0;
+      for (let a = 0; a < projectTris.length; a++)
+        for (let b = a + 1; b < projectTris.length; b++)
+          if (sharedVerts(tris[projectTris[a].triIdx], tris[projectTris[b].triIdx]) === 1) corners++;
+      const worst = Math.max(0, ...projectTris.map((pt) => pt.p.__level));
+      ok = corners === 0 && worst <= 2;
+    }
+    if (ok) break;
     if (i % 2 === 1) heightBoost *= 1.25; // two jitter rolls per height tier
   }
   if (reduceMotion) draw(0);
@@ -347,6 +367,7 @@ function assignProjectTriangles() {
 
   const intro = introBox();
   const placed = []; // {tr, paired}
+  const mobileLayout = W <= 800;
   const areas = tris.map(homeArea);
   const bigEnough = [...areas].sort((x, y) => x - y)[Math.floor(areas.length * 0.55)] || 0;
 
@@ -366,6 +387,10 @@ function assignProjectTriangles() {
       const clear = b.x1 < intro.x0 || b.x0 > intro.x1 || b.y1 < intro.y0 || b.y0 > intro.y1;
       if (!clear) return false;
     }
+    // Mobile WANTS contact: the triangles form one contiguous string down the
+    // page, so corner/edge/KISS rules don't apply — scoring pulls candidates
+    // onto the chain instead.
+    if (mobileLayout) return { partner: null };
     if (level >= 3) return true;
     let partner = null;
     for (const q of placed) {
@@ -394,17 +419,16 @@ function assignProjectTriangles() {
   }
 
   // On phones the authored desktop positions would fan the triangles down
-  // the whole tall field — instead aim everything at a tight left/right
-  // weave just below the intro, and let pairing + the KISS gap set spacing.
-  const mobile = W <= 800;
+  // the whole tall field — instead aim at a tight weave just below the
+  // intro; contiguity scoring pulls each one onto the growing chain.
   const clumpTop = (intro ? intro.y1 : 0) + cellSize() * 0.7;
 
   for (let n = 0; n < projects.length; n++) {
     const p = projects[n];
     let tx, ty;
-    if (mobile) {
-      tx = W * (n % 2 ? 0.68 : 0.32);
-      ty = clumpTop + n * cellSize() * 0.8;
+    if (mobileLayout) {
+      tx = W * (n % 2 ? 0.62 : 0.38);
+      ty = clumpTop + n * cellSize() * 0.5;
     } else {
       tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
       ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
@@ -420,9 +444,21 @@ function assignProjectTriangles() {
         const gx = (verts[tr.i].hx + verts[tr.j].hx + verts[tr.k].hx) / 3;
         const gy = (verts[tr.i].hy + verts[tr.j].hy + verts[tr.k].hy) / 3;
         let d = (gx - tx) ** 2 + (gy - ty) ** 2;
-        // pairs pack the plane more efficiently than singletons (a pair
-        // blocks one shared ring, not two) — prefer them when available
-        if (res && res.partner) d *= 0.45;
+        if (mobileLayout) {
+          // chain-growing: touching ANY placed triangle beats raw distance,
+          // so the string stays contiguous 1-3 triangles wide
+          if (placed.length) {
+            let touches = false;
+            for (const q of placed) {
+              if (sharedVerts(tr, q.tr) >= 1) { touches = true; break; }
+            }
+            d *= touches ? 0.08 : 1;
+          }
+        } else if (res && res.partner) {
+          // pairs pack the plane more efficiently than singletons (a pair
+          // blocks one shared ring, not two) — prefer them when available
+          d *= 0.45;
+        }
         if (d < bestD) { bestD = d; best = idx; bestRes = res; bestLevel = level; }
       }
     }
@@ -487,12 +523,21 @@ function drawProjectTri(pt, i, t) {
   ctx.lineWidth = active ? 3 : 1.75;
   ctx.stroke();
 
-  // ONE canonical title, hovered or not (Robby: no Guitar/Pedalboard split)
+  // ONE canonical title, hovered or not (Robby: no Guitar/Pedalboard split).
+  // Font auto-shrinks until the block fits its own triangle — in the dense
+  // mobile chain a neighbor's label must never bleed across the border.
   const label = pt.p.name;
-  const font = `700 ${active ? 14.5 : 13}px "Open Sans", system-ui, sans-serif`;
   const bboxW = Math.max(...P.map((q) => q[0])) - Math.min(...P.map((q) => q[0]));
-  const lines = wrapLabel(label, font, Math.max(76, bboxW * 0.52));
-  const lineH = active ? 19 : 17;
+  const bboxH = Math.max(...P.map((q) => q[1])) - Math.min(...P.map((q) => q[1]));
+  let size = active ? 14.5 : 13;
+  let font, lines, lineH;
+  for (;;) {
+    font = `700 ${size}px "Open Sans", system-ui, sans-serif`;
+    lines = wrapLabel(label, font, Math.max(70, bboxW * 0.52));
+    lineH = size + 4.5;
+    if (lines.length * lineH <= bboxH * 0.62 || size <= 10) break;
+    size -= 1;
+  }
   let y = gy - (lines.length * lineH) / 2;
 
   ctx.textAlign = "center";
