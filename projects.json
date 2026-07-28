@@ -2,7 +2,6 @@
   {
     "slug": "food",
     "name": "robby.food",
-    "short": "robby.food",
     "icon": [
       "🍔",
       "🌯",
@@ -25,7 +24,6 @@
   {
     "slug": "guitar",
     "name": "Pedalboard",
-    "short": "Guitar",
     "icon": "🎸",
     "blurb": "I play guitar (poorly) and have a Line6 HX Stomp, which routes most of my desk audio. I built a working pedal board around it: the Stomp comes in as a plain USB audio interface, and everything you hear is hand-rolled Web Audio with zero audio libraries — an overdrive and a distortion whose clipping curves are generated from math (no samples), a tape-style delay that filters each repeat darker, and a convolution reverb whose impulse response is synthesized at runtime. Pedals true-bypass by crossfading parallel signal paths like real hardware, and a sample-accurate metronome listens back through the input, detects your note onsets with an adaptive threshold, and grades every hit early/late/on-time against the beat.",
     "link": "https://robbybro.com/guitar/",
@@ -38,7 +36,6 @@
   {
     "slug": "masala",
     "name": "Masala",
-    "short": "Masala",
     "icon": "🌶️",
     "blurb": "Find, visualize, and tweak spice blends in 3D space realtime. Every axis is an individual component (ex: cinnamon, cardamom, etc) and blends are plotted along that. Now you can see how far Garam Masala is from Herbs de Provence, and quick reference on how to make either.",
     "link": "https://robbybro.com/masala/",
@@ -51,7 +48,6 @@
   {
     "slug": "plates",
     "name": "Plates",
-    "short": "Plates",
     "icon": "🏋️",
     "blurb": "I got a squat rack setup but had to get a shorter 25lb bar to fit it in my garage. I get it mixed up with the standard 45lb bar a lot so I vibe coded this app from my phone in my garage using Jules.",
     "link": "https://robbybro.com/plates/",
@@ -64,7 +60,6 @@
   {
     "slug": "basic-bitch",
     "name": "Basic Bitch",
-    "short": "Basic Bitch",
     "icon": "🧪",
     "blurb": "My fiance is a Dietician and was diagnosed with LPR (acid reflux with extra steps) and we’ve been adapting to a lower acid lifestyle. I built this tool to determine coffee pH chemistry, a mocktail slot machine, and reflux-friendly ingredient roulette for inspiration when we get stuck and want to try something new.",
     "link": "https://robbybro.com/basic-bitch/",
@@ -76,8 +71,7 @@
   },
   {
     "slug": "marzocco-water",
-    "name": "Linea Mini Water Lab",
-    "short": "Espresso Machine Water Chemistry",
+    "name": "Espresso Machine Water Chemistry",
     "icon": "☕",
     "blurb": "I used to homebrew and went down a water rabbit hole to optimize the flavor of my beer and efficiency of my brewing methods. I got way too deep into coffee awhile back and ended up with a La Marzocco Linea Mini. I took what I knew from beer and applied it to espresso water, creating this calculator to dial in flavor profiles and maximize machine longevity.",
     "link": "https://robbybro.com/marzocco-water/",
@@ -90,7 +84,6 @@
   {
     "slug": "muggins",
     "name": "Muggins",
-    "short": "Muggins",
     "icon": "♠️",
     "blurb": "My friends tried to teach me Cribbage but there are so many weird rules it felt like they were literally making them up. I built this to score my hand.",
     "link": "https://robbybro.com/muggins/",
@@ -102,8 +95,7 @@
   },
   {
     "slug": "ssbbb",
-    "name": "Seattle Smash Burger Bike Bingo",
-    "short": "SSBBB",
+    "name": "SSBBB",
     "icon": "🍔",
     "blurb": "A bike race I hosted in 2025. I mapped every reputable smash burger in Seattle and built a graph algorithm to generate a bingo board with relatively equivalent min/mid/max distances for each path chosen. Teams consisted of 2 riders who had to eat a total of 4 burgers to get a “bingo”. Winner got a golden spatula.",
     "link": "https://robbybro.com/ssbbb/",
@@ -115,8 +107,7 @@
   },
   {
     "slug": "focet",
-    "name": "Focet",
-    "short": "The Flow Network",
+    "name": "The Flow Network",
     "icon": "🍺",
     "blurb": "2017 ExtraHop CTO Award winner, a wifi enabled kegerator that tracked and visualized beer flow in real time using network packets sniffed by an ExtraHop ECA.",
     "link": "internal",
@@ -132,7 +123,6 @@
   {
     "slug": "beelzebub-health",
     "name": "Beelzebub Health",
-    "short": "Beelzebub",
     "icon": "🧬",
     "blurb": "Beelzebub is my always-on Claude assistant living on my mac mini. It controls my espresso machine, plans my trips, keeps track of restaurant and media recommendations, acts as my personal trainer tying my strava and garmin data with manual input from lift days, and helps me plan meals using the cookbooks I already own and piping ingredients to my shopping list in keep. It has several cron jobs adding weekly / monthly chores like watering specific plants and vaccuming to my google keep todo list, is DB backed with redundant backups , and now can audit its own health with a live dashboard and weekly digest.",
     "link": "internal",

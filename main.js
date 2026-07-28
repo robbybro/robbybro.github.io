@@ -101,6 +101,17 @@ let tris = [];    // {i,j,k,color}
  * height scaling with the project count. Desktop stays viewport-fixed. */
 let heightBoost = 1; // layout() raises this until the placement rules hold
 
+/* Scroll-down FAB: visible only while more mesh sits below the fold. */
+const fab = document.getElementById("scroll-down");
+function updateFab() {
+  const more = H > window.innerHeight + 40 && window.scrollY + window.innerHeight < H - 60;
+  fab.hidden = !more;
+}
+window.addEventListener("scroll", updateFab, { passive: true });
+fab.addEventListener("click", () => {
+  window.scrollBy({ top: window.innerHeight * 0.85, behavior: reduceMotion ? "auto" : "smooth" });
+});
+
 function meshHeight() {
   let base = window.innerHeight;
   if (window.innerWidth <= 800 && projects.length) {
@@ -153,6 +164,11 @@ function buildMesh() {
   const tilesEl = document.getElementById("tiles");
   tilesEl.style.position = scrolls ? "absolute" : "fixed";
   tilesEl.style.height = H + "px";
+  const colophon = document.getElementById("colophon");
+  colophon.style.position = scrolls ? "absolute" : "fixed";
+  colophon.style.top = scrolls ? (H - 34) + "px" : "";
+  colophon.style.bottom = scrolls ? "" : "10px";
+  updateFab();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
   // /10 of the viewport for pool depth + an above-median area floor for
@@ -471,8 +487,8 @@ function drawProjectTri(pt, i, t) {
   ctx.lineWidth = active ? 3 : 1.75;
   ctx.stroke();
 
-  // title at the centroid; hover swaps the short label for the full name
-  const label = active ? pt.p.name : (pt.p.short || pt.p.name);
+  // ONE canonical title, hovered or not (Robby: no Guitar/Pedalboard split)
+  const label = pt.p.name;
   const font = `700 ${active ? 14.5 : 13}px "Open Sans", system-ui, sans-serif`;
   const bboxW = Math.max(...P.map((q) => q[0])) - Math.min(...P.map((q) => q[0]));
   const lines = wrapLabel(label, font, Math.max(76, bboxW * 0.52));
@@ -556,7 +572,7 @@ let lastFocus = null;
 
 function openModal(p) {
   lastFocus = document.activeElement;
-  modalTitle.textContent = p.short || p.name; // same title the triangle wears
+  modalTitle.textContent = p.name; // same title the triangle wears
   modalBlurb.textContent = p.blurb || "";
 
   // photos: [] beats screenshot; either renders as stacked images
@@ -615,7 +631,7 @@ document.getElementById("reroll").addEventListener("click", () => {
   layout(); // fresh jitter -> a whole new map
 });
 
-fetch("projects.json")
+fetch("projects.json", { cache: "no-store" }) // stale-name bugs otherwise outlive deploys
   .then((r) => r.json())
   .then((data) => {
     projects = data;

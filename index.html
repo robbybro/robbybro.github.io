@@ -52,6 +52,16 @@
 
   <button id="reroll" aria-label="Reroll the triangle mesh">Reroll</button>
 
+  <!-- shown only while there's more mesh below the fold -->
+  <button id="scroll-down" aria-label="Scroll down for more projects" hidden>
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 9l7 7 7-7"/>
+    </svg>
+  </button>
+
+  <!-- Bottom-of-field marker; main.js pins it to the mesh's true bottom -->
+  <footer id="colophon">&copy; 2026 Robby Brosman</footer>
+
   <!-- Layer 4: fullscreen modal (single reused instance) -->
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
     <div class="modal-backdrop" data-close></div>

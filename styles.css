@@ -115,6 +115,50 @@ html, body {
 }
 #reroll:hover, #reroll:focus-visible { border-color: #ffb300; transform: translateY(-1px); }
 
+/* Bottom-of-page colophon; main.js sets its top to the mesh's true bottom */
+#colophon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 246, 223, 0.9);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* Scroll-down FAB — appears only while more mesh sits below the fold */
+#scroll-down {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  background: #fff6df;
+  color: #23204a;
+  border: 2px solid #7c5cff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  animation: fab-bounce 2.2s ease-in-out infinite;
+}
+#scroll-down:hover, #scroll-down:focus-visible { border-color: #ffb300; }
+#scroll-down[hidden] { display: none; }
+@keyframes fab-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scroll-down { animation: none; }
+}
+
 /* Layer 4 — modal */
 .modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; }
 .modal[hidden] { display: none; }
