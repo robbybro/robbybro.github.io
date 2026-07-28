@@ -95,7 +95,7 @@
   },
   {
     "slug": "ssbbb",
-    "name": "SSBBB",
+    "name": "Seattle Smash Burger Bike Bingo",
     "icon": "🍔",
     "blurb": "A bike race I hosted in 2025. I mapped every reputable smash burger in Seattle and built a graph algorithm to generate a bingo board with relatively equivalent min/mid/max distances for each path chosen. Teams consisted of 2 riders who had to eat a total of 4 burgers to get a “bingo”. Winner got a golden spatula.",
     "link": "https://robbybro.com/ssbbb/",
