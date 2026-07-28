@@ -106,9 +106,10 @@ function meshHeight() {
   if (window.innerWidth <= 800 && projects.length) {
     const el = document.querySelector(".intro");
     const introBottom = el ? el.getBoundingClientRect().bottom + window.scrollY : 0;
-    // ~1.6 cell-rows per project: a placed triangle blocks most of two rows
-    // of a ~2.5-column phone mesh (its whole vertex ring), pairs block less
-    base = Math.max(base, Math.round(introBottom + projects.length * cellSize() * 1.6 + 100));
+    // ~0.95 cell-rows per project: clumped placement (pairs + tight targets)
+    // packs far denser than the old spread; layout()'s growth valve still
+    // catches the unlucky rolls
+    base = Math.max(base, Math.round(introBottom + projects.length * cellSize() * 0.95 + 140));
   }
   return Math.round(base * heightBoost);
 }
@@ -376,9 +377,22 @@ function assignProjectTriangles() {
     return { partner };
   }
 
-  for (const p of projects) {
-    const tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
-    const ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
+  // On phones the authored desktop positions would fan the triangles down
+  // the whole tall field — instead aim everything at a tight left/right
+  // weave just below the intro, and let pairing + the KISS gap set spacing.
+  const mobile = W <= 800;
+  const clumpTop = (intro ? intro.y1 : 0) + cellSize() * 0.7;
+
+  for (let n = 0; n < projects.length; n++) {
+    const p = projects[n];
+    let tx, ty;
+    if (mobile) {
+      tx = W * (n % 2 ? 0.68 : 0.32);
+      ty = clumpTop + n * cellSize() * 0.8;
+    } else {
+      tx = (p.pos && p.pos[0] != null ? p.pos[0] : 0.5) * W;
+      ty = (p.pos && p.pos[1] != null ? p.pos[1] : 0.5) * H;
+    }
     let best = -1, bestRes = null, bestLevel = -1;
     for (let level = 0; level < 5 && best < 0; level++) {
       let bestD = Infinity;
