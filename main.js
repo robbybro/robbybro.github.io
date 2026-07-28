@@ -200,19 +200,25 @@ const HOVER_BORDER = "#ffb300";
 const CREAM = "#fff6df";
 const INK_ON_CREAM = "#23204a";
 
-/* Tiny repeating emoji background for a project triangle (~5pt glyphs). */
+/* Tiny repeating emoji background for a project triangle (~5pt glyphs).
+ * The tile is rendered at device-pixel resolution and scaled back down via
+ * the pattern's own transform — building it at CSS pixels left every emoji
+ * a 2x-upscaled bitmap on retina, which is what read as "blurry". */
 const patternCache = new Map();
 function emojiPattern(emoji) {
-  if (patternCache.has(emoji)) return patternCache.get(emoji);
+  const key = emoji + "@" + DPR;
+  if (patternCache.has(key)) return patternCache.get(key);
   const c = document.createElement("canvas");
-  c.width = c.height = 18;
+  c.width = c.height = Math.round(18 * DPR);
   const pc = c.getContext("2d");
+  pc.scale(DPR, DPR);
   pc.font = "9px system-ui";
   pc.textAlign = "center";
   pc.textBaseline = "middle";
   pc.fillText(emoji, 9, 10);
   const pat = ctx.createPattern(c, "repeat");
-  patternCache.set(emoji, pat);
+  if (pat.setTransform) pat.setTransform(new DOMMatrix().scale(1 / DPR));
+  patternCache.set(key, pat);
   return pat;
 }
 
@@ -393,11 +399,9 @@ function drawProjectTri(pt, i, t) {
     icon = reduceMotion ? icon[0] : icon[Math.floor(t / 1400) % icon.length];
   }
   if (icon) {
-    ctx.save();
-    ctx.globalAlpha = 0.32;
+    // full-strength emojis on the solid cream base — no translucent wash
     ctx.fillStyle = emojiPattern(icon);
     ctx.fill();
-    ctx.restore();
   }
   ctx.strokeStyle = active ? HOVER_BORDER : ACCENT;
   ctx.lineWidth = active ? 3 : 1.75;
