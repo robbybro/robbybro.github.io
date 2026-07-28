@@ -492,7 +492,7 @@ let lastFocus = null;
 
 function openModal(p) {
   lastFocus = document.activeElement;
-  modalTitle.textContent = p.name;
+  modalTitle.textContent = p.short || p.name; // same title the triangle wears
   modalBlurb.textContent = p.blurb || "";
 
   // photos: [] beats screenshot; either renders as stacked images
