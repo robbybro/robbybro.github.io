@@ -46,9 +46,11 @@ html, body {
   line-height: 1.02;
   margin: 0 0 1rem;
   letter-spacing: -0.01em;
-  /* white + difference: the Baja mesh inverts through the letterforms */
+  /* EXPERIMENT (title-triangles branch): the h1 is rendered as animated
+     Delaunay triangles on the canvas; the DOM node keeps its box so the
+     intro measures the same for layout + placement exclusion. */
   color: #fff;
-  mix-blend-mode: difference;
+  visibility: hidden;
 }
 
 .blurb {

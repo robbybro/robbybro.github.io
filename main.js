@@ -161,6 +161,7 @@ function layout() {
     if (ok) break;
     if (i % 2 === 1) heightBoost *= 1.25; // two jitter rolls per height tier
   }
+  buildTitleMesh(); // EXPERIMENT: retriangulate the title for the new geometry
   if (reduceMotion) draw(0);
 }
 
@@ -241,6 +242,119 @@ function draw(t) {
     ctx.stroke();
   }
   for (let i = 0; i < projectTris.length; i++) drawProjectTri(projectTris[i], i, t);
+  drawTitle(t);
+}
+
+/* --------------- Triangulated title (EXPERIMENT, local branch) ---------------
+ * "HI, I'M ROBBY." rebuilt as a fine Delaunay mesh: rasterize the (hidden)
+ * h1 into an offscreen mask, scatter a jittered grid over its box, keep the
+ * triangles whose centroid lands inside the letterforms. Title triangles may
+ * share edges freely — they have to, to form the picture. Each vertex
+ * breathes a few px and each triangle's opacity oscillates, so the type ebbs
+ * and dissolves; drawn with composite 'difference' so the Baja mesh inverts
+ * through it (same effect the CSS h1 had). */
+let titleTris = [];
+let titleVerts = [];
+
+function buildTitleMesh() {
+  titleTris = [];
+  titleVerts = [];
+  const h1 = document.querySelector(".intro h1");
+  if (!h1) return;
+  const r = h1.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const left = r.left, top = r.top + window.scrollY;
+  const fontSize = parseFloat(getComputedStyle(h1).fontSize);
+  const lineHpx = fontSize * 1.02;
+
+  // rasterize the same text with the same wrap into a mask
+  const mc = document.createElement("canvas");
+  mc.width = Math.ceil(r.width);
+  mc.height = Math.ceil(r.height) + 4;
+  const g = mc.getContext("2d", { willReadFrequently: true });
+  g.font = `${fontSize}px "Rubik Mono One", monospace`;
+  const words = h1.textContent.trim().split(/\s+/);
+  const lines = [];
+  let line = "";
+  for (const w of words) {
+    const trial = line ? line + " " + w : w;
+    if (g.measureText(trial).width <= r.width || !line) line = trial;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  lines.forEach((ln, i) => g.fillText(ln, 0, fontSize * 0.86 + i * lineHpx));
+  const mask = g.getImageData(0, 0, mc.width, mc.height).data;
+  const inside = (x, y) => {
+    const xi = Math.round(x), yi = Math.round(y);
+    if (xi < 0 || yi < 0 || xi >= mc.width || yi >= mc.height) return false;
+    return mask[(yi * mc.width + xi) * 4 + 3] > 100;
+  };
+
+  // fine jittered grid, culled to points near the glyphs — triangles must be
+  // smaller than the letter strokes or the type reads as noise
+  const cell = Math.max(3.5, fontSize * 0.09); // ~half a stroke width
+  const cols = Math.ceil(mc.width / cell) + 1;
+  const rows = Math.ceil(mc.height / cell) + 1;
+  const pts = [];
+  for (let rr = 0; rr <= rows; rr++) {
+    for (let cc = 0; cc <= cols; cc++) {
+      const x = cc * cell + (Math.random() - 0.5) * cell * 0.45;
+      const y = rr * cell + (Math.random() - 0.5) * cell * 0.45;
+      // keep only points on or hugging a glyph (cuts the point count ~60%,
+      // which keeps the from-scratch Bowyer-Watson fast enough to re-run)
+      if (inside(x, y) || inside(x + cell, y) || inside(x - cell, y) ||
+          inside(x, y + cell) || inside(x, y - cell)) {
+        pts.push({ x, y });
+      }
+    }
+  }
+  if (pts.length < 3) return;
+  const raw = triangulate(pts);
+  titleVerts = pts.map((p) => ({
+    hx: left + p.x, hy: top + p.y, x: left + p.x, y: top + p.y,
+    phase: Math.random() * Math.PI * 2,
+    // breathe, don't wander — displacement scales with the type size
+    amp: (0.8 + Math.random() * 1.2) * (fontSize / 45),
+  }));
+  for (const [i, j, k] of raw) {
+    const cx = (pts[i].x + pts[j].x + pts[k].x) / 3;
+    const cy = (pts[i].y + pts[j].y + pts[k].y) / 3;
+    const solid = [pts[i], pts[j], pts[k]].filter((p) => inside(p.x, p.y)).length;
+    if (!inside(cx, cy) && solid < 2) continue; // outside the letterform
+    const base = solid === 3 ? 1 : solid === 2 ? 0.8 : 0.55;
+    titleTris.push({ i, j, k, base, phase: Math.random() * Math.PI * 2 });
+  }
+}
+
+function drawTitle(t) {
+  if (!titleTris.length) return;
+  const speed = 0.00042;
+  for (const v of titleVerts) {
+    if (reduceMotion) { v.x = v.hx; v.y = v.hy; continue; }
+    v.x = v.hx + Math.sin(t * speed + v.phase) * v.amp;
+    v.y = v.hy + Math.cos(t * speed * 1.1 + v.phase * 1.7) * v.amp;
+  }
+  ctx.save();
+  // plain white first — legibility before cleverness; a 'difference' variant
+  // can return once the letterforms hold
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1; // fills the antialiasing seams between triangles
+  ctx.lineJoin = "round";
+  for (const tr of titleTris) {
+    const a = titleVerts[tr.i], b = titleVerts[tr.j], c = titleVerts[tr.k];
+    // solid core stays legible; the EDGE triangles do the dissolving
+    const breathe = reduceMotion ? 1
+      : tr.base === 1 ? 0.93 + 0.07 * Math.sin(t * 0.0006 + tr.phase)
+      : 0.55 + 0.45 * Math.sin(t * 0.0006 + tr.phase);
+    ctx.globalAlpha = tr.base * breathe;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 /* ----------------- animation loop: ~30fps, pause when hidden ----------------- */
@@ -640,6 +754,11 @@ modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("clic
 /* ----------------------------- Boot ----------------------------- */
 buildMesh();
 start();
+
+// the title mask needs the real Rubik Mono One, not the fallback monospace
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => { buildTitleMesh(); if (reduceMotion) draw(0); });
+}
 
 document.getElementById("reroll").addEventListener("click", () => {
   hoverIdx = -1;
