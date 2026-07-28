@@ -161,7 +161,7 @@ function layout() {
     if (ok) break;
     if (i % 2 === 1) heightBoost *= 1.25; // two jitter rolls per height tier
   }
-  buildTitleMesh(); // EXPERIMENT: retriangulate the title for the new geometry
+  ensureTitleMesh(); // EXPERIMENT: rebuilds only if the title geometry changed
   if (reduceMotion) draw(0);
 }
 
@@ -255,6 +255,18 @@ function draw(t) {
  * through it (same effect the CSS h1 had). */
 let titleTris = [];
 let titleVerts = [];
+let titleKey = "";
+
+/* Rebuild only when the title's geometry actually changed (resize/font) —
+ * rerolling the background must NOT retriangulate the type. */
+function ensureTitleMesh() {
+  const h1 = document.querySelector(".intro h1");
+  if (!h1) return;
+  const r = h1.getBoundingClientRect();
+  const key = [Math.round(r.width), Math.round(r.height), getComputedStyle(h1).fontSize, W].join("|");
+  if (key === titleKey && titleTris.length) return;
+  buildTitleMesh();
+}
 
 function buildTitleMesh() {
   titleTris = [];
@@ -265,6 +277,7 @@ function buildTitleMesh() {
   if (!r.width || !r.height) return;
   const left = r.left, top = r.top + window.scrollY;
   const fontSize = parseFloat(getComputedStyle(h1).fontSize);
+  titleKey = [Math.round(r.width), Math.round(r.height), getComputedStyle(h1).fontSize, W].join("|");
   const lineHpx = fontSize * 1.02;
 
   // rasterize the same text with the same wrap into a mask
@@ -310,12 +323,18 @@ function buildTitleMesh() {
   }
   if (pts.length < 3) return;
   const raw = triangulate(pts);
-  titleVerts = pts.map((p) => ({
-    hx: left + p.x, hy: top + p.y, x: left + p.x, y: top + p.y,
-    phase: Math.random() * Math.PI * 2,
-    // breathe, don't wander — displacement scales with the type size
-    amp: (0.8 + Math.random() * 1.2) * (fontSize / 45),
-  }));
+  titleVerts = pts.map((p) => {
+    // each vertex owns a fixed scatter vector; the global assembly envelope
+    // e(t) walks it out and back, so e=0 is ALWAYS the perfect letterform
+    const dir = Math.random() * Math.PI * 2;
+    const reach = fontSize * (0.15 + Math.random() * 0.4);
+    return {
+      hx: left + p.x, hy: top + p.y, x: left + p.x, y: top + p.y,
+      dx: Math.cos(dir) * reach,
+      dy: Math.sin(dir) * reach,
+      phase: Math.random() * Math.PI * 2,
+    };
+  });
   for (const [i, j, k] of raw) {
     const cx = (pts[i].x + pts[j].x + pts[k].x) / 3;
     const cy = (pts[i].y + pts[j].y + pts[k].y) / 3;
@@ -326,28 +345,38 @@ function buildTitleMesh() {
   }
 }
 
+/* The assembly envelope e: 0 = every vertex at home, full alpha — the crisp
+ * letterform; 1 = fully shattered. On a scrolling page e follows scrollY
+ * (load crisp, scroll to shatter, scroll back to reassemble); on a
+ * viewport-fit page it cycles on a timer, lingering in the assembled state. */
+const TITLE_CYCLE = 8000;
 function drawTitle(t) {
   if (!titleTris.length) return;
-  const speed = 0.00042;
+  let e;
+  if (H > window.innerHeight + 1) {
+    e = Math.min(1, window.scrollY / (window.innerHeight * 0.6));
+  } else {
+    const th = ((t % TITLE_CYCLE) / TITLE_CYCLE) * Math.PI * 2;
+    e = Math.pow((1 - Math.cos(th)) / 2, 1.4); // pow > 1 lingers near assembled
+  }
+  if (reduceMotion) e = 0;
+
   for (const v of titleVerts) {
-    if (reduceMotion) { v.x = v.hx; v.y = v.hy; continue; }
-    v.x = v.hx + Math.sin(t * speed + v.phase) * v.amp;
-    v.y = v.hy + Math.cos(t * speed * 1.1 + v.phase * 1.7) * v.amp;
+    const wob = e === 0 ? 0 : 0.75 + 0.25 * Math.sin(t * 0.0011 + v.phase);
+    v.x = v.hx + v.dx * e * wob;
+    v.y = v.hy + v.dy * e * wob;
   }
   ctx.save();
-  // plain white first — legibility before cleverness; a 'difference' variant
-  // can return once the letterforms hold
   ctx.fillStyle = "#ffffff";
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 1; // fills the antialiasing seams between triangles
   ctx.lineJoin = "round";
   for (const tr of titleTris) {
     const a = titleVerts[tr.i], b = titleVerts[tr.j], c = titleVerts[tr.k];
-    // solid core stays legible; the EDGE triangles do the dissolving
-    const breathe = reduceMotion ? 1
-      : tr.base === 1 ? 0.93 + 0.07 * Math.sin(t * 0.0006 + tr.phase)
-      : 0.55 + 0.45 * Math.sin(t * 0.0006 + tr.phase);
-    ctx.globalAlpha = tr.base * breathe;
+    // assembled = solid type (everyone at full alpha); shattering fades the
+    // edge triangles out fast and the core slowly
+    const fade = tr.base === 1 ? 0.3 : 0.85;
+    ctx.globalAlpha = Math.max(0, 1 - fade * e * (tr.base === 1 ? 1 : 1.1));
     ctx.beginPath();
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.closePath();
     ctx.fill();
