@@ -333,6 +333,7 @@ function buildTitleMesh() {
       dx: Math.cos(dir) * reach,
       dy: Math.sin(dir) * reach,
       phase: Math.random() * Math.PI * 2,
+      iAmp: (0.7 + Math.random() * 0.9) * (fontSize / 45), // always-on breathe
     };
   });
   for (const [i, j, k] of raw) {
@@ -362,9 +363,13 @@ function drawTitle(t) {
   if (reduceMotion) e = 0;
 
   for (const v of titleVerts) {
-    const wob = e === 0 ? 0 : 0.75 + 0.25 * Math.sin(t * 0.0011 + v.phase);
-    v.x = v.hx + v.dx * e * wob;
-    v.y = v.hy + v.dy * e * wob;
+    // two motions layered: a small ALWAYS-ON breathe (the type is alive even
+    // fully assembled) + the scatter vector scaled by the envelope
+    const idleX = reduceMotion ? 0 : Math.sin(t * 0.0009 + v.phase) * v.iAmp;
+    const idleY = reduceMotion ? 0 : Math.cos(t * 0.0011 + v.phase * 1.6) * v.iAmp;
+    const wob = 0.75 + 0.25 * Math.sin(t * 0.0011 + v.phase);
+    v.x = v.hx + idleX + v.dx * e * wob;
+    v.y = v.hy + idleY + v.dy * e * wob;
   }
   ctx.save();
   ctx.fillStyle = "#ffffff";
@@ -373,10 +378,11 @@ function drawTitle(t) {
   ctx.lineJoin = "round";
   for (const tr of titleTris) {
     const a = titleVerts[tr.i], b = titleVerts[tr.j], c = titleVerts[tr.k];
-    // assembled = solid type (everyone at full alpha); shattering fades the
-    // edge triangles out fast and the core slowly
+    // assembled = solid core with faintly shimmering edges; shattering fades
+    // the edge triangles out fast and the core slowly
     const fade = tr.base === 1 ? 0.3 : 0.85;
-    ctx.globalAlpha = Math.max(0, 1 - fade * e * (tr.base === 1 ? 1 : 1.1));
+    const shimmer = tr.base === 1 || reduceMotion ? 1 : 0.88 + 0.12 * Math.sin(t * 0.0007 + tr.phase);
+    ctx.globalAlpha = Math.max(0, (1 - fade * e * (tr.base === 1 ? 1 : 1.1)) * shimmer);
     ctx.beginPath();
     ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.closePath();
     ctx.fill();
