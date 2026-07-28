@@ -141,9 +141,10 @@ html, body {
   height: 46px;
   display: grid;
   place-items: center;
-  background: #fff6df;
+  /* translucent white, not cream — cream vanished against the triangles */
+  background: rgba(255, 255, 255, 0.55);
   color: #23204a;
-  border: 2px solid #7c5cff;
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
