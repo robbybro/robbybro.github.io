@@ -106,6 +106,18 @@
     ]
   },
   {
+    "slug": "buy-or-rent",
+    "name": "Buy or Rent",
+    "icon": "🏠",
+    "blurb": "Should we buy a house or keep renting? Every calculator I found was either oversimplified or a black box, so I built a live model. Put in your own net worth, income, burn, house price, and the rent you'd pay instead — every figure on the page moves: monthly cost, an affordability check, a 30-year net-worth projection, a retirement withdrawal-rate test, and a ranked table of which inputs actually decide the answer. 2026 tax brackets, PMI, jumbo premiums, real-vs-nominal toggle. Fully client-side; nothing you type ever leaves the browser.",
+    "link": "https://robbybro.com/buy-or-rent/",
+    "screenshot": "assets/shots/buy-or-rent.png",
+    "pos": [
+      0.35,
+      0.88
+    ]
+  },
+  {
     "slug": "focet",
     "name": "The Flow Network",
     "icon": "🍺",
