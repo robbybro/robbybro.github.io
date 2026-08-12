@@ -132,6 +132,13 @@
     border: 1px solid var(--border); border-radius: 99px; padding: 2px 8px;
     pointer-events: none;
   }
+  a.lbl {
+    pointer-events: auto; text-decoration: none; cursor: pointer;
+  }
+  a.lbl:hover { border-color: var(--ink-1); text-decoration: underline; }
+  a.lbl::before { content: "↗ "; color: var(--ink-muted); font-weight: 400; }
+  td a { color: inherit; text-decoration: underline; text-decoration-color: var(--baseline); text-underline-offset: 2px; }
+  td a:hover { text-decoration-color: var(--ink-1); }
   .lbl::after {
     content: ""; position: absolute; left: 50%; top: 100%;
     width: 1px; height: 7px; background: var(--ink-muted); transform: translateX(-0.5px);
@@ -430,15 +437,15 @@
         <tbody>
           <tr class="section"><td colspan="3">In the starter set</td></tr>
           <tr>
-            <td>IGT Camp Kitchen Starter Set
-              <span class="detail">4-unit frame (46.0″ × 22.8″) · 2× 830 mm leg sets · carrying case · Flat Burner ×1 · Chopping Board Set L (14″ × 9″) · Stainless Box Half Unit ×2 · Waterproof Unit Gear Bag 220</span>
+            <td><a href="https://www.snowpeak.com/products/igt-camp-kitchen-starter-set" target="_blank" rel="noopener">IGT Camp Kitchen Starter Set</a>
+              <span class="detail">4-unit frame (46.0″ × 22.8″) · 2× 830 mm leg sets · carrying case · Flat Burner ×1 · <a href="https://www.snowpeak.com/products/chopping-board-set-l-cs-208" target="_blank" rel="noopener">Chopping Board Set L</a> (14″ × 9″) · <a href="https://www.snowpeak.com/products/igt-stainless-box-half-unit" target="_blank" rel="noopener">Stainless Box Half Unit</a> ×2 · <a href="https://www.snowpeak.com/products/waterproof-unit-gear-bag-220" target="_blank" rel="noopener">Waterproof Unit Gear Bag 220</a></span>
             </td>
             <td>Frame, first burner, cutting board, both dish bins, dish storage</td>
             <td class="num">$599.95</td>
           </tr>
           <tr class="section"><td colspan="3">Add-ons</td></tr>
           <tr>
-            <td>Flat Burner (second)</td>
+            <td><a href="https://www.snowpeak.com/products/flat-burner" target="_blank" rel="noopener">Flat Burner</a> (second)</td>
             <td>Slot 2 — completes the 2-burner cook line</td>
             <td class="num">$129.95</td>
           </tr>
@@ -448,14 +455,14 @@
           </tr>
           <tr class="section"><td colspan="3">Extensions (optional)</td></tr>
           <tr>
-            <td>Bamboo IGT Sliding Extension <span class="pill">renewed</span>
+            <td><a href="https://www.snowpeak.com/products/iron-grill-bamboo-sliding-regular-ck-153tr" target="_blank" rel="noopener">Bamboo IGT Sliding Extension</a> <span class="pill">renewed</span>
               <span class="detail">16.6″ W × 8.6″ D × 1.2″ · 2 lbs</span>
             </td>
             <td>Horizontal — pull-out prep counter for the chopping board</td>
             <td class="num">$54.95</td>
           </tr>
           <tr>
-            <td>IGT Hanging Rack 2 Frame
+            <td><a href="https://www.snowpeak.com/products/copy-of-igt-hanging-rack-frame-set-1" target="_blank" rel="noopener">IGT Hanging Rack 2 Frame</a>
               <span class="detail">21.2″ × 14.4″ × 2.1″ · 10.6 lbs · spans 2 units</span>
             </td>
             <td>Under-table rack — hidden storage below the tabletop; pair with mesh trays</td>
@@ -472,7 +479,7 @@
             <td class="num" id="ext-price">—</td>
           </tr>
           <tr id="leg-row" style="display:none">
-            <td>IGT Standing Height 830 mm Leg Set</td>
+            <td><a href="https://www.snowpeak.com/products/igt-830-leg-set-ck-114" target="_blank" rel="noopener">IGT Standing Height 830 mm Leg Set</a></td>
             <td>Supports the side extension's far end (legs not included with any variant)</td>
             <td class="num">$59.95</td>
           </tr>
@@ -504,18 +511,22 @@
   var BASE = 1007.75, LEG = 59.95;
   var variants = {
     corner:  { price: 159.95, priceStr: "$159.95",
+      url: "https://www.snowpeak.com/products/igt-bamboo-r-corner-ck-119tr",
       name: "Bamboo Corner Extension (R or L)", detail: "20.4″ × 20.4″ × 0.5″ · 5.2 lbs · joint fittings ×2 included",
       role: "Wraparound — turns the kitchen 90° at the frame's end",
       spec: "<strong>Corner:</strong> tightest footprint; keeps everything within a pivot. $159.95 + $59.95 leg set = <strong>$219.90</strong> · grand total <strong>$1,227.65</strong>" },
     angle:   { price: 132.26, priceStr: "$132.26",
+      url: "https://www.snowpeak.com/products/bamboo-right-igt-open-table",
       name: "Bamboo Angle Extension (R or L)", detail: "38.4″ × 19.2″ × 1.0″ · 9.5 lbs · rail joints ×2 · sale (was $188.95)",
       role: "Angled trapezoidal wing off the frame's end",
       spec: "<strong>Angle:</strong> most surface per dollar while on sale; angles serving away from the hot side. $132.26 + $59.95 leg set = <strong>$192.21</strong> · grand total <strong>$1,199.96</strong>" },
     regular: { price: 219.95, priceStr: "$219.95",
+      url: "https://www.snowpeak.com/products/bamboo-igt-table-regular-light",
       name: "Bamboo IGT Table Regular Light", detail: "33.3″ × 19.5″ × 0.9″ · 6.6 lbs · honeycomb core",
       role: "Straight side table — extends the counter flush right",
       spec: "<strong>Side Table Regular:</strong> straight 33″ serving/prep run; total counter 79.3″. $219.95 + $59.95 leg set = <strong>$279.90</strong> · grand total <strong>$1,287.65</strong>" },
     long:    { price: 259.95, priceStr: "$259.95",
+      url: "https://www.snowpeak.com/products/bamboo-igt-table-long-light",
       name: "Bamboo IGT Table Long Light", detail: "43.1″ × 19.5″ × 0.9″ · 7.7 lbs · honeycomb core",
       role: "Straight side table — nearly doubles the counter",
       spec: "<strong>Side Table Long:</strong> 43″ more counter — 89.1″ total, just over 7 ft. $259.95 + $59.95 leg set = <strong>$319.90</strong> · grand total <strong>$1,327.65</strong>" },
@@ -544,7 +555,8 @@
     });
     var d = variants[v];
     var nameCell = document.getElementById("ext-name");
-    nameCell.innerHTML = d.detail ? d.name + '<span class="detail">' + d.detail + "</span>" : d.name;
+    var nameHtml = d.url ? '<a href="' + d.url + '" target="_blank" rel="noopener">' + d.name + "</a>" : d.name;
+    nameCell.innerHTML = d.detail ? nameHtml + '<span class="detail">' + d.detail + "</span>" : nameHtml;
     document.getElementById("ext-role").textContent = d.role;
     document.getElementById("ext-price").textContent = d.priceStr;
     document.getElementById("leg-row").style.display = (v === "none") ? "none" : "";
@@ -676,25 +688,48 @@
     /* ---- piece labels (projected HTML chips) ---- */
     var layer = document.getElementById("lbl-layer");
     var labels = [];
-    function addLabel(text, x, y, z, variantKey) {
-      var el = document.createElement("span");
+    function addLabel(text, x, y, z, variantKey, url) {
+      var el;
+      if (url) {
+        el = document.createElement("a");
+        el.href = url; el.target = "_blank"; el.rel = "noopener";
+        el.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+      } else {
+        el = document.createElement("span");
+      }
       el.className = "lbl";
-      el.textContent = text;
+      el.appendChild(document.createTextNode(text));
       layer.appendChild(el);
       labels.push({ el: el, pos: new THREE.Vector3(x, y, z), v: variantKey || null });
     }
-    addLabel("Flat Burners 1 + 2", -10.75, 33.6, 0);
-    addLabel("Dish Bins ×2 (half units)", 5.4, 33.6, 0);
-    addLabel("Gear Bag 220", 16.1, 33.6, 0);
-    addLabel("Hanging Rack (under-table)", -14, 26, 7.4);
-    addLabel("Sliding Extension + Chopping Board", -8, 30.2, 15.8);
-    addLabel("Fuel Canisters (EN417)", -24.6, 25.2, 0);
-    addLabel("830 mm Leg Sets", 21.9, 12, 10.3);
-    addLabel("IGT 4-Unit Frame", -21.9, 31.4, -10.3);
-    addLabel("Corner Extension + leg", 33.2, 32.9, 1.2, "corner");
-    addLabel("Angle Extension + leg", 39.6, 32.7, 9.6, "angle");
-    addLabel("Side Table Regular + legs", 39.65, 32.7, 0, "regular");
-    addLabel("Side Table Long + legs", 44.55, 32.7, 0, "long");
+    var U = {
+      burner:  "https://www.snowpeak.com/products/flat-burner",
+      bins:    "https://www.snowpeak.com/products/igt-stainless-box-half-unit",
+      bag:     "https://www.snowpeak.com/products/waterproof-unit-gear-bag-220",
+      rack:    "https://www.snowpeak.com/products/copy-of-igt-hanging-rack-frame-set-1",
+      slide:   "https://www.snowpeak.com/products/iron-grill-bamboo-sliding-regular-ck-153tr",
+      board:   "https://www.snowpeak.com/products/chopping-board-set-l-cs-208",
+      fuel:    "https://www.amazon.com/Snow-Peak-GigaPower-Season-IsoPro/dp/B0001WB10U",
+      legs:    "https://www.snowpeak.com/products/igt-830-leg-set-ck-114",
+      set:     "https://www.snowpeak.com/products/igt-camp-kitchen-starter-set",
+      corner:  "https://www.snowpeak.com/products/igt-bamboo-r-corner-ck-119tr",
+      angle:   "https://www.snowpeak.com/products/bamboo-right-igt-open-table",
+      regular: "https://www.snowpeak.com/products/bamboo-igt-table-regular-light",
+      long:    "https://www.snowpeak.com/products/bamboo-igt-table-long-light"
+    };
+    addLabel("Flat Burners 1 + 2", -10.75, 33.6, 0, null, U.burner);
+    addLabel("Dish Bins ×2 (half units)", 5.4, 33.6, 0, null, U.bins);
+    addLabel("Gear Bag 220", 16.1, 33.6, 0, null, U.bag);
+    addLabel("Hanging Rack (under-table)", -14, 26, 7.4, null, U.rack);
+    addLabel("Sliding Extension", -12, 30.2, 15.8, null, U.slide);
+    addLabel("Chopping Board", -4, 33, 17.5, null, U.board);
+    addLabel("Fuel Canisters (EN417)", -24.6, 25.2, 0, null, U.fuel);
+    addLabel("830 mm Leg Sets", 21.9, 12, 10.3, null, U.legs);
+    addLabel("IGT 4-Unit Frame (starter set)", -21.9, 31.4, -10.3, null, U.set);
+    addLabel("Corner Extension + leg", 33.2, 32.9, 1.2, "corner", U.corner);
+    addLabel("Angle Extension + leg", 39.6, 32.7, 9.6, "angle", U.angle);
+    addLabel("Side Table Regular + legs", 39.65, 32.7, 0, "regular", U.regular);
+    addLabel("Side Table Long + legs", 44.55, 32.7, 0, "long", U.long);
     var v3 = new THREE.Vector3();
     function updateLabels() {
       var w2 = wrap.clientWidth, h2 = wrap.clientHeight;
