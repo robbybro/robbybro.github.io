@@ -743,6 +743,7 @@
       });
     }
     var tog = document.getElementById("lbl-toggle");
+    tog.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
     tog.addEventListener("click", function () {
       var off = layer.classList.toggle("off");
       tog.textContent = "labels: " + (off ? "off" : "on");
