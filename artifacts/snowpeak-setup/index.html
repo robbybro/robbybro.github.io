@@ -155,6 +155,7 @@
     padding: 1px 7px; border-radius: 99px; border: 1px solid var(--border);
     color: var(--ink-2); margin-left: 6px; vertical-align: 1px;
   }
+  .pill.done { border-color: var(--c-store); color: var(--c-store); font-weight: 700; }
   .footnote { font-size: 12px; color: var(--ink-2); margin-top: 14px; line-height: 1.5; }
   .footnote strong { color: var(--ink-1); font-weight: 600; }
 </style>
@@ -415,7 +416,7 @@
             <td class="num">$59.95</td>
           </tr>
           <tr>
-            <td><a href="https://korogi.co/products/4u-yakitori-rack-for-igt" target="_blank" rel="noopener">Kōrogi 4U Yakitori Rack</a> <span class="pill">1 left</span>
+            <td><a href="https://korogi.co/products/4u-yakitori-rack-for-igt" target="_blank" rel="noopener">Kōrogi 4U Yakitori Rack</a> <span class="pill done">✓ purchased</span>
               <span class="detail">Stainless utensil-hanging rail (not a grill) · clips to the frame rail via 2 sliding joints</span>
             </td>
             <td>Back-rail hanging rail for tools and towels</td>
@@ -423,11 +424,11 @@
           </tr>
           <tr class="section"><td colspan="3">Cook &amp; safety kit</td></tr>
           <tr>
-            <td><a href="https://www.amazon.com/Gooseneck-Kettle-Stainless-Thermometer-Handle/dp/B085GJQH8F" target="_blank" rel="noopener">Gooseneck Kettle, 30 oz, wood handle + thermometer</a>
-              <span class="detail">Stainless, stovetop/gas rated · built-in lid thermometer for pour-over temps · wood handle stays cool over the burner. (Name-brand thermometer option: <a href="https://www.frenchpresscoffee.com/products/fellow-stagg-gooseneck-stovetop-kettle" target="_blank" rel="noopener">Fellow Stagg stovetop</a>, $99, steel handle)</span>
+            <td><a href="https://www.miir.com/products/new-standard-pour-over-kettle" target="_blank" rel="noopener">MiiR New Standard Pour-over Kettle</a>
+              <span class="detail">1L, 18/8 stainless · analog lid thermometer with brew-temp band · internal flow reducer · explicitly gas-stove rated, camp-first Seattle B-corp. Steel handle gets warm over flame — pack a silicone sleeve or bandana. (Wood-handle budget alternative: <a href="https://www.amazon.com/Gooseneck-Kettle-Stainless-Thermometer-Handle/dp/B085GJQH8F" target="_blank" rel="noopener">30 oz generic</a>, ~$30)</span>
             </td>
             <td>Camp pour-overs off burner 1</td>
-            <td class="num">~$30.00</td>
+            <td class="num">~$70.00</td>
           </tr>
           <tr>
             <td><a href="https://www.amazon.com/Kidde-FA110-Purpose-Extinguisher-1A10BC/dp/B00002ND64" target="_blank" rel="noopener">Kidde FA110 Fire Extinguisher</a>
@@ -438,7 +439,7 @@
           </tr>
           <tr class="section"><td colspan="3">Fuel — propane conversion</td></tr>
           <tr>
-            <td><a href="https://www.campsaver.com/kovea-lpg-adapter.html" target="_blank" rel="noopener">Kovea LPG Adapter (VA-AD-0701) ×2</a>
+            <td><a href="https://www.everythingpolarisxpedition.com/polaris-xpedition-lpg-adapter-brass-kovea-va-ad-0701" target="_blank" rel="noopener">Kovea LPG Adapter (VA-AD-0701) ×2</a> <span class="pill done">✓ purchased</span>
               <span class="detail">Solid brass · adjustable flow-restrictor screw · one per burner. The bottle screws on and hangs off the burner's canister arm exactly where a GigaPower can would — no hose, no regulator (the stove's needle valve + this restrictor handle propane's pressure; a BBQ regulator would starve the burner). Two bottles beat a splitter: no tee fittings to leak, and one small bottle chills and loses vapor pressure feeding two 11.9k BTU burners at once</span>
             </td>
             <td>1 lb bottle → each burner's Lindal valve (+ bottles from any hardware store, ~$6 each)</td>
@@ -446,7 +447,7 @@
           </tr>
           <tr class="total">
             <td colspan="2">Everything above</td>
-            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,449.55</td>
+            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,489.55</td>
           </tr>
           <tr class="section"><td colspan="3">Later / optional — not in the total</td></tr>
           <tr>
@@ -501,7 +502,7 @@
         <tbody>
           <tr>
             <td><strong>Today</strong></td>
-            <td>Place every order — <a href="https://korogi.co/products/4u-yakitori-rack-for-igt" target="_blank" rel="noopener">Kōrogi rack</a> first (1 in stock, the only item that can vanish), then Snow Peak (set + corner + leg set + hanging rack), Backcountry (burner 2), Lodge/Amazon (griddle, kettle, extinguisher, Kovea ×2). Expedite anything not landing by Fri Aug 21.</td>
+            <td>Place the remaining orders — Snow Peak (set + corner + leg set + hanging rack), Backcountry (burner 2), MiiR (kettle), Lodge/Amazon (griddle, extinguisher). <strong style="color:var(--c-store)">✓ Done:</strong> Kōrogi rack, Kovea adapters ×2. Expedite anything not landing by Fri Aug 21.</td>
           </tr>
           <tr>
             <td><strong>Aug 19</strong></td>
@@ -675,7 +676,7 @@
       new THREE.Vector3(-28.2, TOP + 4.6, 1.2)
     ]), 12, 0.3, 8, false), M.steel);
     scene.add(spout);
-    var handle = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.4, 0.8), M.wood);
+    var handle = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.4, 0.8), M.steel);
     handle.position.set(-36.6, TOP + 4.6, 1.2);
     handle.rotation.z = 0.5;
     scene.add(handle);
@@ -716,7 +717,7 @@
       corner:  "https://www.snowpeak.com/products/igt-bamboo-l-corner-ck-118tr",
       long:    "https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1",
       yaki:    "https://korogi.co/products/4u-yakitori-rack-for-igt",
-      kettle:  "https://www.amazon.com/Gooseneck-Kettle-Stainless-Thermometer-Handle/dp/B085GJQH8F",
+      kettle:  "https://www.miir.com/products/new-standard-pour-over-kettle",
       exting:  "https://www.amazon.com/Kidde-FA110-Purpose-Extinguisher-1A10BC/dp/B00002ND64"
     };
     addLabel("Flat Burners 1 + 2", -16.1, 32.5, -5, null, U.burner);
@@ -731,7 +732,7 @@
     addLabel("IGT 4-Unit Frame (in set)", -21.9, 31.4, -10.3, null, U.set);
     addLabel("Kōrogi Yakitori Rail (4U)", 0, 37.8, -11.1, null, U.yaki);
     addLabel("Left Corner Extension + leg", -38, 32.9, 8, null, U.corner);
-    addLabel("Gooseneck Kettle (wood handle + thermometer)", -33.2, 39.2, 1.2, null, U.kettle);
+    addLabel("MiiR Pour-over Kettle (thermometer lid)", -33.2, 39.2, 1.2, null, U.kettle);
     addLabel("Bamboo Table Long (in set)", -33.2, 32.7, 48, null, U.long);
     var v3 = new THREE.Vector3();
     function updateLabels() {
