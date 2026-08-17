@@ -164,8 +164,8 @@
   <div class="wrap">
     <header>
       <h1>Snow Peak IGT Camp Kitchen — Robby's Build</h1>
-      <p class="sub">The locked build for the Sep 3 trip: two-burner cook line with a cast iron griddle spanning both, wash bins, dish storage, sliding bamboo prep extension, and under-table hanging rack — now based on the <a href="https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1" target="_blank" rel="noopener">Camp Kitchen &amp; Table Set</a>, whose long bamboo table runs off the right end while the quarter-circle corner wraps the left into an L. Fuel is bulk propane through a brass Kovea adapter.</p>
-      <p id="ext-spec"><strong>The L:</strong> 46″ frame + 43.1″ long table right (89.1″ straight run, just over 7 ft) + 20.4″ corner left — roughly 9 ft of counter wrapping two sides.</p>
+      <p class="sub">The locked build for the Sep 3 trip: two-burner cook line with a cast iron griddle spanning both, wash bins, dish storage, sliding bamboo prep extension, and under-table hanging rack — now based on the <a href="https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1" target="_blank" rel="noopener">Camp Kitchen &amp; Table Set</a>: the quarter-circle corner turns the left end and the set's long bamboo table runs forward off it, wrapping the counter into an L around you. Fuel is 1 lb propane bottles hung straight off each burner on brass Kovea adapters.</p>
+      <p id="ext-spec"><strong>The L:</strong> 46″ cook line ahead of you + 20.4″ quarter-circle corner + 43.1″ table running forward at your left — about 9 ft of counter wrapping two sides.</p>
     </header>
 
     <!-- ============ 3D MODEL ============ -->
@@ -178,9 +178,9 @@
     <!-- ============ TOP-DOWN VIEW, FULL CONFIG (10 px / inch) ============ -->
     <div class="card">
       <h2>Top-down — full configuration, drawn to scale (10 px / inch)</h2>
-      <p class="note">Each IGT slot accepts one full unit or two half units. The dashed outline across slots 1–2 is the Lodge Pro-Grid griddle sitting on both burners; the dashed rectangle beneath them is the hanging rack. The chopping board floats on the sliding extension. Long table at the right end, corner extension at the left.</p>
+      <p class="note">Each IGT slot accepts one full unit or two half units. The dashed outline across slots 1–2 is the Lodge Pro-Grid griddle sitting on both burners; the dashed rectangle beneath them is the hanging rack. The chopping board floats on the sliding extension. The quarter-circle corner turns the left end, and the long table runs forward off it — the L wraps around where you stand.</p>
 
-      <svg viewBox="-250 0 1250 505" role="img" aria-label="To-scale top-down schematic of the complete IGT camp kitchen with corner extension left and long table right">
+      <svg viewBox="-250 0 1250 800" role="img" aria-label="To-scale top-down schematic of the complete IGT camp kitchen: corner extension at the left end with the long table running forward off it">
         <!-- Hanging rack label -->
         <text x="192" y="36" text-anchor="middle" class="t-label">IGT Hanging Rack 2 Frame — mounts under tabletop</text>
         <text x="192" y="51" text-anchor="middle" class="t-sub">21.2″ × 14.4″ × 2.1″ · spans 2 units · holds mesh trays · shown dashed</text>
@@ -257,32 +257,31 @@
         <text x="350" y="350" class="t-sub">slips into frame's outside-edge ridges</text>
         <text x="350" y="364" class="t-sub">board overhangs the top by 0.4″</text>
 
-        <!-- Corner extension — left end, front-aligned -->
+        <!-- Corner extension — quarter circle turning the left end -->
         <g id="td-corner">
-          <rect x="-140" y="104" width="204" height="204" rx="7" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
-          <path d="M -120 120 v 172 M -90 120 v 172 M -60 120 v 172 M 14 120 v 172 M 44 120 v 172" stroke="var(--c-ext)" stroke-width="1" opacity="0.3"/>
-          <text x="-38" y="180" text-anchor="middle" class="t-label">Bamboo Left Corner</text>
-          <text x="-38" y="195" text-anchor="middle" class="t-sub">20.4″ × 20.4″ × 0.5″ · 5.2 lbs · renewed</text>
-          <text x="-38" y="209" text-anchor="middle" class="t-sub">wraps the counter 90° into the L</text>
-          <rect x="-132" y="282" width="14" height="14" rx="3" fill="none" stroke="var(--baseline)" stroke-width="1.5"/>
-          <line x1="-140" y1="330" x2="64" y2="330" class="dim-line"/>
-          <line x1="-140" y1="324" x2="-140" y2="336" class="dim-line"/>
-          <line x1="64" y1="324" x2="64" y2="336" class="dim-line"/>
-          <text x="-38" y="346" text-anchor="middle" class="t-dim">20.4″ · leg at far corner</text>
+          <path d="M -134 308 A 204 204 0 0 1 70 104 L 70 308 Z" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
+          <path d="M -104 308 A 174 174 0 0 1 70 134 M -44 308 A 114 114 0 0 1 70 194" fill="none" stroke="var(--c-ext)" stroke-width="1" opacity="0.3"/>
+          <text x="-40" y="200" text-anchor="middle" class="t-label">Bamboo Left Corner</text>
+          <text x="-40" y="215" text-anchor="middle" class="t-sub">quarter circle · 20.4″ radius · renewed</text>
+          <text x="-40" y="229" text-anchor="middle" class="t-sub">pivots the counter 90° into the L</text>
+          <rect x="-126" y="284" width="14" height="14" rx="3" fill="none" stroke="var(--baseline)" stroke-width="1.5"/>
+          <text x="-118" y="276" text-anchor="middle" class="t-dim">leg</text>
         </g>
 
-        <!-- Bamboo Table Long — right end, included in the set -->
+        <!-- Bamboo Table Long — runs forward off the corner (in set) -->
         <g id="td-long">
-          <rect x="532" y="96.5" width="431" height="195" rx="7" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
-          <path d="M 550 115 h 396 M 550 143 h 396 M 550 243 h 396 M 550 271 h 396" stroke="var(--c-ext)" stroke-width="1" opacity="0.25"/>
-          <text x="747" y="180" text-anchor="middle" class="t-label">Bamboo IGT Table Long</text>
-          <text x="747" y="195" text-anchor="middle" class="t-sub">43.1″ × 19.5″ · included in the set</text>
-          <text x="747" y="209" text-anchor="middle" class="t-sub">connection hooks join it flush</text>
-          <rect x="933" y="263" width="14" height="14" rx="3" fill="none" stroke="var(--baseline)" stroke-width="1.5"/>
-          <line x1="532" y1="330" x2="963" y2="330" class="dim-line"/>
-          <line x1="532" y1="324" x2="532" y2="336" class="dim-line"/>
-          <line x1="963" y1="324" x2="963" y2="336" class="dim-line"/>
-          <text x="747" y="346" text-anchor="middle" class="t-dim">43.1″ · legs at far end · total run 89.1″</text>
+          <rect x="-134" y="308" width="195" height="431" rx="7" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
+          <path d="M -116 328 v 392 M -88 328 v 392 M 15 328 v 392 M 43 328 v 392" stroke="var(--c-ext)" stroke-width="1" opacity="0.25"/>
+          <text x="-36.5" y="500" text-anchor="middle" class="t-label">Bamboo IGT Table Long</text>
+          <text x="-36.5" y="515" text-anchor="middle" class="t-sub">43.1″ × 19.5″ · included in the set</text>
+          <text x="-36.5" y="529" text-anchor="middle" class="t-sub">connection hooks join it to the corner</text>
+          <rect x="-50" y="700" width="14" height="14" rx="3" fill="none" stroke="var(--baseline)" stroke-width="1.5"/>
+          <line x1="-160" y1="308" x2="-160" y2="739" class="dim-line"/>
+          <line x1="-166" y1="308" x2="-154" y2="308" class="dim-line"/>
+          <line x1="-166" y1="739" x2="-154" y2="739" class="dim-line"/>
+          <text x="-176" y="523" class="t-dim" transform="rotate(-90 -176 523)" text-anchor="middle">43.1″ · legs at far end</text>
+          <text x="90" y="560" class="t-sub" style="font-weight:600">you stand here,</text>
+          <text x="90" y="574" class="t-sub" style="font-weight:600">inside the L</text>
         </g>
 
         <!-- width dimension (frame only) -->
@@ -291,11 +290,11 @@
         <line x1="530" y1="414" x2="530" y2="426" class="dim-line"/>
         <text x="300" y="436" text-anchor="middle" class="t-dim">46.0″ frame</text>
 
-        <!-- depth dimension -->
-        <line x1="46" y1="80" x2="46" y2="308" class="dim-line"/>
-        <line x1="40" y1="80" x2="52" y2="80" class="dim-line"/>
-        <line x1="40" y1="308" x2="52" y2="308" class="dim-line"/>
-        <text x="30" y="194" class="t-dim" transform="rotate(-90 30 194)" text-anchor="middle">22.8″ deep</text>
+        <!-- depth dimension (moved right — the corner now owns the left margin) -->
+        <line x1="554" y1="80" x2="554" y2="308" class="dim-line"/>
+        <line x1="548" y1="80" x2="560" y2="80" class="dim-line"/>
+        <line x1="548" y1="308" x2="560" y2="308" class="dim-line"/>
+        <text x="572" y="194" class="t-dim" transform="rotate(90 572 194)" text-anchor="middle">22.8″ deep</text>
       </svg>
 
       <div class="legend" role="list">
@@ -310,7 +309,7 @@
     <!-- ============ FRONT ELEVATION, FULL CONFIG (8 px / inch) ============ -->
     <div class="card">
       <h2>Front elevation — full configuration, drawn to scale (8 px / inch)</h2>
-      <p class="note">A 1 lb propane bottle sits upright on the ground and feeds the burners through a hose and the brass Kovea adapter — no more tiny canisters. The hanging rack mounts under the burner slots — its 2.1″ profile clears them — leaving slots 3–4 free for the bins and gear bag. The long table continues the counter at the same 32.6″ height on its own leg set; the corner wraps the left end.</p>
+      <p class="note">A 1 lb propane bottle hangs from each burner's canister arm on a brass Kovea adapter — right where a GigaPower can would go, as upright as the arm allows, no regulator (the stove's needle valve does that job). The hanging rack mounts under the burner slots — its 2.1″ profile clears them — leaving slots 3–4 free for the bins and gear bag. The corner turns the left end at the same 32.6″ height; the long table runs toward the viewer from it, so it's seen end-on here.</p>
 
       <svg viewBox="0 0 960 400" role="img" aria-label="To-scale front elevation of the complete IGT camp kitchen with corner extension left and long table right">
         <!-- ground -->
@@ -330,12 +329,13 @@
         <rect x="299" y="69" width="78" height="10" rx="3" fill="var(--burner-fill)" stroke="var(--c-burner)" stroke-width="1.5"/>
         <text x="338" y="62" text-anchor="middle" class="t-sub" style="font-weight:600">Burner 2</text>
 
-        <!-- propane feed: bottle on the ground, hose to the burner rail -->
-        <path d="M 205 92 C 172 132, 128 205, 118 280" fill="none" stroke="var(--c-burner)" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <rect x="112" y="272" width="12" height="10" rx="2" fill="none" stroke="var(--c-burner)" stroke-width="1.5"/>
-        <rect x="103" y="282" width="30" height="58" rx="6" fill="none" stroke="var(--c-burner)" stroke-width="1.5"/>
-        <text x="118" y="360" text-anchor="middle" class="t-sub">1 lb propane · upright</text>
-        <text x="118" y="374" text-anchor="middle" class="t-sub">Kovea VA-AD-0701 + hose</text>
+        <!-- propane: 1 lb bottle hanging off the burner's canister arm via Kovea adapter -->
+        <line x1="205" y1="90" x2="170" y2="96" stroke="var(--c-burner)" stroke-width="1.5"/>
+        <rect x="164" y="96" width="12" height="9" rx="2" fill="none" stroke="var(--c-burner)" stroke-width="1.5"/>
+        <rect x="155" y="105" width="31" height="60" rx="6" fill="none" stroke="var(--c-burner)" stroke-width="1.5"/>
+        <text x="118" y="188" text-anchor="middle" class="t-sub">1 lb propane ×2 — one per burner</text>
+        <text x="118" y="202" text-anchor="middle" class="t-sub">hangs on Kovea VA-AD-0701</text>
+        <text x="118" y="216" text-anchor="middle" class="t-sub">no hose, no regulator needed</text>
 
         <!-- hanging rack -->
         <rect x="214" y="94" width="170" height="17" rx="3" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
@@ -352,20 +352,17 @@
         <rect x="487" y="90" width="70" height="64" rx="5" fill="var(--store-fill)" stroke="var(--c-store)" stroke-width="1.5"/>
         <text x="522" y="220" text-anchor="middle" class="t-sub">gear bag</text>
 
-        <!-- corner extension, left end -->
+        <!-- corner + table running toward viewer, left end -->
         <g id="el-corner">
           <rect x="37" y="79" width="163" height="7" rx="2" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
           <rect x="40" y="86" width="7" height="254" fill="none" stroke="var(--baseline)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <text x="118" y="62" text-anchor="middle" class="t-sub" style="font-weight:600">Corner ext. — 20.4″ face</text>
-          <text x="44" y="330" class="t-sub">+ leg set</text>
+          <rect x="60" y="86" width="7" height="254" fill="none" stroke="var(--baseline)" stroke-width="1" stroke-dasharray="3 4" opacity="0.6"/>
+          <text x="100" y="34" text-anchor="middle" class="t-sub" style="font-weight:600">Corner — 20.4″ face</text>
+          <text x="100" y="48" text-anchor="middle" class="t-sub">Table Long (43.1″) runs</text>
+          <text x="100" y="62" text-anchor="middle" class="t-sub">toward viewer, end-on</text>
+          <text x="44" y="330" class="t-sub">+ leg sets</text>
         </g>
-        <!-- long table, right end (in set) -->
-        <g id="el-long">
-          <rect x="568" y="79" width="344.8" height="7" rx="2" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
-          <rect x="900" y="86" width="7" height="254" fill="none" stroke="var(--baseline)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <text x="740" y="62" text-anchor="middle" class="t-sub" style="font-weight:600">Bamboo Table Long — 43.1″ · in set</text>
-          <text x="904" y="330" text-anchor="end" class="t-sub">+ leg set (in set)</text>
-        </g>
+        <text x="700" y="70" text-anchor="middle" class="t-sub">frame ends here — open right end</text>
 
         <!-- height dimension -->
         <line x1="930" y1="79" x2="930" y2="340" class="dim-line"/>
@@ -388,7 +385,7 @@
             <td><a href="https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1" target="_blank" rel="noopener">IGT Camp Kitchen &amp; Table Set</a>
               <span class="detail">Everything from the starter set — 4-unit frame (46.0″ × 22.8″) · 830 mm leg sets ×2 · carrying case · Flat Burner ×1 · <a href="https://www.snowpeak.com/products/chopping-board-set-l-cs-208" target="_blank" rel="noopener">Chopping Board Set L</a> (14″ × 9″) · <a href="https://www.snowpeak.com/products/igt-stainless-box-half-unit" target="_blank" rel="noopener">Stainless Box Half Unit</a> ×2 · <a href="https://www.snowpeak.com/products/waterproof-unit-gear-bag-220" target="_blank" rel="noopener">Waterproof Unit Gear Bag 220</a> — <strong>plus</strong> the Bamboo IGT Table Long (43.1″) and a third 830 mm leg set to hold it. Beats building the same footprint à la carte by ~$170</span>
             </td>
-            <td>Frame, first burner, cutting board, dish bins, dish storage — and the right arm of the L</td>
+            <td>Frame, first burner, cutting board, dish bins, dish storage — plus the long table, the L's forward arm off the corner</td>
             <td class="num">$749.95</td>
           </tr>
           <tr class="section"><td colspan="3">Add-ons</td></tr>
@@ -456,27 +453,34 @@
           </tr>
           <tr class="section"><td colspan="3">Fuel — propane conversion</td></tr>
           <tr>
-            <td><a href="https://www.campsaver.com/kovea-lpg-adapter.html" target="_blank" rel="noopener">Kovea LPG Adapter (VA-AD-0701)</a>
-              <span class="detail">Solid brass · adjustable flow-restrictor screw · the decade-proven direct-run adapter for these burners</span>
+            <td><a href="https://www.campsaver.com/kovea-lpg-adapter.html" target="_blank" rel="noopener">Kovea LPG Adapter (VA-AD-0701) ×2</a>
+              <span class="detail">Solid brass · adjustable flow-restrictor screw · one per burner. The bottle screws on and hangs off the burner's canister arm exactly where a GigaPower can would — no hose, no regulator (the stove's needle valve + this restrictor handle propane's pressure; a BBQ regulator would starve the burner). Two bottles beat a splitter: no tee fittings to leak, and one small bottle chills and loses vapor pressure feeding two 11.9k BTU burners at once</span>
             </td>
-            <td>1 lb propane bottle → burner's Lindal valve</td>
-            <td class="num">$19.95</td>
-          </tr>
-          <tr>
-            <td><a href="https://www.amazon.com/camping-moon-Propane-Adapter-Extend/dp/B08V16WSJN" target="_blank" rel="noopener">Campingmoon propane hose kit</a>
-              <span class="detail">Braided stainless hose · bottle stands on the ground instead of cantilevering off the burner socket</span>
-            </td>
-            <td>Under-table fuel routing (+ 1 lb bottles from any hardware store, ~$6 each)</td>
-            <td class="num">~$30.00</td>
+            <td>1 lb bottle → each burner's Lindal valve (+ bottles from any hardware store, ~$6 each)</td>
+            <td class="num">$39.90</td>
           </tr>
           <tr class="total">
             <td colspan="2">Everything above</td>
-            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,514.55</td>
+            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,504.50</td>
           </tr>
           <tr class="section"><td colspan="3">Later / optional — not in the total</td></tr>
           <tr>
+            <td><a href="https://www.amazon.com/camping-moon-Propane-Adapter-Extend/dp/B08V16WSJN" target="_blank" rel="noopener">Campingmoon propane hose kit</a>
+              <span class="detail">Braided stainless hose per burner — only if the hanging bottles bother you</span>
+            </td>
+            <td>Comfort option: bottle stands on the ground, taking its 2 lb off the burner socket</td>
+            <td class="num">~$30.00</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.snowpeak.com/products/stacking-shelf-container-50" target="_blank" rel="noopener">Stacking Shelf Container 50</a>
+              <span class="detail">Steel, stackable, bamboo handles · folds open into camp shelving. Transit note: the frame + legs ride in the set's carrying case, each Flat Burner ships with its own bag, and the Gear Bag 220 is itself the tabletop-kit tote — the bamboo tables are the only pieces without a bag (moving blanket + straps)</span>
+            </td>
+            <td>Transit + camp storage for tabletop items, pantry, the loose kit</td>
+            <td class="num">$169.95</td>
+          </tr>
+          <tr>
             <td>Deep Mesh Tray Half Unit</td>
-            <td>Air-dry dish rack — swap into slot 4 beside/instead of gear bag</td>
+            <td>Air-dry dish rack — hangs in the frame's rails or the hanging rack (the bamboo table has no rails, so it can't go under there)</td>
             <td class="num">$54.95</td>
           </tr>
           <tr>
@@ -489,7 +493,7 @@
         </tbody>
       </table>
       <p class="footnote">
-        <strong>Propane rules:</strong> the Kovea's brass restrictor screw tames propane's ~3–4× higher vapor pressure, but the setup is off-label and voids the Snow Peak warranty — it's the community's decade-proven arrangement, not the manufacturer's. Bottles stay <strong>upright</strong> (tipped = liquid feed = flare-up) · open the stove valve <strong>slowly, never full-open</strong>, especially on hot days — flame lift-off is the failure mode · soapy-water leak-check every fitting before lighting · keep the hose clear of the burner head · never refill a canister with propane, direct-run only. Standard EN417 isobutane canisters (GigaPower, MSR, Jetboil) still work any time, no adapter.
+        <strong>Propane rules:</strong> the Kovea's brass restrictor screw tames propane's ~3–4× higher vapor pressure, but the setup is off-label and voids the Snow Peak warranty — it's the community's decade-proven arrangement, not the manufacturer's. Bottles stay <strong>upright</strong> (tipped = liquid feed = flare-up) · open the stove valve <strong>slowly, never full-open</strong>, especially on hot days — flame lift-off is the failure mode · soapy-water leak-check every fitting before lighting · hang the bottle as upright as the canister arm allows · never refill a canister with propane, direct-run only. Standard EN417 isobutane canisters (GigaPower, MSR, Jetboil) still work any time, no adapter.
         &nbsp;·&nbsp; <strong>Warranty:</strong> lifetime on Snow Peak hard goods (fueled off GigaPower canisters). Prices from snowpeak.com and retailers, Aug 17, 2026.
       </p>
     </div>
@@ -505,7 +509,7 @@
         <tbody>
           <tr>
             <td><strong>Today</strong></td>
-            <td>Place every order — <a href="https://korogi.co/products/4u-yakitori-rack-for-igt" target="_blank" rel="noopener">Kōrogi rack</a> first (1 in stock, the only item that can vanish), then Snow Peak (set + corner + leg set + hanging rack), Backcountry (burner 2), Lodge/Amazon (griddle, kettle, extinguisher, Kovea, hose). Expedite anything not landing by Fri Aug 21.</td>
+            <td>Place every order — <a href="https://korogi.co/products/4u-yakitori-rack-for-igt" target="_blank" rel="noopener">Kōrogi rack</a> first (1 in stock, the only item that can vanish), then Snow Peak (set + corner + leg set + hanging rack), Backcountry (burner 2), Lodge/Amazon (griddle, kettle, extinguisher, Kovea ×2). Expedite anything not landing by Fri Aug 21.</td>
           </tr>
           <tr>
             <td><strong>Aug 19</strong></td>
@@ -634,25 +638,26 @@
     /* gear bag slot 4, rim proud of the top */
     box(9.2, 7, 13, M.green, SC[3], TOP - 3.2, 0);
     box(8.4, 0.2, 12.2, M.dark, SC[3], TOP + 0.32, 0);
-    /* hanging rack under slots 1-2 */
-    box(21.2, 2.1, 14.4, M.steel, -10.75, TOP - T - 1.05, 0);
+    /* hanging rack under slots 1-2 — open basket so it reads in the preview */
+    box(21.2, 0.4, 14.4, M.dark, -10.75, TOP - T - 3.1, 0);
+    box(21.2, 0.4, 0.4, M.dark, -10.75, TOP - T - 1.0, 6.9);
+    box(21.2, 0.4, 0.4, M.dark, -10.75, TOP - T - 1.0, -6.9);
+    [[-21.15, 6.9], [-21.15, -6.9], [-0.35, 6.9], [-0.35, -6.9]].forEach(function (p) {
+      box(0.4, 2.5, 0.4, M.dark, p[0], TOP - T - 1.85, p[1]);
+    });
     /* sliding extension + board, front-left */
     box(16.6, 1.2, 8.6, M.bamboo2, -8, TOP - T - 0.6, 22.8 / 2 + 8.6 / 2 - 1);
     box(14, 0.75, 9, M.bamboo, -8, TOP - T + 0.15, 22.8 / 2 + 8.6 / 2 - 1);
-    /* 1 lb propane bottle on the ground behind the left end, hose up to the burner rail */
-    var bottle = new THREE.Mesh(new THREE.CylinderGeometry(1.95, 1.95, 7.7, 20), M.canis);
-    bottle.position.set(-27, 3.85, -15);
-    scene.add(bottle);
-    var valve = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.4, 12), M.dark);
-    valve.position.set(-27, 8.4, -15);
-    scene.add(valve);
-    var hose = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-27, 9.1, -15),
-      new THREE.Vector3(-25, 18, -9),
-      new THREE.Vector3(-19, TOP - 4, -3),
-      new THREE.Vector3(-16.1, TOP - 1.8, 0)
-    ]), 24, 0.22, 8, false), M.dark);
-    scene.add(hose);
+    /* 1 lb propane bottles hanging off each burner's canister arm via Kovea adapters */
+    [-3, 3].forEach(function (z) {
+      box(2.6, 0.7, 0.7, M.steel, -24.2, TOP - 2.2, z);
+      var kv = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1.0, 12), M.dark);
+      kv.position.set(-25.8, TOP - 2.8, z);
+      scene.add(kv);
+      var b = new THREE.Mesh(new THREE.CylinderGeometry(1.95, 1.95, 7.7, 20), M.canis);
+      b.position.set(-25.8, TOP - 7.2, z);
+      scene.add(b);
+    });
 
     /* Kidde FA110 extinguisher on the ground at the right front leg */
     var ext = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.35, 9, 16), M.red);
@@ -662,9 +667,12 @@
     extNozzle.position.set(20, 9.8, 14.5);
     scene.add(extNozzle);
 
-    /* corner extension — left end, front-aligned, on its own leg */
-    box(20.4, 0.5, 20.4, M.bamboo, -33.2, TOP - 0.25, 1.2);
-    box(1.2, TOP - 0.5, 1.2, M.dark, -42.4, (TOP - 0.5) / 2, 10.4);
+    /* corner extension — quarter circle pivoting at the frame's front-left corner */
+    var corner = new THREE.Mesh(
+      new THREE.CylinderGeometry(20.4, 20.4, 0.5, 32, 1, false, Math.PI, Math.PI / 2), M.bamboo);
+    corner.position.set(-23, TOP - 0.25, 11.4);
+    scene.add(corner);
+    box(1.2, TOP - 0.5, 1.2, M.dark, -35, (TOP - 0.5) / 2, -1.5);
 
     /* gooseneck kettle sitting on the corner */
     var kettle = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.0, 4.6, 20), M.steel);
@@ -681,10 +689,10 @@
     handle.rotation.z = 0.5;
     scene.add(handle);
 
-    /* bamboo table long — right end (included in the set) */
-    box(43.1, 0.9, 19.5, M.bamboo, 23 + 21.55, TOP - 0.45, 0);
-    box(1.2, TOP - 0.9, 1.2, M.dark, 23 + 41.8, (TOP - 0.9) / 2, -8.5);
-    box(1.2, TOP - 0.9, 1.2, M.dark, 23 + 41.8, (TOP - 0.9) / 2, 8.5);
+    /* bamboo table long — runs forward off the corner (included in the set) */
+    box(19.5, 0.9, 43.1, M.bamboo, -33.2, TOP - 0.45, 11.4 + 21.55);
+    box(1.2, TOP - 0.9, 1.2, M.dark, -41.2, (TOP - 0.9) / 2, 53.2);
+    box(1.2, TOP - 0.9, 1.2, M.dark, -25.2, (TOP - 0.9) / 2, 53.2);
 
     /* ---- piece labels (projected HTML chips) ---- */
     var layer = document.getElementById("lbl-layer");
@@ -727,14 +735,14 @@
     addLabel("Hanging Rack (under-table)", -14, 26, 7.4, null, U.rack);
     addLabel("Sliding Extension", -12, 30.2, 15.8, null, U.slide);
     addLabel("Chopping Board", -4, 33, 17.5, null, U.board);
-    addLabel("1 lb Propane · Kovea Adapter + Hose", -27, 12.5, -15, null, U.fuel);
+    addLabel("1 lb Propane ×2 · Kovea Adapters", -26, 21, 0, null, U.fuel);
     addLabel("Kidde FA110 Extinguisher", 20, 11.5, 14.5, null, U.exting);
     addLabel("830 mm Leg Sets", 21.9, 12, 10.3, null, U.legs);
     addLabel("IGT 4-Unit Frame (in set)", -21.9, 31.4, -10.3, null, U.set);
     addLabel("Kōrogi Yakitori Rail (4U)", 0, 37.8, -11.1, null, U.yaki);
     addLabel("Left Corner Extension + leg", -38, 32.9, 8, null, U.corner);
     addLabel("Gooseneck Kettle (wood handle + thermometer)", -33.2, 39.2, 1.2, null, U.kettle);
-    addLabel("Bamboo Table Long (in set)", 44.55, 32.7, 0, null, U.long);
+    addLabel("Bamboo Table Long (in set)", -33.2, 32.7, 48, null, U.long);
     var v3 = new THREE.Vector3();
     function updateLabels() {
       var w2 = wrap.clientWidth, h2 = wrap.clientHeight;
@@ -754,7 +762,7 @@
     });
 
     /* orbit */
-    var theta = -0.7, phi = 1.05, radius = 105, target = new THREE.Vector3(8, 14, 0);
+    var theta = -0.7, phi = 1.05, radius = 115, target = new THREE.Vector3(-4, 14, 10);
     function place() {
       camera.position.set(
         target.x + radius * Math.sin(phi) * Math.sin(theta),
