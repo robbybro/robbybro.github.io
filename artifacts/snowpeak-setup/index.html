@@ -164,7 +164,7 @@
   <div class="wrap">
     <header>
       <h1>Snow Peak IGT Camp Kitchen — Robby's Build</h1>
-      <p class="sub">The locked build for the Sep 3 trip: two-burner cook line with a cast iron griddle spanning both, wash bins, dish storage, sliding bamboo prep extension, and under-table hanging rack — now based on the <a href="https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1" target="_blank" rel="noopener">Camp Kitchen &amp; Table Set</a>: the quarter-circle corner turns the left end and the set's long bamboo table runs forward off it, wrapping the counter into an L around you. Fuel is 1 lb propane bottles hung straight off each burner on brass Kovea adapters.</p>
+      <p class="sub">The locked build for the Sep 3 trip: two-burner cook line with a cast iron griddle spanning both, wash bins, dish storage, and under-table hanging rack — now based on the <a href="https://www.snowpeak.com/products/igt-camp-kitchen-table-set-1" target="_blank" rel="noopener">Camp Kitchen &amp; Table Set</a>: the quarter-circle corner turns the left end and the set's long bamboo table runs forward off it, wrapping the counter into an L around you. Fuel is 1 lb propane bottles hung straight off each burner on brass Kovea adapters.</p>
       <p id="ext-spec"><strong>The L:</strong> 46″ cook line ahead of you + 20.4″ quarter-circle corner + 43.1″ table running forward at your left — about 9 ft of counter wrapping two sides.</p>
     </header>
 
@@ -178,7 +178,7 @@
     <!-- ============ TOP-DOWN VIEW, FULL CONFIG (10 px / inch) ============ -->
     <div class="card">
       <h2>Top-down — full configuration, drawn to scale (10 px / inch)</h2>
-      <p class="note">Each IGT slot accepts one full unit or two half units. The dashed outline across slots 1–2 is the Lodge Pro-Grid griddle sitting on both burners; the dashed rectangle beneath them is the hanging rack. The chopping board floats on the sliding extension. The quarter-circle corner turns the left end, and the long table runs forward off it — the L wraps around where you stand.</p>
+      <p class="note">Each IGT slot accepts one full unit or two half units. The dashed outline across slots 1–2 is the Lodge Pro-Grid griddle sitting on both burners; the dashed rectangle beneath them is the hanging rack. The chopping board rides on the long table. The quarter-circle corner turns the left end, and the long table runs forward off it — the L wraps around where you stand.</p>
 
       <svg viewBox="-250 0 1250 800" role="img" aria-label="To-scale top-down schematic of the complete IGT camp kitchen: corner extension at the left end with the long table running forward off it">
         <!-- Hanging rack label -->
@@ -242,20 +242,12 @@
           <text x="461" y="253" text-anchor="middle" class="t-sub">or mesh tray</text>
         </g>
 
-        <!-- Sliding extension 16.6 x 8.6 -> 166 x 86, tucked under front edge -->
-        <rect x="160" y="298" width="166" height="86" rx="7" fill="var(--ext-fill)" stroke="var(--c-ext)" stroke-width="1.5"/>
-        <!-- Chopping board 14 x 9 -> 140 x 90 -->
-        <rect x="172" y="302" width="140" height="90" rx="5" fill="var(--frame-fill)" stroke="var(--baseline)" stroke-width="1.5"/>
-        <line x1="242" y1="306" x2="242" y2="328" stroke="var(--baseline)" stroke-width="1"/>
-        <line x1="242" y1="362" x2="242" y2="388" stroke="var(--baseline)" stroke-width="1"/>
-        <text x="242" y="341" text-anchor="middle" class="t-sub" style="font-weight:600">Chopping Board Set L</text>
-        <text x="242" y="355" text-anchor="middle" class="t-sub">14″ × 9″ open · in set</text>
-        <line x1="146" y1="315" x2="146" y2="365" class="dim-line"/>
-        <path d="M 146 373 l -4 -8 h 8 z" fill="var(--ink-muted)"/>
-        <text x="350" y="322" class="t-label">Bamboo Sliding Extension</text>
-        <text x="350" y="336" class="t-sub">16.6″ W × 8.6″ D × 1.2″ thick · 2 lbs</text>
-        <text x="350" y="350" class="t-sub">slips into frame's outside-edge ridges</text>
-        <text x="350" y="364" class="t-sub">board overhangs the top by 0.4″</text>
+        <!-- Chopping board 14 x 9 -> 140 x 90, riding on the long table -->
+        <rect x="-107" y="580" width="140" height="90" rx="5" fill="var(--frame-fill)" stroke="var(--baseline)" stroke-width="1.5"/>
+        <line x1="-37" y1="584" x2="-37" y2="606" stroke="var(--baseline)" stroke-width="1"/>
+        <line x1="-37" y1="644" x2="-37" y2="666" stroke="var(--baseline)" stroke-width="1"/>
+        <text x="-37" y="619" text-anchor="middle" class="t-sub" style="font-weight:600">Chopping Board Set L</text>
+        <text x="-37" y="633" text-anchor="middle" class="t-sub">14″ × 9″ open · in set</text>
 
         <!-- Corner extension — quarter circle turning the left end -->
         <g id="td-corner">
@@ -409,13 +401,6 @@
             <td class="num">$59.95</td>
           </tr>
           <tr>
-            <td><a href="https://www.snowpeak.com/products/iron-grill-bamboo-sliding-regular-ck-153tr" target="_blank" rel="noopener">Bamboo IGT Sliding Extension</a> <span class="pill">renewed</span>
-              <span class="detail">16.6″ W × 8.6″ D × 1.2″ · 2 lbs</span>
-            </td>
-            <td>Horizontal — pull-out prep counter for the chopping board</td>
-            <td class="num">$54.95</td>
-          </tr>
-          <tr>
             <td><a href="https://www.snowpeak.com/products/copy-of-igt-hanging-rack-frame-set-1" target="_blank" rel="noopener">IGT Hanging Rack 2 Frame</a>
               <span class="detail">21.2″ × 14.4″ × 2.1″ · 10.6 lbs · spans 2 units</span>
             </td>
@@ -461,9 +446,16 @@
           </tr>
           <tr class="total">
             <td colspan="2">Everything above</td>
-            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,504.50</td>
+            <td class="num" id="grand-total" style="white-space:nowrap">≈ $1,449.55</td>
           </tr>
           <tr class="section"><td colspan="3">Later / optional — not in the total</td></tr>
+          <tr>
+            <td><a href="https://www.snowpeak.com/products/iron-grill-bamboo-sliding-regular-ck-153tr" target="_blank" rel="noopener">Bamboo IGT Sliding Extension</a> <span class="pill">renewed</span>
+              <span class="detail">16.6″ W × 8.6″ D × 1.2″ · 2 lbs · slips into the frame's outside-edge ridges</span>
+            </td>
+            <td>Pull-out prep counter — see if the L leaves you wanting it first</td>
+            <td class="num">$54.95</td>
+          </tr>
           <tr>
             <td><a href="https://www.amazon.com/camping-moon-Propane-Adapter-Extend/dp/B08V16WSJN" target="_blank" rel="noopener">Campingmoon propane hose kit</a>
               <span class="detail">Braided stainless hose per burner — only if the hanging bottles bother you</span>
@@ -645,9 +637,8 @@
     [[-21.15, 6.9], [-21.15, -6.9], [-0.35, 6.9], [-0.35, -6.9]].forEach(function (p) {
       box(0.4, 2.5, 0.4, M.dark, p[0], TOP - T - 1.85, p[1]);
     });
-    /* sliding extension + board, front-left */
-    box(16.6, 1.2, 8.6, M.bamboo2, -8, TOP - T - 0.6, 22.8 / 2 + 8.6 / 2 - 1);
-    box(14, 0.75, 9, M.bamboo, -8, TOP - T + 0.15, 22.8 / 2 + 8.6 / 2 - 1);
+    /* chopping board riding on the long table */
+    box(14, 0.75, 9, M.bamboo2, -33.2, TOP + 0.4, 44);
     /* 1 lb propane bottles hanging off each burner's canister arm via Kovea adapters */
     [-3, 3].forEach(function (z) {
       box(2.6, 0.7, 0.7, M.steel, -24.2, TOP - 2.2, z);
@@ -733,8 +724,7 @@
     addLabel("Dish Bins ×2 (half units)", 5.4, 33.6, 0, null, U.bins);
     addLabel("Gear Bag 220", 16.1, 33.6, 0, null, U.bag);
     addLabel("Hanging Rack (under-table)", -14, 26, 7.4, null, U.rack);
-    addLabel("Sliding Extension", -12, 30.2, 15.8, null, U.slide);
-    addLabel("Chopping Board", -4, 33, 17.5, null, U.board);
+    addLabel("Chopping Board", -33.2, 33.8, 44, null, U.board);
     addLabel("1 lb Propane ×2 · Kovea Adapters", -26, 21, 0, null, U.fuel);
     addLabel("Kidde FA110 Extinguisher", 20, 11.5, 14.5, null, U.exting);
     addLabel("830 mm Leg Sets", 21.9, 12, 10.3, null, U.legs);
