@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitch's Colors</title>
+<meta property="og:title" content="Mitch's Colors">
+<meta property="og:description" content="A personal color analysis: the palette that makes Mitch look great.">
+<style>
+  :root {
+    --bg: #F5F1E8;
+    --ink: #2E2A24;
+    --muted: #6E675C;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: clamp(34px, 7vw, 56px); margin: 0 0 8px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 17px; max-width: 60ch; margin: 0 0 12px; }
+  .season {
+    display: inline-block; margin: 4px 0 36px; padding: 6px 14px; border-radius: 999px;
+    background: #6E5638; color: #F5F1E8; font-weight: 600; font-size: 14px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  h2 { font-size: 22px; margin: 44px 0 6px; }
+  .why { color: var(--muted); font-size: 15px; margin: 0 0 16px; max-width: 68ch; }
+  .anchors { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .anchor { display: flex; align-items: center; gap: 8px; background: var(--card);
+    border-radius: 999px; padding: 6px 14px 6px 6px; font-size: 13px;
+    box-shadow: 0 1px 3px rgba(46,42,36,.12); }
+  .anchor .dot { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(46,42,36,.12); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .swatch {
+    border-radius: 14px; overflow: hidden; background: var(--card); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(46,42,36,.14); border: none; padding: 0; text-align: left;
+    font: inherit; color: inherit; transition: transform .12s ease;
+  }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch .color { height: 96px; }
+  .swatch .label { padding: 10px 12px 12px; }
+  .swatch .name { font-weight: 650; font-size: 14px; }
+  .swatch .hex { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--muted); }
+  .swatch .note { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .avoid .color { height: 56px; position: relative; }
+  .avoid .color::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top right, transparent calc(50% - 1px), rgba(255,255,255,.9) 50%, transparent calc(50% + 1px));
+  }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px;
+    font-size: 14px; opacity: 0; transition: all .25s ease; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mitch's Colors</h1>
+  <p class="sub">Fair warm-neutral skin with a ruddy flush, warm freckles, light chestnut hair,
+  blue-grey eyes, soft contrast. Muted and warm beats bright and icy.</p>
+  <span class="season">Soft Autumn</span>
+
+  <h2>The anchors</h2>
+  <p class="why">What the palette is built around — sampled from Mitch himself.</p>
+  <div class="anchors">
+    <span class="anchor"><span class="dot" style="background:#E3A794"></span>Skin</span>
+    <span class="anchor"><span class="dot" style="background:#CE8272"></span>Flush</span>
+    <span class="anchor"><span class="dot" style="background:#AE7350"></span>Freckles</span>
+    <span class="anchor"><span class="dot" style="background:#77603F"></span>Hair</span>
+    <span class="anchor"><span class="dot" style="background:#8494A4"></span>Eyes</span>
+  </div>
+
+  <h2>Wear these</h2>
+  <p class="why">Greens and teals sit opposite a ruddy flush on the color wheel, so they visibly calm
+  redness. Blues echo the eyes. Everything is muted and a touch warm to match soft-autumn contrast.
+  Tap a swatch to copy its hex.</p>
+  <div class="grid">
+    <button class="swatch" data-hex="#1F6E6B"><div class="color" style="background:#1F6E6B"></div>
+      <div class="label"><div class="name">Deep Teal</div><div class="hex">#1F6E6B</div><div class="note">the #1 — cancels redness</div></div></button>
+    <button class="swatch" data-hex="#3E5F44"><div class="color" style="background:#3E5F44"></div>
+      <div class="label"><div class="name">Forest Green</div><div class="hex">#3E5F44</div><div class="note">direct complement of the flush</div></div></button>
+    <button class="swatch" data-hex="#6B6B3A"><div class="color" style="background:#6B6B3A"></div>
+      <div class="label"><div class="name">Olive</div><div class="hex">#6B6B3A</div><div class="note">warms with the freckles</div></div></button>
+    <button class="swatch" data-hex="#5B7A9D"><div class="color" style="background:#5B7A9D"></div>
+      <div class="label"><div class="name">Steel Blue</div><div class="hex">#5B7A9D</div><div class="note">pulls out the eyes</div></div></button>
+    <button class="swatch" data-hex="#2C3E5C"><div class="color" style="background:#2C3E5C"></div>
+      <div class="label"><div class="name">Warm Navy</div><div class="hex">#2C3E5C</div><div class="note">the better "black"</div></div></button>
+    <button class="swatch" data-hex="#B98A54"><div class="color" style="background:#B98A54"></div>
+      <div class="label"><div class="name">Camel</div><div class="hex">#B98A54</div><div class="note">hair-tone harmony</div></div></button>
+    <button class="swatch" data-hex="#F1E4CE"><div class="color" style="background:#F1E4CE"></div>
+      <div class="label"><div class="name">Cream</div><div class="hex">#F1E4CE</div><div class="note">instead of stark white</div></div></button>
+    <button class="swatch" data-hex="#6E2F35"><div class="color" style="background:#6E2F35"></div>
+      <div class="label"><div class="name">Oxblood</div><div class="hex">#6E2F35</div><div class="note">deep red that doesn't flush</div></div></button>
+    <button class="swatch" data-hex="#B05C3B"><div class="color" style="background:#B05C3B"></div>
+      <div class="label"><div class="name">Rust</div><div class="hex">#B05C3B</div><div class="note">freckle-adjacent; small doses</div></div></button>
+    <button class="swatch" data-hex="#3A3A3C"><div class="color" style="background:#3A3A3C"></div>
+      <div class="label"><div class="name">Charcoal</div><div class="hex">#3A3A3C</div><div class="note">softer than true black</div></div></button>
+  </div>
+
+  <h2>Skip these</h2>
+  <p class="why">Bright warm reds and hot pinks amplify the flush; icy pastels and stark white fight
+  the warm freckles and wash him out; neon overwhelms soft contrast.</p>
+  <div class="grid">
+    <div class="swatch avoid"><div class="color" style="background:#E8112D"></div>
+      <div class="label"><div class="name">Cherry Red</div><div class="note">doubles the flush</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#FF69B4"></div>
+      <div class="label"><div class="name">Hot Pink</div><div class="note">same problem, louder</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#FFFFFF"></div>
+      <div class="label"><div class="name">Stark White</div><div class="note">harsh against warm skin</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#CDE7F0"></div>
+      <div class="label"><div class="name">Icy Pastels</div><div class="note">cool + pale = washed out</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#39FF14"></div>
+      <div class="label"><div class="name">Neon Anything</div><div class="note">overwhelms soft contrast</div></div></div>
+  </div>
+
+  <footer>Palette derived from photo analysis · robbybro.com</footer>
+</div>
+<div class="toast" id="toast">Copied</div>
+<script>
+  const toast = document.getElementById('toast');
+  let t;
+  document.querySelectorAll('.swatch[data-hex]').forEach(el => {
+    el.addEventListener('click', () => {
+      navigator.clipboard.writeText(el.dataset.hex).then(() => {
+        toast.textContent = el.dataset.hex + ' copied';
+        toast.classList.add('show');
+        clearTimeout(t);
+        t = setTimeout(() => toast.classList.remove('show'), 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>
