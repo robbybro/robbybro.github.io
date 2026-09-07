@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Willamette Valley Scenic Bikeway — Eats Atlas</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { color-scheme: light dark; }
+  .viz-root {
+    color-scheme: light;
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --ink-1: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --c-cafe:   #2a78d6;
+    --c-rest:   #eb6834;
+    --c-bake:   #1baf7a;
+    --c-beer:   #eda100;
+    --c-wine:   #e87ba4;
+    --c-mkt:    #008300;
+    --route:    #52514e;
+    --casing:   #fcfcfb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --ink-1: #ffffff;
+      --ink-2: #c3c2b7;
+      --ink-muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --c-cafe:   #3987e5;
+      --c-rest:   #d95926;
+      --c-bake:   #199e70;
+      --c-beer:   #c98500;
+      --c-wine:   #d55181;
+      --c-mkt:    #008300;
+      --route:    #c3c2b7;
+      --casing:   #1a1a19;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--page); }
+  .viz-root {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page); color: var(--ink-1);
+    min-height: 100vh; padding: 24px 16px 48px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  header h1 { font-size: 1.45rem; letter-spacing: -0.01em; }
+  header .sub { color: var(--ink-2); margin-top: 6px; font-size: 0.95rem; line-height: 1.45; }
+  header .sub b { color: var(--ink-1); font-weight: 600; }
+  .flexnote {
+    margin: 14px 0 0; padding: 10px 14px; border: 1px solid var(--border);
+    border-left: 3px solid var(--c-cafe); border-radius: 6px;
+    background: var(--surface-1); color: var(--ink-2); font-size: 0.88rem; line-height: 1.5;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 10px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface-1); color: var(--ink-1);
+    padding: 5px 12px; font-size: 0.84rem; cursor: pointer; user-select: none;
+  }
+  .chip .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .chip.off { opacity: 0.38; }
+  .chip:hover { border-color: var(--baseline); }
+  #map {
+    height: 62vh; min-height: 380px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface-1);
+  }
+  .leaflet-container { font: inherit; background: var(--surface-1); }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .leaflet-tile-pane {
+      filter: invert(1) hue-rotate(180deg) brightness(0.88) contrast(0.9) saturate(0.7);
+    }
+    :root:where(:not([data-theme="light"])) .leaflet-control-zoom a,
+    :root:where(:not([data-theme="light"])) .leaflet-control-attribution {
+      background: #1a1a19; color: #c3c2b7;
+    }
+  }
+  .pin {
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--casing); box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    font-size: 13px; line-height: 1;
+  }
+  .pin.approx { border-style: dashed; }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface-1); color: var(--ink-1); }
+  .leaflet-popup-content { margin: 12px 14px; font-size: 0.85rem; line-height: 1.45; }
+  .pop h3 { font-size: 0.95rem; margin-bottom: 2px; }
+  .pop h3 a { color: var(--ink-1); }
+  .pop .meta { color: var(--ink-muted); font-size: 0.78rem; margin-bottom: 6px; }
+  .pop .why { margin-bottom: 5px; }
+  .pop .vibe { color: var(--ink-2); font-style: italic; }
+  .badge {
+    display: inline-block; font-size: 0.7rem; font-style: normal; padding: 1px 7px; border-radius: 999px;
+    border: 1px solid var(--baseline); color: var(--ink-2); margin-left: 6px; vertical-align: 1px;
+  }
+  section.leg { margin-top: 34px; }
+  section.leg > h2 { font-size: 1.1rem; }
+  section.leg > .legmeta { color: var(--ink-muted); font-size: 0.84rem; margin: 3px 0 14px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .card {
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface-1);
+    padding: 12px 14px; cursor: pointer;
+  }
+  .card:hover { border-color: var(--baseline); }
+  .card .top { display: flex; align-items: baseline; gap: 8px; }
+  .card .glyph { font-size: 0.95rem; }
+  .card h3 { font-size: 0.92rem; flex: 1; }
+  .card h3 a { color: var(--ink-1); text-decoration-color: var(--baseline); }
+  .card .mi { color: var(--ink-muted); font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .card .meta { color: var(--ink-muted); font-size: 0.76rem; margin: 3px 0 7px; }
+  .card .why { font-size: 0.82rem; line-height: 1.45; }
+  .card .vibe { font-size: 0.78rem; line-height: 1.45; color: var(--ink-2); font-style: italic; margin-top: 6px; }
+  footer { margin-top: 40px; color: var(--ink-muted); font-size: 0.78rem; line-height: 1.6; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 640px) { #map { height: 52vh; } .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <header>
+    <h1>Willamette Valley Scenic Bikeway — Eats Atlas</h1>
+    <div class="sub"><b>132 mi</b> · Champoeg State Heritage Area → Armitage Park (Eugene) · <b>40 stops</b> worth leaving the route for. Built for Emily's September ride.</div>
+    <div class="flexnote">No schedule attached — stops are grouped by route leg and listed in riding order with their approximate route mile. Ride to whatever's nearby when you're hungry; anything flagged <b>off-route</b> is a deliberate detour. Every name links to Google Maps.</div>
+  </header>
+
+  <div class="chips" id="chips"></div>
+  <div id="map"></div>
+  <div id="legs"></div>
+
+  <footer id="foot">
+    Sources: Eater Portland, James Beard Foundation, The Infatuation, Travel Oregon, local press (Salem Reporter, Statesman Journal, Lookout Eugene-Springfield, Daily Coffee News), and crowd ratings — all listings verified operational via Google Places on Sep 7, 2026.
+    Two guide-book staples were excluded as permanently closed in 2026: Epilogue Kitchen (Salem) and Izakaya Meiji (Eugene).
+    Route line: official Ride with GPS track. · <a href="https://traveloregon.com/things-to-do/outdoor-recreation/bicycling/willamette-valley-scenic-bikeway/">Travel Oregon route guide</a>
+  </footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const PLACES = [{"n": "Wolves & People Farmhouse Brewery", "c": "Newberg", "cat": "brewery", "cu": "farmhouse ales, wood-fired pizza", "lat": 45.31434, "lng": -122.92841, "r": 4.9, "rv": 274, "p": null, "why": "Eater Portland has repeatedly singled it out as one of Oregon's most distinctive farmhouse breweries - estate hazelnut-orchard fruit and wild yeast.", "vibe": "Fri-Sun only, opens 12pm; farm setting ~4mi off route at the Champoeg end.", "src": "Eater Portland", "leg": 1, "mi": 0.0, "off": 4.9, "pid": "ChIJC-31A1pqlVQRqkUrbOHohNg"}, {"n": "Lady Hill Winery", "c": "St. Paul", "cat": "winery", "cu": "Willamette Valley wine, pinot noir", "lat": 45.24562, "lng": -122.88805, "r": 4.6, "rv": 170, "p": null, "why": "Fifth-generation family estate on Champoeg Road literally on the bikeway alignment; Travel Oregon / Oregon Wine Board featured.", "vibe": "Open daily from 12:00pm; ~1 mile from Champoeg, so best as a leisurely noon-start stop.", "src": "Travel Oregon / Oregon Wine Board", "leg": 1, "mi": 0.3, "off": 0.1, "pid": "ChIJo2XmyitolVQRbXHbCFguAdU"}, {"n": "Historic Butteville Store", "c": "Aurora", "cat": "market", "cu": "deli sandwiches, ice cream, snacks", "lat": 45.26198, "lng": -122.84184, "r": 4.6, "rv": 405, "p": 2, "why": "Oregon's oldest continuously operating store (1863), run by Oregon State Parks with Champoeg and celebrated by Travel Oregon as the classic refuel at the end of the Champoeg bike path.", "vibe": "Right on the route between Champoeg and St. Paul; seasonal May-Oct with limited days - check hours before counting on it.", "src": "Travel Oregon", "leg": 1, "mi": 1.0, "off": 2.0, "pid": "ChIJt4w8f1VolVQRc4CrJHXjfYI"}, {"n": "Burning Boar BBQ", "c": "St. Paul", "cat": "restaurant", "cu": "barbecue, smoked meats", "lat": 45.21194, "lng": -122.97621, "r": 5, "rv": 2, "p": null, "why": "Family-run BBQ truck ranked the #1 food stop in tiny St. Paul (4.5); the only hearty lunch in town on this leg.", "vibe": "St. Paul food truck on Main St NE - schedule varies, verify it's parked before relying on it; St. Paul Market next door is the backup.", "src": "crowd", "leg": 1, "mi": 6.7, "off": 3.9, "pid": "ChIJawYmUQJBlVQRDtLw2Xen_Hs", "approx": true}, {"n": "Xicha Brewing", "c": "Salem", "cat": "brewery", "cu": "Latin American, tacos, craft beer", "lat": 44.982, "lng": -123.00116, "r": 4.8, "rv": 397, "p": 2, "why": "The Pacific Northwest's first Latino-owned brewery, profiled by Portland Monthly - house lagers with excellent tacos and salvadoreno plates.", "vibe": "Go to the North Salem location on Hyacinth St NE (near the route in from Keizer) - the original West Salem spot closed; open 11:00am daily.", "src": "Portland Monthly", "leg": 1, "mi": 28.8, "off": 1.1, "pid": "ChIJvRIQneT_v1QRmUGIyMFC2h8"}, {"n": "Willamette Valley Pie Co. Farm Store", "c": "Salem", "cat": "bakery", "cu": "marionberry pie, scones, coffee", "lat": 44.96754, "lng": -122.89092, "r": 4.6, "rv": 1189, "p": null, "why": "Farm bakery essentially on the bikeway at the Willamette Mission State Park entrance - pie by the slice from the farm's own berries.", "vibe": "Open 8:00am weekdays, 9:00am Sat, 12:00-5:00pm Sun - the mid-ride slice-and-coffee stop with outdoor seating.", "src": "crowd", "leg": 1, "mi": 29.0, "off": 6.3, "pid": "ChIJR_3dI4_8v1QRE_AJzoPX_U8"}, {"n": "Word of Mouth Neighborhood Bistro", "c": "Salem", "cat": "restaurant", "cu": "breakfast, brunch, American", "lat": 44.93571, "lng": -123.01978, "r": 4.7, "rv": 2859, "p": 2, "why": "Salem's consensus best breakfast since 2008 - 4.7 from 2,700+ reviews, Food Network + Travel Oregon featured; creme brulee French toast.", "vibe": "Opens 6:45am weekends, closes 2:00pm, closed Tuesdays; expect a wait.", "src": "Travel Oregon", "leg": 1, "mi": 31.3, "off": 0.6, "pid": "ChIJUdgGKxb_v1QRjo0Lmk3EyeI"}, {"n": "Archive Coffee & Bar", "c": "Salem", "cat": "café", "cu": "specialty coffee, cocktails, small plates", "lat": 44.94014, "lng": -123.03852, "r": 4.5, "rv": 1826, "p": 2, "why": "Downtown Salem's craft-coffee anchor since 2014 - house-roasted coffee by day, proper cocktail bar at night; Travel Oregon featured.", "vibe": "One stop covers post-ride espresso and an evening drink; Liberty St NE in the walkable downtown core.", "src": "Travel Oregon", "leg": 1, "mi": 31.4, "off": 0.3, "pid": "ChIJe0iCVA3_v1QRVO2xS1jkNbc"}, {"n": "Prismatic Coffee", "c": "Salem", "cat": "café", "cu": "specialty coffee, pastries", "lat": 44.89911, "lng": -123.01969, "r": 4.8, "rv": 158, "p": 2, "why": "Salem's standout roaster opened this luminous cafe in a 90-year-old carpentry hall at Pringle Creek in early 2025 - national coverage from Daily Coffee News.", "vibe": "Mornings only in Carpenter's Hall (Epilogue takes over at night); South Salem ~2 miles past downtown.", "src": "Daily Coffee News", "leg": 1, "mi": 32.4, "off": 2.0, "pid": "ChIJcxad29H_v1QREihYb_OjbpQ"}, {"n": "Tony's Taco Shop", "c": "Salem", "cat": "restaurant", "cu": "Mexican, tacos", "lat": 44.89058, "lng": -123.05973, "r": 4.3, "rv": 212, "p": 1, "why": "Locals' hole-in-the-wall pick for tacos in Salem - generous cheap portions, exactly the unfussy calorie bomb a touring cyclist wants.", "vibe": "Counter/drive-thru, minimal seating - grab breakfast tacos to go on the way out of town.", "src": "crowd", "leg": 1, "mi": 34.9, "off": 1.5, "pid": "ChIJwzT0XTgHwFQRBIiMah4IbBk"}, {"n": "Ovenbird Bakery", "c": "Independence", "cat": "bakery", "cu": "artisan bread, pastries, quiche", "lat": 44.85186, "lng": -123.1844, "r": 4.8, "rv": 235, "p": 2, "why": "Travel Oregon highlights this chef-founded Main Street bake shop; locals rave about the Danishes and cinnamon rolls.", "vibe": "Opens 6:30am Tue-Sat right on Main St - ideal early carb-and-coffee stop before the ferry leg.", "src": "Travel Oregon", "leg": 2, "mi": 42.8, "off": 0.6, "pid": "ChIJQ7dBc4YEwFQR_TkLEbC1PEA"}, {"n": "Gilgamesh Brewing - The River", "c": "Independence", "cat": "brewery", "cu": "pizza, sandwiches, craft beer", "lat": 44.85058, "lng": -123.18485, "r": 4.2, "rv": 579, "p": 2, "why": "Riverfront Independence outpost of the Salem brewery: hand-tossed pizzas and sandwiches on housemade bread.", "vibe": "Covered patio steps from Riverview Park - easy bike parking, hearty lunch.", "src": "crowd", "leg": 2, "mi": 42.8, "off": 0.6, "pid": "ChIJT76sJggFwFQRxSNfaIbmZXs"}, {"n": "Parallel 45 Brewing", "c": "Independence", "cat": "brewery", "cu": "craft beer, Mexican food truck", "lat": 44.85133, "lng": -123.18661, "r": 4.9, "rv": 103, "p": null, "why": "Independence's only in-house brewery, voted Best Brewery of the Willamette Valley, Cusinela food truck alongside.", "vibe": "Outdoor seating on Monmouth St; pint + tacos from the adjacent truck.", "src": "crowd", "leg": 2, "mi": 42.8, "off": 0.7, "pid": "ChIJ5WaVn5gFwFQR1bWlllBhR70"}, {"n": "Yeasty Beasty", "c": "Monmouth", "cat": "restaurant", "cu": "pizza, calzones", "lat": 44.84842, "lng": -123.23688, "r": 4.6, "rv": 778, "p": 1, "why": "Consistently ranked the top restaurant in Monmouth (4.5) for pizzas made with local Bob's Red Mill dough.", "vibe": "Main Street, a 2-mile flat spur from Independence; filling calzones for big-mileage days.", "src": "crowd", "leg": 2, "mi": 42.8, "off": 3.0, "pid": "ChIJgYZaDFQDwFQRmyZZAFiLJbM"}, {"n": "Koyote Tacos", "c": "Monmouth", "cat": "restaurant", "cu": "Mexican, tacos", "lat": 44.84918, "lng": -123.23708, "r": 4.5, "rv": 700, "p": 1, "why": "Local-favorite taqueria on Monmouth best-of lists for this college town.", "vibe": "Quick, cheap, protein-heavy taco stop on a Monmouth detour.", "src": "crowd", "leg": 2, "mi": 42.8, "off": 3.0, "pid": "ChIJzxwx-FMDwFQRMtN68zHmjJ4"}, {"n": "Roots & Brew Cafe", "c": "Jefferson", "cat": "café", "cu": "coffee, breakfast, sandwiches", "lat": 44.71708, "lng": -123.0118, "r": 5, "rv": 20, "p": 1, "why": "The one true coffee-and-lunch stop on Jefferson's Main Street - the only services between the Buena Vista Ferry/Ankeny refuge and Albany.", "vibe": "Small-town hours - hit it late morning between Ankeny NWR and Albany.", "src": "crowd", "leg": 2, "mi": 62.1, "off": 0.1, "pid": "ChIJm76uzhINwFQRML7wMVsnL-A"}, {"n": "Calapooia Brewing Company", "c": "Albany", "cat": "brewery", "cu": "craft beer, burgers", "lat": 44.63926, "lng": -123.094, "r": 4.5, "rv": 507, "p": null, "why": "Longtime taproom brewing 20+ beers on site with hand-patted burgers; Travel Oregon listed.", "vibe": "Low-key neighborhood joint a few blocks off downtown - no reservation needed.", "src": "Travel Oregon", "leg": 2, "mi": 74.7, "off": 0.1, "pid": "ChIJ3wia87JswFQRwd5whCDjty8"}, {"n": "Margin Coffee", "c": "Albany", "cat": "café", "cu": "specialty coffee, pastries, bagels", "lat": 44.63634, "lng": -123.10624, "r": 4.7, "rv": 553, "p": 2, "why": "Albany's third-wave roaster in a 1906 downtown building, ~4.8 across 1,000+ reviews; Travel Oregon featured.", "vibe": "Bright room, outdoor seating in the historic district - the proper light-roast stop in Albany.", "src": "Travel Oregon", "leg": 2, "mi": 75.4, "off": 0.1, "pid": "ChIJYUDxzPVtwFQRrLpEChpiFJs"}, {"n": "Brick & Mortar Cafe", "c": "Albany", "cat": "restaurant", "cu": "breakfast, brunch, American", "lat": 44.6371, "lng": -123.1069, "r": 4.5, "rv": 1605, "p": 2, "why": "Widely called the best breakfast in Albany (600+ reviews): huevos rancheros, chicken and waffles.", "vibe": "Downtown on 1st Ave - morning fuel-up out of an Albany overnight; expect a weekend wait.", "src": "crowd", "leg": 2, "mi": 75.4, "off": 0.0, "pid": "ChIJXyLSoKxswFQRTD_iOWA3rdE"}, {"n": "Sybaris Bistro", "c": "Albany", "cat": "restaurant", "cu": "Pacific Northwest, seasonal", "lat": 44.63665, "lng": -123.10975, "r": 4.8, "rv": 413, "p": 2, "why": "Chef Matt Bennett is a multiple James Beard Best Chef Northwest nominee; monthly-changing menu from ingredients raised within 10 miles.", "vibe": "Historic building at 1st and Washington; dinner only - the Albany overnight splurge, casual enough for post-ride clothes.", "src": "James Beard nominee", "leg": 2, "mi": 75.6, "off": 0.1, "pid": "ChIJIfaoSVUTwFQRiOCrYHQsJ3E"}, {"n": "KH Pho and Grill", "c": "Corvallis", "cat": "restaurant", "cu": "Vietnamese, pho", "lat": 44.58758, "lng": -123.2736, "r": 4.4, "rv": 310, "p": 1, "why": "Crowd-rated best pho in Corvallis - friendly, unfussy hole-in-the-wall.", "vibe": "Hot salty broth, quick service - ideal cold-day recovery lunch.", "src": "crowd", "leg": 3, "mi": 85.0, "off": 2.5, "pid": "ChIJ-e-Ybnw_wFQRNbPtNFfJ8xE"}, {"n": "Block 15 Brewing - Downtown Pub", "c": "Corvallis", "cat": "brewery", "cu": "brewpub, burgers", "lat": 44.56229, "lng": -123.26221, "r": 4.5, "rv": 1112, "p": 2, "why": "Corvallis's most-awarded brewery (Sticky Hands imperial IPA gold); its pub ranks #1 of ~155 Corvallis restaurants.", "vibe": "Downtown, big portions - the default post-ride dinner-and-recovery-beer stop on a Corvallis overnight.", "src": "crowd", "leg": 3, "mi": 85.1, "off": 1.3, "pid": "ChIJo0U-ROpAwFQR7-PW01SnclE"}, {"n": "Futura Coffee Roasters", "c": "Corvallis", "cat": "café", "cu": "coffee, espresso", "lat": 44.56288, "lng": -123.26013, "r": 4.7, "rv": 453, "p": 1, "why": "Futura acquired longtime specialty favorite Tried & True and runs the third-wave roastery-cafe downtown.", "vibe": "Closest thing Corvallis has to a light-roast third-wave bar; Madison Ave, easy bike parking.", "src": "crowd", "leg": 3, "mi": 85.1, "off": 1.2, "pid": "ChIJgwQZuutAwFQR_hYeRaEI8Tk"}, {"n": "New Morning Bakery", "c": "Corvallis", "cat": "bakery", "cu": "bakery, breakfast", "lat": 44.5627, "lng": -123.26024, "r": 4.3, "rv": 1158, "p": 2, "why": "A downtown Corvallis landmark for 35+ years: breakfast burritos, biscuits and gravy, big pastry case.", "vibe": "Long counter line at peak brunch - go early or grab pastries to go.", "src": "crowd", "leg": 3, "mi": 85.1, "off": 1.2, "pid": "ChIJSSFMtOtAwFQRkx2tjJQ0GL4"}, {"n": "del Alma", "c": "Corvallis", "cat": "restaurant", "cu": "Latin American, Spanish, Pacific Northwest", "lat": 44.55967, "lng": -123.26106, "r": 4.7, "rv": 678, "p": 2, "why": "Widely cited as the best formal dinner in Corvallis - elegant riverfront Latin/Spanish plates from Northwest farms.", "vibe": "Riverfront downtown, dinner Tue-Sat from 5:00pm; book ahead on weekends.", "src": "crowd", "leg": 3, "mi": 85.2, "off": 1.3, "pid": "ChIJG6Vo4OlAwFQRZAfRwXCuQKw"}, {"n": "Bodhi Cafe & Bakery", "c": "Corvallis", "cat": "bakery", "cu": "bakery, breakfast, sourdough", "lat": 44.56004, "lng": -123.26217, "r": 4.3, "rv": 533, "p": null, "why": "Crowd favorite for housemade quiche and avocado toast on fresh-baked sourdough, everything under ~$13.", "vibe": "Cheap, warm, carb-dense pre-ride breakfast + a sourdough loaf for the jersey pocket.", "src": "crowd", "leg": 3, "mi": 85.2, "off": 1.3, "pid": "ChIJww_2m3VBwFQRfyir2HHDTsE"}, {"n": "Gathering Together Farm", "c": "Philomath", "cat": "experience", "cu": "farm-to-table, wood-fired pizza, seasonal", "lat": 44.53133, "lng": -123.37286, "r": 4.6, "rv": 327, "p": 2, "why": "Working-organic-farm restaurant with a decades-long farm-to-table tradition; Lookout Eugene-Springfield covered it May 2025.", "vibe": "~6 flat miles west of Corvallis; lunch only Wed-Sat 11:00am-3:00pm; mid-September is peak farmstand season.", "src": "Lookout Eugene-Springfield", "leg": 3, "mi": 85.2, "off": 7.1, "pid": "ChIJYVmXjepHwFQREGLJwIWf-1Q"}, {"n": "Brownsville Saloon", "c": "Brownsville", "cat": "bar", "cu": "burgers, American, pie", "lat": 44.3946, "lng": -122.98467, "r": 4.3, "rv": 484, "p": 1, "why": "In continuous operation since 1947 inside a former opera house; Travel Oregon highlights the bacon cheeseburgers and homemade marionberry pie.", "vibe": "Old-west room at 419 N Main - burger-and-pie lunch if Randy's is packed.", "src": "Travel Oregon", "leg": 3, "mi": 107.3, "off": 0.0, "pid": "ChIJ2zt3uE5ewFQRUci109G3VoY"}, {"n": "Randy's Main Street Coffee", "c": "Brownsville", "cat": "café", "cu": "coffee, baked goods, soups and sandwiches", "lat": 44.39326, "lng": -122.98427, "r": 4.8, "rv": 281, "p": 2, "why": "The #1 eatery in Brownsville (4.6) for scratch-baked bread, cinnamon rolls, and soups made every morning.", "vibe": "Main Street, 7:00am-4:00pm Mon-Sat - the mid-ride refuel in the Stand By Me town; cinnamon rolls sell out early.", "src": "crowd", "leg": 3, "mi": 107.5, "off": 0.1, "pid": "ChIJTWG2JUxewFQRsObKrvqPTlo"}, {"n": "Coburg Pizza Company", "c": "Coburg", "cat": "restaurant", "cu": "pizza, calzones", "lat": 44.13497, "lng": -123.0649, "r": 4.6, "rv": 1373, "p": 1, "why": "Century-old family recipes and 24-hour-fermented dough earn 4.5+ crowd ratings and best-pizza-in-the-Eugene-area reviews.", "vibe": "In Coburg's historic core - hearty lunch if you hit town midday.", "src": "crowd", "leg": 4, "mi": 130.0, "off": 0.1, "pid": "ChIJqw8HFhXjwFQRFSr73eSbCdY"}, {"n": "Coburg Crossing Café", "c": "Coburg", "cat": "café", "cu": "American breakfast, diner", "lat": 44.13639, "lng": -123.057, "r": 4.2, "rv": 3805, "p": 1, "why": "Coburg's go-to breakfast/lunch stop, strong crowd ratings for homemade biscuits and gravy and quick friendly service.", "vibe": "Open from 6am right on the route through tiny historic Coburg - the natural refuel ~8 miles before the finish.", "src": "crowd", "leg": 4, "mi": 130.2, "off": 0.4, "pid": "ChIJBwmczGvjwFQRtM2mDo87mO0"}, {"n": "Yardy Rum Bar", "c": "Eugene", "cat": "restaurant", "cu": "Caribbean, Jamaican", "lat": 44.05053, "lng": -123.09709, "r": 4.7, "rv": 294, "p": 2, "why": "Chef Isaiah Martinez was a James Beard Best Chef Northwest semifinalist in 2024 and 2025, and Yardy made the NYT 2025 Top 50 Restaurants in America.", "vibe": "Walk-in only, Wed-Sun 5-9pm - THE celebratory end-of-ride dinner; arrive at open to beat the line.", "src": "James Beard / NYT / The Infatuation", "leg": 4, "mi": 132.3, "off": 4.6, "pid": "ChIJu2eN0HUfwVQRmDUGMj-8tfc"}, {"n": "Osteria DOP", "c": "Eugene", "cat": "restaurant", "cu": "Italian, Neapolitan pizza", "lat": 44.04732, "lng": -123.09153, "r": 4.6, "rv": 369, "p": 2, "why": "Tops The Infatuation's 2026 Best Restaurants in Eugene guide for blistered Neapolitan pies, suppli, and rigatoni.", "vibe": "Carb-heavy recovery dinner if the Yardy line is long; relaxed enough for post-ride clothes.", "src": "The Infatuation", "leg": 4, "mi": 132.3, "off": 4.6, "pid": "ChIJ6UqxRykfwVQRSenUUl2S5aw"}, {"n": "Bar Purlieu", "c": "Eugene", "cat": "restaurant", "cu": "French", "lat": 44.0429, "lng": -123.09307, "r": 4.6, "rv": 474, "p": 4, "why": "The Infatuation's special-occasion French pick in Eugene: mushroom tart, lamb chops, strong wine program.", "vibe": "The dressier celebratory option - worth a shower and a reservation.", "src": "The Infatuation", "leg": 4, "mi": 132.3, "off": 4.9, "pid": "ChIJZ5Cxy7gfwVQRTFGYKSWL9j8"}, {"n": "The Paddock", "c": "Eugene", "cat": "restaurant", "cu": "brunch, Pacific Northwest", "lat": 44.02065, "lng": -123.08058, "r": 4.3, "rv": 633, "p": 2, "why": "Lion & Owl (chef Crystal Platt, 2023 James Beard semifinalist) reopened as The Paddock on East Amazon Drive with the same locally sourced brunch menu.", "vibe": "Next-morning brunch before heading home; the famous Airstream now serves coffee outside - confirm hours, the move is recent.", "src": "KLCC / Lookout Eugene-Springfield", "leg": 4, "mi": 132.3, "off": 6.2, "pid": "ChIJ4b_-Nq8fwVQRh441J6mfGmE"}, {"n": "Tailored Coffee Roasters", "c": "Eugene", "cat": "café", "cu": "coffee, light-roast single origin", "lat": 44.05447, "lng": -123.08871, "r": 4.6, "rv": 328, "p": 1, "why": "Eugene's flagship third-wave roaster since 2014 - single-origin light roasts, widely rated the best coffee in town.", "vibe": "5th Street Market District - the Nordic-leaning light-roast fix at the finish.", "src": "crowd", "leg": 4, "mi": 132.3, "off": 4.1, "pid": "ChIJ40avdhEewVQRblUVRJUAqho"}, {"n": "Farmers Union Coffee Roasters", "c": "Eugene", "cat": "café", "cu": "coffee, pastries", "lat": 44.05419, "lng": -123.09474, "r": 4.4, "rv": 362, "p": 1, "why": "Third-wave roaster in a repurposed old farmhouse downtown, roasting single-origin micro-lots on site.", "vibe": "Cozy, a few blocks from Tailored - good second-cortado + pastry stop.", "src": "crowd", "leg": 4, "mi": 132.3, "off": 4.3, "pid": "ChIJ533Q1KkfwVQRpmKNQOAxLhg"}, {"n": "Barry's Espresso, Bakery & Deli", "c": "Eugene", "cat": "bakery", "cu": "Jewish deli, bakery", "lat": 44.0278, "lng": -123.08942, "r": 4.8, "rv": 718, "p": 2, "why": "The Infatuation singles out the pastrami sandwiches, matzo ball soup, and black-and-white cookies.", "vibe": "Counter-service and fast - substantial lunch or pastry grab, no sit-down commitment.", "src": "The Infatuation", "leg": 4, "mi": 132.3, "off": 5.8, "pid": "ChIJewSZXFMewVQRNBWJ_aD-NpQ"}, {"n": "Newman's Fish Company", "c": "Eugene", "cat": "restaurant", "cu": "seafood, fish and chips", "lat": 44.04275, "lng": -123.09236, "r": 4.6, "rv": 1023, "p": null, "why": "The Infatuation recommends this walk-up window for fried and seared seafood and po'boys with herby tartar sauce.", "vibe": "Walk-up window with outdoor tables - perfect straight-off-the-bike salty finish-line food.", "src": "The Infatuation", "leg": 4, "mi": 132.3, "off": 4.9, "pid": "ChIJfSi4fEEewVQRA7qbXUsZB90"}, {"n": "ColdFire Public House", "c": "Eugene", "cat": "brewery", "cu": "craft beer, lagers", "lat": 44.05397, "lng": -123.08246, "r": 4.3, "rv": 158, "p": null, "why": "Consistently named among Eugene's best breweries for award-winning lagers, IPAs, and barrel-aged sours.", "vibe": "Crisp finish-line lager territory; casual, bike-friendly taproom.", "src": "crowd", "leg": 4, "mi": 132.3, "off": 4.0, "pid": "ChIJqwrjYfkfwVQRBvhxeUte5Bs"}];
+const ROUTE = [[45.24828, -122.89416], [45.24769, -122.88856], [45.24613, -122.88552], [45.2455, -122.88273], [45.24631, -122.87796], [45.24542, -122.87559], [45.23739, -122.87497], [45.22862, -122.87867], [45.21844, -122.87743], [45.2073, -122.87627], [45.20162, -122.8794], [45.19996, -122.88486], [45.20146, -122.88639], [45.20259, -122.8903], [45.19904, -122.89226], [45.19329, -122.89601], [45.18799, -122.90021], [45.18442, -122.90406], [45.18141, -122.90877], [45.17768, -122.91302], [45.16913, -122.91501], [45.16546, -122.91675], [45.16384, -122.91704], [45.16337, -122.91702], [45.16179, -122.91716], [45.16128, -122.91698], [45.15684, -122.91766], [45.14525, -122.91907], [45.14343, -122.91961], [45.14333, -122.92077], [45.14358, -122.92994], [45.1434, -122.9307], [45.14067, -122.93238], [45.12834, -122.93954], [45.12447, -122.94149], [45.1205, -122.94406], [45.11359, -122.94543], [45.11383, -122.95941], [45.10462, -122.97475], [45.09716, -122.97697], [45.09232, -122.98239], [45.09221, -122.98776], [45.09182, -122.99306], [45.09185, -123.0012], [45.09209, -123.00515], [45.09469, -123.00944], [45.09343, -123.01291], [45.09244, -123.01924], [45.09238, -123.02102], [45.0934, -123.0215], [45.09354, -123.02517], [45.09174, -123.0341], [45.08924, -123.03318], [45.08462, -123.03239], [45.08313, -123.03359], [45.07974, -123.03045], [45.06945, -123.01896], [45.06274, -123.01518], [45.05264, -123.01009], [45.04816, -123.01013], [45.04535, -123.01101], [45.04327, -123.01339], [45.04364, -123.02449], [45.04604, -123.02771], [45.04983, -123.03842], [45.0522, -123.04282], [45.04497, -123.04555], [45.04376, -123.05082], [45.02808, -123.05101], [45.02237, -123.05495], [45.01354, -123.05321], [45.00615, -123.04667], [45.0011, -123.04338], [44.99843, -123.04162], [44.99603, -123.03946], [44.99002, -123.0373], [44.9881, -123.03703], [44.9868, -123.02998], [44.98347, -123.02455], [44.97921, -123.02302], [44.97339, -123.02113], [44.97098, -123.02048], [44.96941, -123.02356], [44.96528, -123.02488], [44.9591, -123.02498], [44.95534, -123.02521], [44.95328, -123.02483], [44.94715, -123.02789], [44.9395, -123.03193], [44.93914, -123.03221], [44.93891, -123.03247], [44.93838, -123.03249], [44.93727, -123.03285], [44.93437, -123.03431], [44.93262, -123.03517], [44.93111, -123.03591], [44.92995, -123.03598], [44.92849, -123.03632], [44.92801, -123.03644], [44.9277, -123.03539], [44.92742, -123.0342], [44.92635, -123.03368], [44.92565, -123.0358], [44.92633, -123.04138], [44.92724, -123.04499], [44.92929, -123.04633], [44.92857, -123.05046], [44.92207, -123.05617], [44.91801, -123.06094], [44.91413, -123.06688], [44.91035, -123.07106], [44.90871, -123.07768], [44.90767, -123.08627], [44.90791, -123.09082], [44.90619, -123.09544], [44.90276, -123.09981], [44.90202, -123.10386], [44.90161, -123.107], [44.89907, -123.10956], [44.89733, -123.11279], [44.89617, -123.12106], [44.89618, -123.12544], [44.8927, -123.13061], [44.8882, -123.13276], [44.88486, -123.13533], [44.87608, -123.14185], [44.873, -123.14432], [44.87058, -123.14466], [44.86493, -123.1463], [44.85636, -123.1469], [44.85203, -123.14758], [44.8498, -123.1487], [44.84704, -123.15429], [44.84564, -123.15881], [44.84534, -123.16523], [44.84549, -123.17461], [44.84594, -123.17512], [44.8457, -123.1759], [44.84229, -123.17429], [44.83785, -123.17084], [44.836, -123.15858], [44.83487, -123.13701], [44.83385, -123.13234], [44.83138, -123.12663], [44.82913, -123.12308], [44.82663, -123.11883], [44.82557, -123.11423], [44.82466, -123.10554], [44.82317, -123.10063], [44.82158, -123.09725], [44.8221, -123.09068], [44.81772, -123.08287], [44.81641, -123.07972], [44.81295, -123.08781], [44.80813, -123.08433], [44.79614, -123.08438], [44.79008, -123.09872], [44.78713, -123.10487], [44.78316, -123.11123], [44.77894, -123.11469], [44.77616, -123.11481], [44.77577, -123.11756], [44.7756, -123.12332], [44.77265, -123.12677], [44.77188, -123.13304], [44.76723, -123.13774], [44.76222, -123.13503], [44.76211, -123.11304], [44.76272, -123.11178], [44.76427, -123.11019], [44.76319, -123.10546], [44.76113, -123.09736], [44.76036, -123.09404], [44.76025, -123.09039], [44.7609, -123.08706], [44.75977, -123.08319], [44.75895, -123.07242], [44.75856, -123.05188], [44.75749, -123.0473], [44.75284, -123.04671], [44.75238, -123.04468], [44.75085, -123.04074], [44.74908, -123.03702], [44.74044, -123.0305], [44.73621, -123.02659], [44.73318, -123.02267], [44.72932, -123.01025], [44.71976, -123.01021], [44.71552, -123.01167], [44.71412, -123.01723], [44.70744, -123.03283], [44.70325, -123.03049], [44.69777, -123.02752], [44.69529, -123.02768], [44.68859, -123.02532], [44.68664, -123.02347], [44.6847, -123.02166], [44.67855, -123.02265], [44.66922, -123.01932], [44.66194, -123.018], [44.65542, -123.02117], [44.65252, -123.0228], [44.64971, -123.0247], [44.64045, -123.02824], [44.63328, -123.03043], [44.62466, -123.03259], [44.61214, -123.03309], [44.61205, -123.03669], [44.60887, -123.05084], [44.6111, -123.0622], [44.612, -123.06575], [44.61545, -123.07651], [44.61737, -123.0825], [44.62018, -123.08305], [44.62592, -123.08328], [44.63173, -123.08345], [44.63539, -123.08357], [44.63983, -123.08369], [44.63884, -123.09227], [44.63812, -123.09857], [44.63713, -123.10745], [44.63667, -123.11121], [44.63513, -123.11092], [44.63544, -123.11304], [44.63532, -123.1142], [44.63548, -123.11798], [44.63678, -123.12286], [44.63543, -123.1255], [44.63382, -123.12677], [44.63352, -123.13376], [44.62469, -123.13984], [44.62277, -123.14282], [44.61597, -123.15466], [44.61513, -123.15773], [44.60229, -123.15837], [44.59964, -123.16249], [44.59907, -123.17138], [44.597, -123.17304], [44.5927, -123.17517], [44.58968, -123.1789], [44.58361, -123.18163], [44.57409, -123.18437], [44.57006, -123.1916], [44.56871, -123.19354], [44.56624, -123.19533], [44.56501, -123.19664], [44.56425, -123.19746], [44.56425, -123.20034], [44.56426, -123.20441], [44.56428, -123.20732], [44.56439, -123.20761], [44.56423, -123.2078], [44.5642, -123.20856], [44.56421, -123.20979], [44.56425, -123.21033], [44.56426, -123.2115], [44.56427, -123.21267], [44.56426, -123.21395], [44.56424, -123.21571], [44.56424, -123.21758], [44.56423, -123.21999], [44.5642, -123.22408], [44.56418, -123.22703], [44.56417, -123.22896], [44.56416, -123.23056], [44.56415, -123.23258], [44.56413, -123.23427], [44.56407, -123.23471], [44.5632, -123.23493], [44.56148, -123.23492], [44.5608, -123.23479], [44.55993, -123.23414], [44.5589, -123.23237], [44.55782, -123.23053], [44.55712, -123.22953], [44.5543, -123.22552], [44.55202, -123.22229], [44.54935, -123.21851], [44.54665, -123.21468], [44.54456, -123.21171], [44.54192, -123.20797], [44.53966, -123.20478], [44.53844, -123.20358], [44.53764, -123.20314], [44.53645, -123.20284], [44.52801, -123.20284], [44.52642, -123.20426], [44.5194, -123.21201], [44.51581, -123.21255], [44.50508, -123.21104], [44.49744, -123.21109], [44.48542, -123.21131], [44.48341, -123.21003], [44.48037, -123.20799], [44.47704, -123.2072], [44.4723, -123.2068], [44.46435, -123.21072], [44.45715, -123.21], [44.45761, -123.18807], [44.45942, -123.18739], [44.45964, -123.17776], [44.45987, -123.16831], [44.46085, -123.1664], [44.46087, -123.14925], [44.46129, -123.14747], [44.46173, -123.14571], [44.46159, -123.121], [44.4617, -123.1026], [44.46035, -123.09366], [44.45966, -123.08684], [44.45437, -123.08407], [44.45248, -123.0832], [44.44977, -123.07947], [44.44747, -123.077], [44.44536, -123.07644], [44.44157, -123.07645], [44.43895, -123.07573], [44.43718, -123.07383], [44.43664, -123.07187], [44.4359, -123.06611], [44.43481, -123.06558], [44.43056, -123.06535], [44.42699, -123.06425], [44.42523, -123.06187], [44.42523, -123.05795], [44.42516, -123.01906], [44.42486, -123.01582], [44.41771, -123.00794], [44.4114, -123.00114], [44.40462, -122.99406], [44.39973, -122.98893], [44.39777, -122.98601], [44.39583, -122.98502], [44.39493, -122.98446], [44.39164, -122.98442], [44.38709, -122.98567], [44.38093, -122.98552], [44.36166, -122.98471], [44.35057, -122.98454], [44.34598, -122.98506], [44.34353, -122.98712], [44.34095, -122.98875], [44.33904, -122.98931], [44.33766, -122.99046], [44.33449, -122.99215], [44.33241, -122.99315], [44.33086, -122.99276], [44.32809, -122.99208], [44.32518, -122.99294], [44.32306, -122.99321], [44.31956, -122.99165], [44.31611, -122.99176], [44.30888, -122.99112], [44.30603, -122.99197], [44.30411, -122.9937], [44.30142, -122.99403], [44.29194, -122.99415], [44.28674, -122.99433], [44.28253, -122.99455], [44.28198, -122.99451], [44.28153, -122.99508], [44.28168, -122.99616], [44.28185, -122.99781], [44.28157, -122.99989], [44.28143, -123.00162], [44.28145, -123.00552], [44.27938, -123.00632], [44.27152, -123.00639], [44.26762, -123.00636], [44.26614, -123.00595], [44.26164, -123.00597], [44.25659, -123.00621], [44.25641, -123.00875], [44.2528, -123.00948], [44.24879, -123.00943], [44.24387, -123.00939], [44.24332, -123.00997], [44.24332, -123.01418], [44.24336, -123.01929], [44.24343, -123.02988], [44.24348, -123.03624], [44.24658, -123.03729], [44.24836, -123.03952], [44.24834, -123.05155], [44.24856, -123.05736], [44.25068, -123.05759], [44.25103, -123.05831], [44.25101, -123.06054], [44.251, -123.06305], [44.25078, -123.06745], [44.24835, -123.06732], [44.24171, -123.06769], [44.24019, -123.07013], [44.23181, -123.06992], [44.22834, -123.06901], [44.22229, -123.06743], [44.20996, -123.06715], [44.20749, -123.06936], [44.20536, -123.0717], [44.19105, -123.0714], [44.18221, -123.0716], [44.16561, -123.07187], [44.14169, -123.07195], [44.1408, -123.07091], [44.13956, -123.06746], [44.13609, -123.06604], [44.13357, -123.06401], [44.12902, -123.06102], [44.12263, -123.05723], [44.11901, -123.05323], [44.11556, -123.04871], [44.11354, -123.04695], [44.11079, -123.04804], [44.10892, -123.05116], [44.10818, -123.05248]];
+
+const CATS = {
+  "café":       { key: "cafe", label: "Coffee",      glyph: "☕", v: "--c-cafe" },
+  "restaurant": { key: "rest", label: "Restaurants", glyph: "🍽️", v: "--c-rest" },
+  "bakery":     { key: "bake", label: "Bakeries",    glyph: "🥐", v: "--c-bake" },
+  "brewery":    { key: "beer", label: "Beer & bars", glyph: "🍺", v: "--c-beer" },
+  "bar":        { key: "beer", label: "Beer & bars", glyph: "🍺", v: "--c-beer" },
+  "winery":     { key: "wine", label: "Wine & farm", glyph: "🍷", v: "--c-wine" },
+  "experience": { key: "wine", label: "Wine & farm", glyph: "🌾", v: "--c-wine" },
+  "market":     { key: "mkt",  label: "Markets",     glyph: "🧺", v: "--c-mkt" }
+};
+const LEGS = {
+  1: { title: "Leg 1 · Champoeg → Salem", meta: "~31 mi, flat French Prairie farmland through St. Paul; Salem is the first overnight-sized town." },
+  2: { title: "Leg 2 · Salem → Albany", meta: "~44 mi via Independence, Monmouth, the Buena Vista Ferry and Ankeny refuge; Jefferson is the only mid-leg services." },
+  3: { title: "Leg 3 · Albany → Brownsville (via Corvallis)", meta: "~32 mi through Corvallis and past Thompson's Mills; Brownsville is the Stand By Me town." },
+  4: { title: "Leg 4 · Brownsville → Eugene", meta: "~25 mi to Armitage Park + the ride into town; the hilliest day (~600 ft) through Coburg to the finish-line food." }
+};
+
+const css = v => getComputedStyle(document.querySelector(".viz-root")).getPropertyValue(v).trim();
+const dark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+
+const map = L.map("map", { scrollWheelZoom: true });
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+}).addTo(map);
+
+let routeLine, routeCasing;
+function drawRoute() {
+  if (routeLine) { map.removeLayer(routeLine); map.removeLayer(routeCasing); }
+  routeCasing = L.polyline(ROUTE, { color: css("--casing"), weight: 6, opacity: 0.9 }).addTo(map);
+  routeLine = L.polyline(ROUTE, { color: css("--route"), weight: 3, opacity: 0.95 }).addTo(map);
+}
+drawRoute();
+map.fitBounds(L.latLngBounds(ROUTE).pad(0.08));
+
+const mapsUrl = p => p.approx
+  ? `https://www.google.com/maps/search/${encodeURIComponent(p.n + " " + p.c + " OR")}`
+  : `https://www.google.com/maps/place/?q=place_id:${p.pid}`;
+
+function popupHtml(p) {
+  const cat = CATS[p.cat];
+  const stars = (p.r && p.rv >= 25) ? `${p.r}★ (${p.rv.toLocaleString()})` : "";
+  const price = p.p ? " · " + "$".repeat(p.p) : "";
+  const off = p.off > 2 ? `<span class="badge">off-route ${p.off} mi</span>` : "";
+  const approx = p.approx ? `<span class="badge">pin approximate — food truck</span>` : "";
+  return `<div class="pop"><h3><a href="${mapsUrl(p)}" target="_blank" rel="noopener">${p.n}</a></h3>
+    <div class="meta">${p.c} · ${cat.glyph} ${cat.label} · ${stars}${price} · mi ~${p.mi}</div>
+    <div class="why">${p.why}${off}${approx}</div>
+    <div class="vibe">${p.vibe}</div></div>`;
+}
+
+const markers = [];
+PLACES.forEach(p => {
+  const cat = CATS[p.cat];
+  const icon = L.divIcon({
+    className: "", iconSize: [26, 26], iconAnchor: [13, 13],
+    html: `<div class="pin${p.approx ? " approx" : ""}" style="background:var(${cat.v})" title="${p.n}">${cat.glyph}</div>`
+  });
+  const m = L.marker([p.lat, p.lng], { icon, title: p.n }).addTo(map).bindPopup(popupHtml(p), { maxWidth: 300 });
+  markers.push({ m, p, key: cat.key });
+});
+
+const active = new Set(["cafe", "rest", "bake", "beer", "wine", "mkt"]);
+const chipDefs = [
+  { key: "cafe", label: "☕ Coffee", v: "--c-cafe" },
+  { key: "rest", label: "🍽 Restaurants", v: "--c-rest" },
+  { key: "bake", label: "🥐 Bakeries", v: "--c-bake" },
+  { key: "beer", label: "🍺 Beer & bars", v: "--c-beer" },
+  { key: "wine", label: "🍷 Wine & farm", v: "--c-wine" },
+  { key: "mkt", label: "🧺 Markets", v: "--c-mkt" }
+];
+const chipsEl = document.getElementById("chips");
+chipDefs.forEach(d => {
+  const el = document.createElement("button");
+  el.className = "chip";
+  el.innerHTML = `<span class="dot" style="background:var(${d.v})"></span>${d.label}`;
+  el.onclick = () => {
+    if (active.has(d.key)) { active.delete(d.key); el.classList.add("off"); }
+    else { active.add(d.key); el.classList.remove("off"); }
+    markers.forEach(({ m, key }) => {
+      if (active.has(key)) m.addTo(map); else map.removeLayer(m);
+    });
+  };
+  chipsEl.appendChild(el);
+});
+
+const legsEl = document.getElementById("legs");
+[1, 2, 3, 4].forEach(n => {
+  const sec = document.createElement("section");
+  sec.className = "leg";
+  sec.innerHTML = `<h2>${LEGS[n].title}</h2><div class="legmeta">${LEGS[n].meta}</div>`;
+  const grid = document.createElement("div");
+  grid.className = "cards";
+  PLACES.filter(p => p.leg === n).forEach(p => {
+    const cat = CATS[p.cat];
+    const stars = (p.r && p.rv >= 25) ? `${p.r}★ (${p.rv.toLocaleString()})` : "";
+    const price = p.p ? " · " + "$".repeat(p.p) : "";
+    const off = p.off > 2 ? `<span class="badge">off-route ${p.off} mi</span>` : "";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="top"><span class="glyph" style="color:var(${cat.v})">${cat.glyph}</span>
+      <h3><a href="${mapsUrl(p)}" target="_blank" rel="noopener">${p.n}</a></h3><span class="mi">mi ~${p.mi}</span></div>
+      <div class="meta">${p.c} · ${cat.label} · ${stars}${price} · ${p.src}</div>
+      <div class="why">${p.why}${off}</div><div class="vibe">${p.vibe}</div>`;
+    card.onclick = e => {
+      if (e.target.tagName === "A") return;
+      const mk = markers.find(x => x.p === p);
+      map.flyTo([p.lat, p.lng], 14, { duration: 0.8 });
+      setTimeout(() => mk.m.openPopup(), 850);
+      document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    grid.appendChild(card);
+  });
+  sec.appendChild(grid);
+  legsEl.appendChild(sec);
+});
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { drawRoute(); });
+</script>
+</body>
+</html>
