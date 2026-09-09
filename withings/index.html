@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Withings link</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.5 -apple-system, system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1.25rem; }
+  h1 { font-size: 1.4rem; margin: 0 0 .5rem; }
+  p { margin: .5rem 0; }
+  .box { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all;
+         padding: .9rem 1rem; border: 1px solid #8884; border-radius: 8px; background: #8881; margin: 1rem 0; }
+  button { font: inherit; padding: .55rem 1rem; border-radius: 8px; border: 1px solid #8886; background: #8882; cursor: pointer; }
+  .ok { color: #2d6a4f; font-weight: 600; }
+  .bad { color: #9c4221; font-weight: 600; }
+  .muted { color: #888; font-size: .9rem; }
+</style>
+</head>
+<body>
+<h1>⚖️ Withings link</h1>
+<p id="status" class="muted">Reading the redirect…</p>
+<div class="box" id="url"></div>
+<p><button id="copy" type="button">Copy URL</button> <span id="copied" class="ok" hidden>copied</span></p>
+<p>Paste it into the terminal prompt from <code>withings.py auth --paste</code>. The code is single-use and expires 30 seconds after you clicked Allow.</p>
+<p class="muted">This page keeps nothing and sends nothing anywhere. It is only the landing spot Withings requires to be a public https URL.</p>
+<script>
+  const q = new URLSearchParams(location.search);
+  const url = location.href;
+  const box = document.getElementById('url');
+  const st = document.getElementById('status');
+  box.textContent = url;
+  if (q.get('code') && q.get('state')) {
+    st.textContent = 'Withings approved the link. Copy this URL now:';
+    st.className = 'ok';
+  } else if (q.get('error')) {
+    st.textContent = 'Withings returned an error: ' + q.get('error');
+    st.className = 'bad';
+  } else {
+    st.textContent = 'No code in the address — this page is only useful as a Withings OAuth redirect target.';
+  }
+  document.getElementById('copy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(url); document.getElementById('copied').hidden = false; }
+    catch (e) { box.focus(); }
+  });
+</script>
+</body>
+</html>
