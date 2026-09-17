@@ -5,66 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>B-Tree Stepper</title>
+<title>B-Tree & LSM Stepper</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 :root{
   color-scheme:light dark;
   --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF;
-  --node:#FFFFFF; --node-stroke:#8A94AB; --cell:#E9EDF5; --edge:#9AA3B8;
+  --node:#FFFFFF; --node-stroke:#8A94AB; --cell:#E9EDF5; --slot:#C3CAD9; --edge:#9AA3B8;
   --visit:#2F6FEB; --visit-bg:#DCE8FF; --good:#12805C; --good-bg:#D6F2E6; --bad:#C2410C; --bad-bg:#FDE3D6; --move:#8B3FD9; --move-bg:#ECDDFB;
   --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root{
     --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320;
-    --node:#1B2236; --node-stroke:#56617D; --cell:#242D46; --edge:#4A5470;
+    --node:#1B2236; --node-stroke:#56617D; --cell:#2A3450; --slot:#3A4563; --edge:#4A5470;
     --visit:#6EA0FF; --visit-bg:#1D3260; --good:#4FD1A1; --good-bg:#12382C; --bad:#FF8A5C; --bad-bg:#47210F; --move:#C79BFF; --move-bg:#35205A;
   }
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:24px 48px}
-.wrap{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
-header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px}
+.wrap{max-width:1280px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:14px}
 h1{font-family:var(--mono);font-weight:600;font-size:clamp(22px,4.5vw,30px);letter-spacing:-.01em;margin:0}
-.sub{margin:4px 0 0;color:var(--muted);max-width:62ch}
-.settings{display:flex;flex-wrap:wrap;gap:10px 16px}
+.sub{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 14px}
 .field{display:flex;flex-direction:column;gap:3px}
 .field>span,.label{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-select,input[type="text"],input[type="number"]{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;min-width:0}
+select,input[type="text"]{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;min-width:0;max-width:100%}
 button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:40px;padding:0 14px;cursor:pointer}
 button:hover{border-color:var(--node-stroke)}
 button:disabled{opacity:.4;cursor:default}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 6px 6px 0;max-width:95ch}
 
-.app{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
-@media (min-width:940px){.app{grid-template-columns:minmax(0,1fr) 350px}}
-@media (max-width:939px){.stage{height:clamp(260px,40vh,420px)}}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+@media (min-width:980px){.app{grid-template-columns:minmax(0,1fr) 350px}}
 .panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
 .viewer{display:flex;flex-direction:column;min-width:0}
-.stage{position:relative;height:clamp(300px,50vh,500px);overflow:auto;border-bottom:1px solid var(--rule)}
+.pane{display:flex;flex-direction:column;min-width:0;border-bottom:1px solid var(--rule)}
+.pane-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:10px 16px 0}
+.pane-head h2{margin:0;font:600 15px var(--mono)}
+.pane-head span{font-size:13px;color:var(--muted)}
+.stage{position:relative;height:clamp(300px,50vh,500px);overflow:auto}
+.viewer.both .stage{height:clamp(240px,32vh,340px)}
+@media (max-width:979px){.stage{height:clamp(260px,40vh,420px)}.viewer.both .stage{height:clamp(220px,30vh,300px)}}
 .stage svg{display:block}
 .empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);pointer-events:none}
-.caption{padding:14px 16px;min-height:5.6em;border-bottom:1px solid var(--rule)}
-.caption .call{font:600 14px var(--mono);color:var(--accent)}
-.caption p{margin:4px 0 0;font-size:16px;max-width:75ch}
+.caption{padding:0 16px 12px;min-height:4.4em}
+.caption p{margin:0;font-size:15.5px;max-width:80ch}
 .transport{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px}
 .transport button{width:44px;height:44px;padding:0;display:grid;place-items:center}
 .transport button.primary{width:56px}
 .transport svg{width:18px;height:18px;fill:currentColor}
 .transport .spacer{flex:1}
+.transport .call{font:600 14px var(--mono);color:var(--accent);overflow-wrap:anywhere}
 .transport .progress{font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .scrub{padding:0 16px 12px}
 .scrub input{width:100%;accent-color:var(--accent);margin:0}
-.meta{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
-.meta .stats{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.score{border-top:1px solid var(--rule);padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.score-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.score-head button{height:32px;font-size:13px;padding:0 10px}
+.score-scroll{overflow-x:auto}
+.score table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.score th,.score td{text-align:left;padding:7px 12px 7px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
+.score tr:last-child th,.score tr:last-child td{border-bottom:0}
+.score thead th{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.score tbody th{font-weight:500;color:var(--muted);font-size:13.5px;white-space:nowrap}
+.score td b{font:600 18px var(--mono)}
+.score td small{display:block;font:400 12.5px var(--mono);color:var(--muted)}
+.score td.win b{color:var(--good)}
+.score td .sv{font:400 13px var(--mono)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border-radius:3px;border:1.5px solid}
 .lg-visit{background:var(--visit-bg);border-color:var(--visit)!important}.lg-good{background:var(--good-bg);border-color:var(--good)!important}
 .lg-bad{background:var(--bad-bg);border-color:var(--bad)!important}.lg-move{background:var(--move-bg);border-color:var(--move)!important}
+.lg-slot{border:1.5px dashed var(--slot)!important}
 
 .side{display:flex;flex-direction:column;min-width:0}
 .composer{padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--rule)}
@@ -77,76 +95,98 @@ button.primary{background:var(--accent);border-color:var(--accent);color:var(--o
 .log-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
 .log-head button{height:32px;font-size:13px;padding:0 10px}
 .log{list-style:none;margin:0;padding:0 8px 8px;max-height:420px;overflow-y:auto}
-@media (min-width:940px){.log{max-height:min(52vh,520px)}}
+@media (min-width:980px){.log{max-height:min(70vh,760px)}}
 .log li{display:grid;grid-template-columns:minmax(0,1fr) 32px;align-items:center;border-radius:6px}
 .log .go{all:unset;box-sizing:border-box;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 8px;cursor:pointer;border-radius:6px;min-height:36px}
 .log .go:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .log .n{font:400 12px var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .log .c{font:500 13.5px var(--mono);overflow-wrap:anywhere}
-.log .r{font:400 12px var(--mono);color:var(--good);white-space:nowrap}
-.log .r.warn{color:var(--bad)}
+.log .r{font:400 12px var(--mono);color:var(--good);text-align:right}
+.log .r span{display:block;white-space:nowrap}
+.log .r .warn{color:var(--bad)}
+.log .r em{font-style:normal;color:var(--muted)}
 .log .rm{all:unset;width:32px;height:32px;display:grid;place-items:center;color:var(--muted);cursor:pointer;border-radius:6px;font-size:16px}
 .log .rm:hover{color:var(--bad)} .log .rm:focus-visible{outline:2px solid var(--accent)}
 .log li.pending .c,.log li.pending .n{color:var(--muted);opacity:.75}
 .log li.pending .r{visibility:hidden}
 .log li.current{background:var(--visit-bg);box-shadow:inset 3px 0 0 var(--visit)}
+.log li.base{border-top:1px dashed var(--node-stroke);border-radius:0 0 6px 6px}
 .log li:hover:not(.current){background:var(--ground)}
 .log .none{padding:12px 8px;color:var(--muted);font-size:13.5px;display:block}
-footer{color:var(--muted);font-size:13px;max-width:80ch}
+footer{color:var(--muted);font-size:13px;max-width:95ch}
 footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:4px;padding:1px 5px;background:var(--panel)}
 
-/* tree */
-.node rect{fill:var(--node);stroke:var(--node-stroke);stroke-width:1.5;transition:fill .25s,stroke .25s}
-.node.visit rect{fill:var(--visit-bg);stroke:var(--visit);stroke-width:2.5}
-.node.good rect{fill:var(--good-bg);stroke:var(--good);stroke-width:2.5}
-.node.bad rect{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2.5}
+/* drawing */
+.node rect.box{fill:var(--node);stroke:var(--node-stroke);stroke-width:1.5;transition:fill .25s,stroke .25s}
+.node rect.slot{fill:none;stroke:var(--slot);stroke-width:1.2;stroke-dasharray:3 3}
+.node.visit rect.box{fill:var(--visit-bg);stroke:var(--visit);stroke-width:2.5}
+.node.good rect.box{fill:var(--good-bg);stroke:var(--good);stroke-width:2.5}
+.node.bad rect.box{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2.5}
+.node.skip rect.box{stroke-dasharray:5 4;opacity:.55}
 .key rect{fill:var(--cell);stroke:transparent;stroke-width:2;transition:fill .25s,stroke .25s}
 .key text{fill:var(--ink);font-family:var(--mono);text-anchor:middle}
 .key .k{font-size:15px;font-weight:600}
 .key .v{font-size:9.5px;fill:var(--muted)}
+.key.tomb .k{text-decoration:line-through;fill:var(--muted)}
 .key.visit rect{fill:var(--visit-bg);stroke:var(--visit)}
 .key.good rect{fill:var(--good-bg);stroke:var(--good)}
 .key.bad rect{fill:var(--bad-bg);stroke:var(--bad)}
 .key.move rect{fill:var(--move-bg);stroke:var(--move)}
 .edge{fill:none;stroke:var(--edge);stroke-width:1.5}
+.edge.sep{stroke-dasharray:6 5}
+.lbl{font-family:var(--mono);fill:var(--muted)}
+.lbl.tname{font-size:11px}
+.lbl.rlabel{font-size:11.5px;font-weight:600;letter-spacing:.06em}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div>
-      <h1>B-Tree Stepper</h1>
-      <p class="sub">Every API call is broken into the steps a B-tree actually takes. Step through them in either direction, or add your own calls anywhere in the log.</p>
+      <h1>B-Tree &amp; LSM Stepper</h1>
+      <p class="sub">The same API calls run against two storage engines. Every call is broken into the steps each engine actually takes; step through them in either direction, or add your own calls anywhere in the log.</p>
     </div>
     <div class="settings">
-      <label class="field"><span>Program</span>
+      <label class="field"><span>Example</span>
         <select id="preset">
           <option value="tour">Tour: every mechanism</option>
+          <option value="write">Write-heavy workload</option>
+          <option value="read">Read-heavy workload</option>
           <option value="sequential">Sequential inserts</option>
           <option value="teardown">Build up, tear down</option>
           <option value="blank">Blank</option>
         </select>
       </label>
-      <label class="field"><span>Keys per page</span>
-        <select id="maxkeys"><option value="2">max 2</option><option value="3">max 3</option><option value="4">max 4</option><option value="5">max 5</option></select>
+      <label class="field"><span>Show</span>
+        <select id="view"><option value="both">Both engines</option><option value="btree">B-tree only</option><option value="lsm">LSM-tree only</option></select>
+      </label>
+      <label class="field"><span>B-tree page holds</span>
+        <select id="maxkeys"><option value="2">2 keys</option><option value="3">3 keys</option><option value="4">4 keys</option><option value="5">5 keys</option></select>
+      </label>
+      <label class="field"><span>Memtable holds</span>
+        <select id="memcap"><option value="2">2 entries</option><option value="3">3 entries</option><option value="4">4 entries</option><option value="6">6 entries</option></select>
+      </label>
+      <label class="field"><span>Bloom filters</span>
+        <select id="bloom"><option value="on">on</option><option value="off">off</option></select>
       </label>
       <label class="field"><span>Speed</span>
         <select id="speed"><option value="0.5">0.5×</option><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select>
       </label>
     </div>
+    <p class="note" id="note"></p>
   </header>
 
   <div class="app">
-    <section class="panel viewer" aria-label="Tree viewer">
-      <div class="stage" id="stage">
-        <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet" role="img" aria-label="B-tree diagram">
-          <g id="l-edges"></g><g id="l-nodes"></g><g id="l-keys"></g>
-        </svg>
-        <div class="empty" id="empty" hidden>empty tree</div>
+    <section class="panel viewer both" id="viewer" aria-label="Engines">
+      <div class="pane" id="pane-btree">
+        <div class="pane-head"><h2>B-tree</h2><span>one sorted tree of fixed-size pages, updated in place</span></div>
+        <div class="stage" id="stage-btree"><svg id="svg-btree" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet" role="img" aria-label="B-tree diagram"></svg><div class="empty" id="empty-btree" hidden>no pages yet</div></div>
+        <div class="caption" aria-live="polite"><p id="cap-btree"></p></div>
       </div>
-      <div class="caption" aria-live="polite">
-        <span class="call" id="cap-call"></span>
-        <p id="cap-text"></p>
+      <div class="pane" id="pane-lsm">
+        <div class="pane-head"><h2>LSM-tree</h2><span>writes land in RAM, flush to immutable sorted files, merge later</span></div>
+        <div class="stage" id="stage-lsm"><svg id="svg-lsm" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet" role="img" aria-label="LSM-tree diagram"></svg></div>
+        <div class="caption" aria-live="polite"><p id="cap-lsm"></p></div>
       </div>
       <div class="transport">
         <button type="button" id="b-prevcall" aria-label="Back one call" title="Back one call (Shift+←)"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="2.5" height="12"/><path d="M17 4v12L7 10z"/></svg></button>
@@ -155,15 +195,26 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
         <button type="button" id="b-next" aria-label="Forward one step" title="Forward one step (→)"><svg viewBox="0 0 20 20"><path d="M6 4v12l9-6z"/></svg></button>
         <button type="button" id="b-nextcall" aria-label="Forward one call" title="Forward one call (Shift+→)"><svg viewBox="0 0 20 20"><path d="M3 4v12l10-6z"/><rect x="14.5" y="4" width="2.5" height="12"/></svg></button>
         <span class="spacer"></span>
+        <span class="call" id="cur-call"></span>
         <span class="progress" id="progress"></span>
       </div>
       <div class="scrub"><input type="range" id="scrub" min="0" max="0" value="0" step="1" aria-label="Timeline"></div>
-      <div class="meta">
-        <span class="stats" id="stats"></span>
-        <span class="legend">
-          <span><i class="lg-visit"></i>reading</span><span><i class="lg-good"></i>changed or found</span>
-          <span><i class="lg-bad"></i>overflow, underflow, target</span><span><i class="lg-move"></i>key on the move</span>
-        </span>
+      <div class="score">
+        <div class="score-head"><span class="label" id="score-title">Cost so far</span><button type="button" id="b-zero">Zero the counters here</button></div>
+        <div class="score-scroll">
+          <table>
+            <thead><tr><th></th><th>B-tree</th><th>LSM-tree</th></tr></thead>
+            <tbody>
+              <tr><th>Disk reads</th><td id="sc-br"></td><td id="sc-lr"></td></tr>
+              <tr><th>Disk writes</th><td id="sc-bw"></td><td id="sc-lw"></td></tr>
+              <tr><th>Storage</th><td id="sc-bs"></td><td id="sc-ls"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="lg-visit"></i>reading</span><span><i class="lg-good"></i>changed or found</span>
+        <span><i class="lg-bad"></i>full, underfull, stale or deleted</span><span><i class="lg-move"></i>key on the move</span><span><i class="lg-slot"></i>empty slot</span>
       </div>
     </section>
 
@@ -182,7 +233,7 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
           <button type="button" id="c-random">Random insert</button>
         </div>
         <p class="err" id="c-err" hidden></p>
-        <p class="hint">Keys are whole numbers 0–999; a value is optional. Calls after the insertion point are re-run against the new tree.</p>
+        <p class="hint">Keys are whole numbers 0–999; a value is optional. Calls after the insertion point are re-run against the new state.</p>
       </form>
       <div class="log-head"><span class="label" id="log-title">Call log</span><button type="button" id="b-clear">Clear log</button></div>
       <ol class="log" id="log"></ol>
@@ -191,167 +242,253 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
 
   <footer>
     <p>Keyboard: <kbd>←</kbd> <kbd>→</kbd> step, <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> whole calls, <kbd>Space</kbd> play or pause. Click any call in the log to replay it.</p>
-    <p>This is the classic B-tree of Bayer and McCreight (1972), where every page holds keys and values. Most databases use the B+ variant, which keeps values only in the leaves and links the leaves together for range scans. Splitting, borrowing and merging work the same way in both.</p>
+    <p><strong>How costs are counted.</strong> A disk read is one B-tree page or one LSM file. The B-tree root is treated as cached in RAM, the same free ride the memtable and the Bloom filters get. Writing a B-tree page rewrites the whole page, so it costs a full page of entries; a flush or compaction costs the entries it writes. Neither side's write-ahead log is counted, and compaction's own reads are left out.</p>
+    <p><strong>What is simplified.</strong> The B-tree is the classic Bayer and McCreight design (1972) with values in every page; most databases use the B+ variant, which splits and merges the same way. The LSM-tree has two levels, merges all of L0 into L1 once L0 reaches three files, and its Bloom filters never give false positives (real ones do, about 1% of the time). Both are tiny: a real B-tree page holds hundreds of keys, so real trees are three or four levels deep with everything but the leaves cached, and a real LSM-tree has five to seven levels.</p>
   </footer>
 </div>
 
 <script src="btree.js"></script>
+<script src="lsm.js"></script>
 <script>
 (function(){
-  var NS = "http://www.w3.org/2000/svg", KEY = "btree-stepper.v1";
-  var CW = 46, CH = 40, GAP = 2, PAD = 4, NH = CH + 2*PAD, LEVEL = 104, DUR = 520, DWELL = 1300;
+  var NS = "http://www.w3.org/2000/svg", KEY = "btree-stepper.v2";
+  var CW = 40, CH = 40, GAP = 2, PAD = 4, NH = CH + 2*PAD, LEVEL = 104, DUR = 520, DWELL = 1300;
   function $(id){ return document.getElementById(id); }
   function I(key, value){ return {type:"insert", key:key, value:value||""}; }
+  function U(key, value){ return {type:"update", key:key, value:value}; }
   function D(key){ return {type:"delete", key:key}; }
+  function G(key){ return {type:"get", key:key}; }
+  function Rg(a, b){ return {type:"range", key:a, hi:b}; }
 
   var PRESETS = {
-    tour: { maxKeys:3, start:10, ops:[I(41,"ada"),I(17),I(63,"cy"),I(8),I(29),I(55),I(72),I(90),I(35),I(23),I(48),I(12),I(80),I(66),I(5),
-      {type:"get",key:41},{type:"get",key:50},{type:"update",key:63,value:"cyd"},{type:"range",key:20,hi:50},
-      D(5),D(41),D(72),D(90),D(80),D(66),D(63),D(55),D(48)] },
-    sequential: { maxKeys:3, start:-1, ops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(function(k){return I(k);}).concat([{type:"get",key:11},{type:"range",key:5,hi:12}]) },
-    teardown: { maxKeys:2, start:-1, ops:[50,20,80,10,30,60,90,5,15,25,35,55,65,85].map(function(k){return I(k);}).concat([5,15,10,25,20,30,35,50,55,60,65,80,85,90].map(D)) },
-    blank: { maxKeys:3, start:-1, ops:[] }
+    tour: { maxKeys:3, memCap:4, start:10, base:-1,
+      note:"One pass through every mechanism: page splits and a taller tree on the B-tree side; flushes, a compaction, shadowed versions and tombstones on the LSM side; then deletes that borrow, merge and shrink the tree.",
+      ops:[I(41,"ada"),I(17),I(63,"cy"),I(8),I(29),I(55),I(72),I(90),I(35),I(23),I(48),I(12),I(80),I(66),I(5),
+        G(41),G(50),U(63,"cyd"),Rg(20,50),D(5),D(41),D(72),D(90),D(80),D(66),D(63),D(55),D(48)] },
+    write: { maxKeys:4, memCap:4, start:-1, base:-1,
+      note:"Almost every call is a write. Watch the cost table: the B-tree reads its way down to a leaf and then rewrites whole pages for every single change, while the LSM-tree answers from RAM and writes to disk only in bulk, sequentially. The price shows up under Storage, where stale versions and tombstones pile up until a compaction.",
+      ops:[I(44),I(12),I(78),I(31),I(90),I(5),I(63),I(27),I(52),I(85),I(19),I(70),I(38),I(96),I(8),I(57),
+        U(31,"a"),U(63,"b"),I(23),U(12,"c"),D(90),I(74),U(44,"d"),D(5),U(78,"e"),I(29),U(31,"f"),D(57),U(19,"g"),I(50),U(63,"h"),D(38),I(88),U(70,"i"),G(63),U(44,"j"),D(12),I(15),U(85,"k"),G(90)] },
+    read: { maxKeys:4, memCap:4, start:17, base:17,
+      note:"Opens with 18 keys already loaded and the counters zeroed, so the table shows only what follows: lookups and range scans with a trickle of writes. The B-tree follows one path per query and a scan walks neighbouring pages. The LSM-tree has to open every file a scan overlaps, plus whatever is still piled up in L0. Point lookups stay close only because of the Bloom filters; switch them off to see what they are saving.",
+      ops:[40,15,70,25,55,85,10,30,60,90,20,45,75,65,35,80,50,5].map(function(k){return I(k);}).concat(
+        [G(55),Rg(20,45),G(20),Rg(50,75),G(33),I(12),Rg(10,30),G(85),Rg(60,90),G(10),U(55,"x"),Rg(25,60),G(60),Rg(5,40),G(99),I(62),Rg(40,70),G(45),Rg(70,95),G(55),U(30,"y"),Rg(10,50),G(70),Rg(30,65),G(15),I(48),Rg(45,80),G(77),Rg(5,25),G(30),Rg(55,90),G(90),Rg(15,55),G(65)]) },
+    sequential: { maxKeys:3, memCap:4, start:-1, base:-1,
+      note:"Keys arrive in order, the classic worst case for page fill: every B-tree split leaves a half-empty page behind that never fills again. The LSM-tree does not care about arrival order at all.",
+      ops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(function(k){return I(k);}).concat([G(11),Rg(5,12)]) },
+    teardown: { maxKeys:2, memCap:4, start:-1, base:-1,
+      note:"Fourteen inserts, then fourteen deletes. The B-tree hands pages back as it shrinks. The LSM-tree gets bigger first, because every delete is a new tombstone, and only compaction makes it smaller.",
+      ops:[50,20,80,10,30,60,90,5,15,25,35,55,65,85].map(function(k){return I(k);}).concat([5,15,10,25,20,30,35,50,55,60,65,80,85,90].map(D)) },
+    blank: { maxKeys:3, memCap:4, start:-1, base:-1, note:"An empty store. Add calls on the right.", ops:[] }
   };
 
-  var S = { ops:[], maxKeys:3, speed:1, cursor:0, playing:false, until:0, sim:null, preset:"tour" };
+  var S = { ops:[], maxKeys:3, memCap:4, bloom:true, view:"both", speed:1, cursor:0, base:0, baseOp:-1, playing:false, until:0, preset:"tour", bt:null, lsm:null, steps:[], meta:[] };
   var timer = null, reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function persist(){
-    try{ localStorage.setItem(KEY, JSON.stringify({ops:S.ops, maxKeys:S.maxKeys, speed:S.speed, preset:S.preset, op:S.sim.frames[S.cursor].op})); }catch(e){}
+    try{ localStorage.setItem(KEY, JSON.stringify({ops:S.ops, maxKeys:S.maxKeys, memCap:S.memCap, bloom:S.bloom, view:S.view, speed:S.speed, preset:S.preset, op:S.steps[S.cursor].op, baseOp:S.baseOp})); }catch(e){}
   }
-  function restore(){
-    try{ var d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.ops)) return d; }catch(e){}
-    return null;
-  }
+  function restore(){ try{ var d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.ops)) return d; }catch(e){} return null; }
 
-  /* ---------- layout ---------- */
-  function nodeW(n){ return n.keys.length ? n.keys.length*CW + (n.keys.length-1)*GAP + 2*PAD : 36; }
-  function computeLayout(frame){
-    var nodes=[], keys=[], edges=[], maxD=0, maxX=0;
+  /* ---------- layouts ---------- */
+  function boxW(n){ return n ? n*CW + (n-1)*GAP + 2*PAD : 36; }
+  function btreeLayout(f){
+    var nodes=[], keys=[], edges=[], maxD=0, maxX=0, cap=S.bt.maxKeys;
     function rec(n, x, y, w){
-      nodes.push({id:String(n.id), cls:frame.nodes[n.id]||"", t:{x:x,y:y,w:w,o:1}});
-      n.keys.forEach(function(e,i){ keys.push({id:String(e.k), k:e.k, v:e.v, cls:frame.keys[e.k]||"", t:{x:x+PAD+i*(CW+GAP), y:y+PAD, o:1}}); });
+      nodes.push({id:String(n.id), cls:f.nodes[n.id]||"", slots:cap, t:{x:x,y:y,w:w,o:1}});
+      n.keys.forEach(function(e,i){ keys.push({id:String(e.k), k:e.k, v:e.v, cls:f.keys[e.k]||"", t:{x:x+PAD+i*(CW+GAP), y:y+PAD, o:1}}); });
       if (x+w > maxX) maxX = x+w;
     }
     function place(n, d, x0){
-      var w = nodeW(n), y = d*LEVEL; if (d > maxD) maxD = d;
+      var w = boxW(Math.max(n.keys.length, cap)), y = d*LEVEL; if (d > maxD) maxD = d;
       if (!n.children.length){ rec(n, x0, y, w); return {x1:x0+w, cx:x0+w/2}; }
-      var gap = n.children[0].children.length ? 30 : 14, cur = x0, cs = [];
+      var gap = n.children[0].children.length ? 28 : 12, cur = x0, cs = [];
       n.children.forEach(function(c){ var r = place(c, d+1, cur); cs.push({id:String(c.id), cx:r.cx}); cur = r.x1 + gap; });
       var span1 = cur - gap, x = Math.max(x0, (x0+span1)/2 - w/2);
       rec(n, x, y, w);
       cs.forEach(function(o,i){
-        var ax = n.keys.length ? x + PAD + i*(CW+GAP) - GAP/2 : x + w/2;
-        ax = Math.max(x+5, Math.min(x+w-5, ax));
-        edges.push({id:o.id, t:{x1:ax, y1:y+NH, x2:o.cx, y2:(d+1)*LEVEL, o:1}});
+        var ax = Math.max(x+5, Math.min(x+w-5, x + PAD + i*(CW+GAP) - GAP/2));
+        edges.push({id:o.id, cls:"", t:{x1:ax, y1:y+NH, x2:o.cx, y2:(d+1)*LEVEL, o:1}});
       });
       return {x1:Math.max(span1, x+w), cx:x+w/2};
     }
-    if (frame.tree) place(frame.tree, 0, 0);
-    return {nodes:nodes, keys:keys, edges:edges, w:maxX, h:maxD*LEVEL+NH};
+    if (f.tree) place(f.tree, 0, 0);
+    return {nodes:nodes, keys:keys, edges:edges, labels:[], w:maxX, h:maxD*LEVEL+NH, empty:!f.tree};
+  }
+  function lsmLayout(f){
+    var st=f.state, nodes=[], keys=[], edges=[], labels=[], X0=66, ROW=98, Y=[16, 16+ROW, 16+2*ROW], maxX=0;
+    function table(id, entries, x, y, slots, name){
+      var w = boxW(Math.max(entries.length, slots));
+      nodes.push({id:id, cls:f.nodes[id]||"", slots:slots, t:{x:x,y:y,w:w,o:1}});
+      entries.forEach(function(e,i){ keys.push({id:"e"+e.eid, k:e.k, v:e.v, tomb:e.tomb, cls:f.keys[e.eid]||"", t:{x:x+PAD+i*(CW+GAP), y:y+PAD, o:1}}); });
+      labels.push({id:"n"+id, text:name, cls:"tname", t:{x:x+2, y:y-6, o:1}});
+      if (x+w > maxX) maxX = x+w; return x+w;
+    }
+    table("mem", st.mem, X0, Y[0], st.memCap, "memtable " + st.mem.length + "/" + st.memCap);
+    [st.l0, st.l1].forEach(function(level, li){
+      var x = X0, y = Y[li+1];
+      level.forEach(function(t){ x = table(t.id, t.entries, x, y, 0, t.name + (li === 0 ? "" : "  " + t.entries[0].k + "–" + t.entries[t.entries.length-1].k)) + 14; });
+      if (!level.length) labels.push({id:"none"+li, text:"no files", cls:"tname", t:{x:X0+2, y:y+NH/2+4, o:1}});
+    });
+    labels.push({id:"r0", text:"RAM", cls:"rlabel", t:{x:0, y:Y[0]+NH/2+4, o:1}});
+    labels.push({id:"r1", text:"DISK L0", cls:"rlabel", t:{x:0, y:Y[1]+NH/2+4, o:1}});
+    labels.push({id:"r2", text:"DISK L1", cls:"rlabel", t:{x:0, y:Y[2]+NH/2+4, o:1}});
+    maxX = Math.max(maxX, X0 + 420);
+    var sy = Y[0] + NH + (ROW-NH)/2 - 6;
+    edges.push({id:"sep", cls:"sep", t:{x1:0, y1:sy, x2:maxX, y2:sy, o:1}});
+    return {nodes:nodes, keys:keys, edges:edges, labels:labels, w:maxX, h:Y[2]+NH, empty:false};
   }
 
   /* ---------- tweened SVG renderer ---------- */
-  var svg = $("svg"), stage = $("stage");
-  var L = {edges:$("l-edges"), nodes:$("l-nodes"), keys:$("l-keys")};
-  var M = {edges:new Map(), nodes:new Map(), keys:new Map()};
-  var vb = {cur:null, from:null, to:null}, anim = {start:0, dur:0, raf:0};
   function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); return e; }
   function copy(o, extra){ var c = {}, k; for (k in o) c[k] = o[k]; if (extra) for (k in extra) c[k] = extra[k]; return c; }
-
+  function lerp(a, b, t){ var o = {}; for (var k in b) o[k] = a[k] + (b[k] - a[k]) * t; return o; }
+  function ease(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
   var KIND = {
     nodes: {
-      make: function(){ var g = el("g",{}), r = el("rect",{height:NH, rx:7}); g.appendChild(r); return {root:g, rect:r}; },
+      make: function(){ var g = el("g",{}), r = el("rect",{class:"box", height:NH, rx:7}); g.appendChild(r); return {root:g, rect:r, slots:[]}; },
       enter: function(t){ return copy(t, {y:t.y-14, o:0}); },
-      update: function(e, it){ e.root.setAttribute("class", "node " + it.cls); },
-      apply: function(e, c){ e.rect.setAttribute("x", c.x); e.rect.setAttribute("y", c.y); e.rect.setAttribute("width", Math.max(0,c.w)); e.root.setAttribute("opacity", c.o); }
+      update: function(e, it){
+        e.root.setAttribute("class", "node " + it.cls);
+        while (e.slots.length < it.slots){ var s = el("rect",{class:"slot", width:CW-4, height:CH-4, rx:3}); e.root.appendChild(s); e.slots.push(s); }
+        while (e.slots.length > it.slots) e.slots.pop().remove();
+      },
+      apply: function(e, c){
+        e.rect.setAttribute("x", c.x); e.rect.setAttribute("y", c.y); e.rect.setAttribute("width", Math.max(0,c.w)); e.root.setAttribute("opacity", c.o);
+        for (var i = 0; i < e.slots.length; i++){ e.slots[i].setAttribute("x", c.x + PAD + i*(CW+GAP) + 2); e.slots[i].setAttribute("y", c.y + PAD + 2); }
+      }
     },
     keys: {
       make: function(){ var g = el("g",{}), r = el("rect",{width:CW, height:CH, rx:4}), k = el("text",{class:"k", x:CW/2}), v = el("text",{class:"v", x:CW/2, y:32}); g.appendChild(r); g.appendChild(k); g.appendChild(v); return {root:g, k:k, v:v}; },
       enter: function(t){ return copy(t, {y:t.y-28, o:0}); },
       update: function(e, it){
-        e.root.setAttribute("class", "key " + it.cls); e.k.textContent = it.k;
-        var val = it.v ? (it.v.length > 7 ? it.v.slice(0,6) + "…" : it.v) : "";
+        e.root.setAttribute("class", "key " + it.cls + (it.tomb ? " tomb" : "")); e.k.textContent = it.k;
+        var val = it.tomb ? "del" : it.v ? (it.v.length > 6 ? it.v.slice(0,5) + "…" : it.v) : "";
         e.v.textContent = val; e.k.setAttribute("y", val ? 19 : 25);
       },
       apply: function(e, c){ e.root.setAttribute("transform", "translate(" + c.x + "," + c.y + ")"); e.root.setAttribute("opacity", c.o); }
     },
     edges: {
-      make: function(){ var p = el("path",{class:"edge"}); return {root:p}; },
+      make: function(){ return {root:el("path",{})}; },
       enter: function(t){ return copy(t, {o:0}); },
-      update: function(){},
+      update: function(e, it){ e.root.setAttribute("class", "edge " + it.cls); },
       apply: function(e, c){ var m = (c.y2 - c.y1) * 0.5; e.root.setAttribute("d", "M" + c.x1 + " " + c.y1 + "C" + c.x1 + " " + (c.y1+m) + " " + c.x2 + " " + (c.y2-m) + " " + c.x2 + " " + c.y2); e.root.setAttribute("opacity", c.o); }
+    },
+    labels: {
+      make: function(){ return {root:el("text",{})}; },
+      enter: function(t){ return copy(t, {o:0}); },
+      update: function(e, it){ e.root.setAttribute("class", "lbl " + it.cls); e.root.textContent = it.text; },
+      apply: function(e, c){ e.root.setAttribute("x", c.x); e.root.setAttribute("y", c.y); e.root.setAttribute("opacity", c.o); }
     }
   };
-  function sync(kind, items, origins){
-    var map = M[kind], K = KIND[kind], seen = {};
-    items.forEach(function(it){
-      var rec = map.get(it.id);
-      if (!rec){
-        var e = K.make(); L[kind].appendChild(e.root);
-        var src = origins && origins[it.id] != null ? map.get(String(origins[it.id])) : null;
-        rec = {el:e, cur: src ? copy(src.cur, {o:0}) : K.enter(it.t)}; map.set(it.id, rec);
-      }
-      rec.from = copy(rec.cur); rec.to = it.t; rec.exit = false; seen[it.id] = 1; K.update(rec.el, it);
-    });
-    map.forEach(function(rec, id){ if (!seen[id]){ rec.from = copy(rec.cur); rec.to = copy(rec.cur, {o:0}); rec.exit = true; } });
-  }
-  function lerp(a, b, t){ var o = {}; for (var k in b) o[k] = a[k] + (b[k] - a[k]) * t; return o; }
-  function ease(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
-  function tick(now){
-    var t = anim.dur <= 0 ? 1 : Math.min(1, (now - anim.start) / anim.dur), e = ease(t);
-    ["edges","nodes","keys"].forEach(function(kind){
-      M[kind].forEach(function(rec, id){
-        rec.cur = lerp(rec.from, rec.to, e); KIND[kind].apply(rec.el, rec.cur);
-        if (t >= 1 && rec.exit){ rec.el.root.remove(); M[kind].delete(id); }
+  var ORDER = ["edges","nodes","keys","labels"];
+  function Renderer(svg, stage, emptyEl){
+    var L = {}, M = {}, vb = {cur:null, from:null, to:null}, anim = {start:0, dur:0, raf:0};
+    ORDER.forEach(function(k){ L[k] = el("g",{}); svg.appendChild(L[k]); M[k] = new Map(); });
+    function sync(kind, items, origins){
+      var map = M[kind], K = KIND[kind], seen = {};
+      items.forEach(function(it){
+        var rec = map.get(it.id);
+        if (!rec){
+          var e = K.make(); L[kind].appendChild(e.root);
+          var src = origins && origins[it.id] != null ? map.get(String(origins[it.id])) : null;
+          rec = {el:e, cur: !src ? K.enter(it.t) : kind === "edges" ? copy(src.cur, {o:0}) : copy(it.t, {x:src.cur.x, y:src.cur.y, o:0})}; map.set(it.id, rec);
+        }
+        rec.from = copy(rec.cur); rec.to = it.t; rec.exit = false; seen[it.id] = 1; K.update(rec.el, it);
       });
-    });
-    vb.cur = lerp(vb.from, vb.to, e);
-    svg.setAttribute("viewBox", vb.cur.x + " " + vb.cur.y + " " + vb.cur.w + " " + vb.cur.h);
-    anim.raf = t < 1 ? requestAnimationFrame(tick) : 0;
+      map.forEach(function(rec, id){ if (!seen[id]){ rec.from = copy(rec.cur); rec.to = copy(rec.cur, {o:0}); rec.exit = true; } });
+    }
+    function tick(now){
+      var t = anim.dur <= 0 ? 1 : Math.min(1, (now - anim.start) / anim.dur), e = ease(t);
+      ORDER.forEach(function(kind){
+        M[kind].forEach(function(rec, id){
+          rec.cur = lerp(rec.from, rec.to, e); KIND[kind].apply(rec.el, rec.cur);
+          if (t >= 1 && rec.exit){ rec.el.root.remove(); M[kind].delete(id); }
+        });
+      });
+      vb.cur = lerp(vb.from, vb.to, e);
+      svg.setAttribute("viewBox", vb.cur.x + " " + vb.cur.y + " " + vb.cur.w + " " + vb.cur.h);
+      anim.raf = t < 1 ? requestAnimationFrame(tick) : 0;
+    }
+    this.draw = function(lay, origins, instant){
+      var cw = stage.clientWidth || 600, ch = stage.clientHeight || 300;
+      var contentW = lay.w + 48, contentH = lay.h + 52;
+      var scale = Math.max(0.5, Math.min(1, cw/contentW, ch/contentH));
+      var svgW = Math.max(cw, Math.ceil(contentW*scale)), svgH = Math.max(ch, Math.ceil(contentH*scale));
+      svg.style.width = svgW + "px"; svg.style.height = svgH + "px";
+      vb.to = {x: lay.w/2 - (svgW/scale)/2, y:-26, w:svgW/scale, h:svgH/scale};
+      if (!vb.cur) vb.cur = copy(vb.to);
+      vb.from = copy(vb.cur);
+      ORDER.forEach(function(k){ sync(k, lay[k], k === "nodes" || k === "edges" ? origins : null); });
+      if (emptyEl) emptyEl.hidden = !lay.empty;
+      // keep the action in view when the drawing is wider than the stage
+      if (svgW > cw){
+        var hot = lay.nodes.filter(function(n){ return n.cls && n.cls !== "skip"; })[0];
+        if (hot){ var px = (hot.t.x + hot.t.w/2 - vb.to.x) * scale; if (px < stage.scrollLeft + 60 || px > stage.scrollLeft + cw - 60) stage.scrollTo({left: px - cw/2, behavior: instant || reduce ? "auto" : "smooth"}); }
+      }
+      anim.start = performance.now(); anim.dur = (instant || reduce) ? 0 : DUR / Math.max(1, S.speed);
+      if (anim.raf) cancelAnimationFrame(anim.raf);
+      if (anim.dur <= 0) tick(anim.start); else anim.raf = requestAnimationFrame(tick);
+    };
   }
-  function draw(frame, instant){
-    var lay = computeLayout(frame), cw = stage.clientWidth || 600, ch = stage.clientHeight || 400;
-    var contentW = lay.w + 56, contentH = lay.h + 56;
-    var scale = Math.max(0.55, Math.min(1, cw/contentW, ch/contentH));
-    var svgW = Math.max(cw, Math.ceil(contentW*scale)), svgH = Math.max(ch, Math.ceil(contentH*scale));
-    svg.style.width = svgW + "px"; svg.style.height = svgH + "px";
-    vb.to = {x: lay.w/2 - (svgW/scale)/2, y:-28, w:svgW/scale, h:svgH/scale};
-    if (!vb.cur) vb.cur = copy(vb.to);
-    vb.from = copy(vb.cur);
-    sync("edges", lay.edges, frame.origins); sync("nodes", lay.nodes, frame.origins); sync("keys", lay.keys, null);
-    $("empty").hidden = !!frame.tree;
-    anim.start = performance.now(); anim.dur = (instant || reduce) ? 0 : DUR / Math.max(1, S.speed);
-    if (anim.raf) cancelAnimationFrame(anim.raf);
-    if (anim.dur <= 0) tick(anim.start); else anim.raf = requestAnimationFrame(tick);
-  }
+  var RB = new Renderer($("svg-btree"), $("stage-btree"), $("empty-btree"));
+  var RL = new Renderer($("svg-lsm"), $("stage-lsm"), null);
 
   /* ---------- timeline ---------- */
-  function boundaries(){ return [0].concat(S.sim.meta.map(function(m){ return m.end; })); }
-  function opOf(idx){ return S.sim.frames[idx].op; }
+  function resim(){
+    S.bt = BTree.simulate(S.ops, S.maxKeys);
+    S.lsm = LSM.simulate(S.ops, {memCap:S.memCap, bloom:S.bloom});
+    var steps = [{op:-1, b:0, l:0}], meta = [];
+    S.ops.forEach(function(op, i){
+      var mb = S.bt.meta[i], ml = S.lsm.meta[i], nb = mb.end-mb.start+1, nl = ml.end-ml.start+1;
+      var n = S.view === "btree" ? nb : S.view === "lsm" ? nl : Math.max(nb, nl);
+      meta[i] = {start:steps.length, end:0, n:n};
+      for (var j = 0; j < n; j++) steps.push({op:i, b:mb.start+Math.min(j,nb-1), l:ml.start+Math.min(j,nl-1)});
+      meta[i].end = steps.length-1;
+    });
+    S.steps = steps; S.meta = meta;
+    S.baseOp = Math.min(S.baseOp, S.ops.length-1);
+    S.base = S.baseOp >= 0 ? meta[S.baseOp].end : 0;
+    $("scrub").max = steps.length - 1;
+    renderLog();
+  }
+  function endOf(op){ return op >= 0 && op < S.meta.length ? S.meta[op].end : 0; }
+  function opOf(idx){ return S.steps[idx].op; }
+  function cell(id, total, delta, unit, win){
+    var td = $(id); td.className = win ? "win" : "";
+    td.innerHTML = "<b></b><small></small>"; td.firstChild.textContent = total; td.lastChild.textContent = unit + (delta ? "  +" + delta + " this call" : "");
+  }
   function go(idx, instant){
-    S.cursor = Math.max(0, Math.min(S.sim.frames.length-1, idx));
-    var f = S.sim.frames[S.cursor];
-    draw(f, instant);
-    $("cap-call").textContent = f.op >= 0 ? BTree.callText(S.ops[f.op]) : "start";
-    $("cap-text").textContent = f.caption;
-    var st = BTree.stats(f.tree), m = f.op >= 0 ? S.sim.meta[f.op] : null;
-    $("stats").textContent = "height " + st.height + " · " + st.pages + (st.pages === 1 ? " page" : " pages") + " · " + st.keys + (st.keys === 1 ? " key" : " keys") + " · " + S.sim.minKeys + "–" + S.sim.maxKeys + " keys per page";
-    $("progress").textContent = m ? "call " + (f.op+1) + "/" + S.ops.length + " · step " + (S.cursor - m.start + 1) + "/" + (m.end - m.start + 1) : "call 0/" + S.ops.length;
+    S.cursor = Math.max(0, Math.min(S.steps.length-1, idx));
+    var st = S.steps[S.cursor], fb = S.bt.frames[st.b], fl = S.lsm.frames[st.l];
+    if (S.view !== "lsm") RB.draw(btreeLayout(fb), fb.origins, instant);
+    if (S.view !== "btree") RL.draw(lsmLayout(fl), fl.origins, instant);
+    $("cap-btree").textContent = fb.caption; $("cap-lsm").textContent = fl.caption;
+    var m = st.op >= 0 ? S.meta[st.op] : null;
+    $("cur-call").textContent = st.op >= 0 ? BTree.callText(S.ops[st.op]) : "";
+    $("progress").textContent = m ? "call " + (st.op+1) + "/" + S.ops.length + " · step " + (S.cursor - m.start + 1) + "/" + m.n : "call 0/" + S.ops.length;
+    // costs, relative to the zero point
+    var b0 = S.bt.frames[S.steps[S.base].b].m, l0 = S.lsm.frames[S.steps[S.base].l].m, shown = S.cursor >= S.base;
+    var pb = S.bt.frames[S.steps[m ? Math.max(m.start-1, 0) : 0].b].m, pl = S.lsm.frames[S.steps[m ? Math.max(m.start-1, 0) : 0].l].m;
+    var br = shown ? fb.m.r - b0.r : 0, lr = shown ? fl.m.r - l0.r : 0, bw = shown ? fb.m.w - b0.w : 0, lw = shown ? fl.m.w - l0.w : 0;
+    cell("sc-br", br, shown ? fb.m.r - pb.r : 0, br === 1 ? "page" : "pages", br < lr);
+    cell("sc-lr", lr, shown ? fl.m.r - pl.r : 0, lr === 1 ? "file" : "files", lr < br);
+    cell("sc-bw", bw, shown ? fb.m.w - pb.w : 0, "entries, in place", bw < lw);
+    cell("sc-lw", lw, shown ? fl.m.w - pl.w : 0, "entries, sequential", lw < bw);
+    $("sc-bs").innerHTML = '<span class="sv"></span>'; $("sc-ls").innerHTML = '<span class="sv"></span>';
+    $("sc-bs").firstChild.textContent = fb.m.used + " keys in " + fb.m.pages + (fb.m.pages === 1 ? " page" : " pages") + (fb.m.slots ? ", " + Math.round(100*fb.m.used/fb.m.slots) + "% full" : "") + ", height " + fb.m.height;
+    $("sc-ls").firstChild.textContent = fl.m.stored + (fl.m.stored === 1 ? " entry" : " entries") + " stored for " + fl.m.live + " live " + (fl.m.live === 1 ? "key" : "keys");
+    $("score-title").textContent = S.baseOp >= 0 ? "Cost since call " + (S.baseOp+1) : "Cost so far";
+    $("b-zero").disabled = S.cursor === S.base;
     $("scrub").value = S.cursor;
     $("b-prev").disabled = $("b-prevcall").disabled = S.cursor === 0;
-    $("b-next").disabled = $("b-nextcall").disabled = S.cursor === S.sim.frames.length-1;
+    $("b-next").disabled = $("b-nextcall").disabled = S.cursor === S.steps.length-1;
     markLog(); persist();
-  }
-  function resim(){
-    S.sim = BTree.simulate(S.ops, S.maxKeys);
-    $("scrub").max = S.sim.frames.length - 1;
-    renderLog();
   }
   function pause(){ S.playing = false; clearTimeout(timer); setPlayIcon(); }
   function play(until){
-    if (S.cursor >= S.sim.frames.length-1 && until == null) go(0);
-    S.until = until == null ? S.sim.frames.length-1 : until; S.playing = true; setPlayIcon(); schedule(true);
+    if (S.cursor >= S.steps.length-1 && until == null) go(0);
+    S.until = until == null ? S.steps.length-1 : until; S.playing = true; setPlayIcon(); schedule(true);
   }
   function schedule(first){
     clearTimeout(timer);
@@ -363,21 +500,23 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     $("ico-play").innerHTML = S.playing ? '<rect x="5" y="4" width="3.5" height="12"/><rect x="11.5" y="4" width="3.5" height="12"/>' : '<path d="M6 4v12l10-6z"/>';
     $("b-play").setAttribute("aria-label", S.playing ? "Pause" : "Play");
   }
-  function prevCall(){ pause(); var b = boundaries().filter(function(x){ return x < S.cursor; }); go(b.length ? b[b.length-1] : 0); }
-  function nextCall(){ pause(); var b = boundaries().filter(function(x){ return x > S.cursor; }); go(b.length ? b[0] : S.cursor); }
+  function bounds(){ return [0].concat(S.meta.map(function(m){ return m.end; })); }
+  function prevCall(){ pause(); var b = bounds().filter(function(x){ return x < S.cursor; }); go(b.length ? b[b.length-1] : 0); }
+  function nextCall(){ pause(); var b = bounds().filter(function(x){ return x > S.cursor; }); go(b.length ? b[0] : S.cursor); }
 
   /* ---------- call log ---------- */
+  function resultSpan(tag, m){ var s = document.createElement("span"); if (m.tone === "warn") s.className = "warn"; if (tag){ var e = document.createElement("em"); e.textContent = tag + " "; s.appendChild(e); } s.appendChild(document.createTextNode(m.result)); return s; }
   function renderLog(){
     var log = $("log"); log.innerHTML = "";
     $("log-title").textContent = "Call log · " + S.ops.length;
     if (!S.ops.length){ var s = document.createElement("span"); s.className = "none"; s.textContent = "No calls yet. Add one above."; log.appendChild(s); return; }
     S.ops.forEach(function(op, i){
       var li = document.createElement("li"); li.dataset.i = i;
-      var m = S.sim.meta[i];
       var btn = document.createElement("button"); btn.type = "button"; btn.className = "go"; btn.id = "call-" + i;
       btn.innerHTML = '<span class="n"></span><span class="c"></span><span class="r"></span>';
       btn.children[0].textContent = i+1; btn.children[1].textContent = BTree.callText(op);
-      btn.children[2].textContent = m.result; if (m.tone === "warn") btn.children[2].className = "r warn";
+      if (S.view !== "lsm") btn.children[2].appendChild(resultSpan(S.view === "both" ? "B" : "", S.bt.meta[i]));
+      if (S.view !== "btree") btn.children[2].appendChild(resultSpan(S.view === "both" ? "L" : "", S.lsm.meta[i]));
       var rm = document.createElement("button"); rm.type = "button"; rm.className = "rm"; rm.textContent = "×";
       rm.setAttribute("aria-label", "Remove " + BTree.callText(op));
       li.appendChild(btn); li.appendChild(rm); log.appendChild(li);
@@ -387,9 +526,8 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     var cur = opOf(S.cursor), log = $("log");
     Array.prototype.forEach.call(log.children, function(li){
       if (li.dataset.i == null) return;
-      var i = +li.dataset.i, m = S.sim.meta[i];
-      var done = S.cursor >= m.end, running = i === cur;
-      li.className = (running ? "current " : "") + (done ? "" : "pending");
+      var i = +li.dataset.i, m = S.meta[i], done = S.cursor >= m.end, running = i === cur;
+      li.className = (running ? "current " : "") + (done ? "" : "pending ") + (S.baseOp >= 0 && i === S.baseOp + 1 ? "base" : "");
       if (running){ var top = li.offsetTop - log.offsetTop; if (top < log.scrollTop || top + li.offsetHeight > log.scrollTop + log.clientHeight) log.scrollTop = top - log.clientHeight/2 + li.offsetHeight/2; }
     });
   }
@@ -398,11 +536,11 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     var i = +li.dataset.i;
     if (e.target.closest(".rm")){
       pause(); var curOp = opOf(S.cursor);
-      S.ops.splice(i, 1); resim();
-      go(i <= curOp ? (i-1 >= 0 ? S.sim.meta[i-1].end : 0) : S.cursor, true);
+      S.ops.splice(i, 1); if (S.baseOp >= i) S.baseOp--; resim();
+      go(i <= curOp ? endOf(Math.min(i, curOp) - 1) : S.cursor, true);
       return;
     }
-    pause(); go(i > 0 ? S.sim.meta[i-1].end : 0); play(S.sim.meta[i].end);
+    pause(); go(endOf(i-1)); play(S.meta[i].end);
   });
 
   /* ---------- composer ---------- */
@@ -419,9 +557,8 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
   function addCall(op){
     pause();
     var cur = opOf(S.cursor), at = cur + 1;
-    S.ops.splice(at, 0, op); resim();
-    go(cur >= 0 ? S.sim.meta[cur].end : 0, true);
-    play(S.sim.meta[at].end);
+    S.ops.splice(at, 0, op); if (S.baseOp >= at) S.baseOp++; resim();
+    go(endOf(cur), true); play(S.meta[at].end);
   }
   $("c-op").addEventListener("change", function(){ $("c-arg").value = ""; syncComposer(); });
   $("composer").addEventListener("submit", function(e){
@@ -434,12 +571,12 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     addCall(op); $("c-key").value = ""; if (type !== "range") $("c-arg").value = ""; $("c-key").focus();
   });
   $("c-random").addEventListener("click", function(){
-    var cur = opOf(S.cursor), f = S.sim.frames[cur >= 0 ? S.sim.meta[cur].end : 0], have = {};
+    var f = S.bt.frames[S.steps[endOf(opOf(S.cursor))].b], have = {};
     (function w(n){ if (!n) return; n.keys.forEach(function(k){ have[k.k] = 1; }); n.children.forEach(w); })(f.tree);
     var k, tries = 0; do { k = 1 + Math.floor(Math.random()*99); } while (have[k] && ++tries < 300);
     addCall(I(k));
   });
-  $("b-clear").addEventListener("click", function(){ pause(); S.ops = []; S.preset = "blank"; $("preset").value = "blank"; resim(); go(0, true); });
+  $("b-clear").addEventListener("click", function(){ pause(); S.ops = []; S.baseOp = -1; S.preset = "blank"; $("preset").value = "blank"; $("note").textContent = PRESETS.blank.note; resim(); go(0, true); });
 
   /* ---------- controls ---------- */
   $("b-play").addEventListener("click", function(){ S.playing ? pause() : play(); });
@@ -449,13 +586,24 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
   $("b-nextcall").addEventListener("click", nextCall);
   $("scrub").addEventListener("input", function(){ pause(); go(+this.value); });
   $("speed").addEventListener("change", function(){ S.speed = +this.value; persist(); if (S.playing) schedule(); });
-  $("maxkeys").addEventListener("change", function(){
-    pause(); var cur = opOf(S.cursor); S.maxKeys = +this.value; resim(); go(cur >= 0 ? S.sim.meta[cur].end : 0, true);
+  $("b-zero").addEventListener("click", function(){
+    var op = opOf(S.cursor); if (op >= 0 && S.cursor < S.meta[op].end) op--;   // zero at the last finished call
+    S.baseOp = op; S.base = endOf(op); go(S.cursor, true);
   });
+  function reconfigure(){ pause(); var cur = opOf(S.cursor); resim(); go(endOf(cur), true); }
+  $("maxkeys").addEventListener("change", function(){ S.maxKeys = +this.value; reconfigure(); });
+  $("memcap").addEventListener("change", function(){ S.memCap = +this.value; reconfigure(); });
+  $("bloom").addEventListener("change", function(){ S.bloom = this.value === "on"; reconfigure(); });
+  function applyView(){
+    $("viewer").className = "panel viewer " + S.view;
+    $("pane-btree").hidden = S.view === "lsm"; $("pane-lsm").hidden = S.view === "btree";
+  }
+  $("view").addEventListener("change", function(){ S.view = this.value; applyView(); reconfigure(); });
   function loadPreset(name, autoplay){
     var p = PRESETS[name]; pause();
-    S.preset = name; S.ops = JSON.parse(JSON.stringify(p.ops)); S.maxKeys = p.maxKeys; $("maxkeys").value = p.maxKeys; $("preset").value = name;
-    resim(); go(p.start >= 0 ? S.sim.meta[p.start].end : 0, true);
+    S.preset = name; S.ops = JSON.parse(JSON.stringify(p.ops)); S.maxKeys = p.maxKeys; S.memCap = p.memCap; S.bloom = true; S.baseOp = p.base;
+    $("maxkeys").value = p.maxKeys; $("memcap").value = p.memCap; $("bloom").value = "on"; $("preset").value = name; $("note").textContent = p.note;
+    resim(); go(endOf(p.start), true);
     if (autoplay && S.ops.length) play();
   }
   $("preset").addEventListener("change", function(){ loadPreset(this.value, true); });
@@ -466,19 +614,20 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     else if (e.key === "ArrowRight"){ e.preventDefault(); e.shiftKey ? nextCall() : (pause(), go(S.cursor+1)); }
     else if (e.key === " " && t !== "BUTTON"){ e.preventDefault(); S.playing ? pause() : play(); }
   });
-  var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ draw(S.sim.frames[S.cursor], true); }, 120); });
+  var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ go(S.cursor, true); }, 120); });
 
   /* ---------- boot ---------- */
   syncComposer();
   var saved = restore();
   if (saved){
-    S.ops = saved.ops; S.maxKeys = [2,3,4,5].indexOf(saved.maxKeys) >= 0 ? saved.maxKeys : 3; S.speed = saved.speed || 1;
-    S.preset = PRESETS[saved.preset] ? saved.preset : "blank";
-    $("maxkeys").value = S.maxKeys; $("speed").value = S.speed; $("preset").value = S.preset;
-    resim(); var o = Math.min(saved.op == null ? -1 : saved.op, S.ops.length-1);
-    go(o >= 0 ? S.sim.meta[o].end : 0, true);
+    S.ops = saved.ops; S.maxKeys = [2,3,4,5].indexOf(saved.maxKeys) >= 0 ? saved.maxKeys : 3; S.memCap = [2,3,4,6].indexOf(saved.memCap) >= 0 ? saved.memCap : 4;
+    S.bloom = saved.bloom !== false; S.view = ["both","btree","lsm"].indexOf(saved.view) >= 0 ? saved.view : "both"; S.speed = [0.5,1,2,4].indexOf(saved.speed) >= 0 ? saved.speed : 1;
+    S.preset = PRESETS[saved.preset] ? saved.preset : "blank"; S.baseOp = typeof saved.baseOp === "number" ? saved.baseOp : -1;
+    $("maxkeys").value = S.maxKeys; $("memcap").value = S.memCap; $("bloom").value = S.bloom ? "on" : "off"; $("view").value = S.view; $("speed").value = S.speed; $("preset").value = S.preset;
+    $("note").textContent = PRESETS[S.preset].note;
+    applyView(); resim(); go(endOf(Math.min(saved.op == null ? -1 : saved.op, S.ops.length-1)), true);
   } else {
-    $("speed").value = "1"; loadPreset("tour", false);
+    $("speed").value = "1"; applyView(); loadPreset("tour", false);
   }
 })();
 </script>
