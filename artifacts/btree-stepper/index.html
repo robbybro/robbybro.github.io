@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>B-Tree Stepper</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF;
+  --node:#FFFFFF; --node-stroke:#8A94AB; --cell:#E9EDF5; --edge:#9AA3B8;
+  --visit:#2F6FEB; --visit-bg:#DCE8FF; --good:#12805C; --good-bg:#D6F2E6; --bad:#C2410C; --bad-bg:#FDE3D6; --move:#8B3FD9; --move-bg:#ECDDFB;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320;
+    --node:#1B2236; --node-stroke:#56617D; --cell:#242D46; --edge:#4A5470;
+    --visit:#6EA0FF; --visit-bg:#1D3260; --good:#4FD1A1; --good-bg:#12382C; --bad:#FF8A5C; --bad-bg:#47210F; --move:#C79BFF; --move-bg:#35205A;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1240px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(22px,4.5vw,30px);letter-spacing:-.01em;margin:0}
+.sub{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 16px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field>span,.label{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select,input[type="text"],input[type="number"]{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;min-width:0}
+button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:40px;padding:0 14px;cursor:pointer}
+button:hover{border-color:var(--node-stroke)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+@media (min-width:940px){.app{grid-template-columns:minmax(0,1fr) 350px}}
+@media (max-width:939px){.stage{height:clamp(260px,40vh,420px)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.viewer{display:flex;flex-direction:column;min-width:0}
+.stage{position:relative;height:clamp(300px,50vh,500px);overflow:auto;border-bottom:1px solid var(--rule)}
+.stage svg{display:block}
+.empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);pointer-events:none}
+.caption{padding:14px 16px;min-height:5.6em;border-bottom:1px solid var(--rule)}
+.caption .call{font:600 14px var(--mono);color:var(--accent)}
+.caption p{margin:4px 0 0;font-size:16px;max-width:75ch}
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px}
+.transport button{width:44px;height:44px;padding:0;display:grid;place-items:center}
+.transport button.primary{width:56px}
+.transport svg{width:18px;height:18px;fill:currentColor}
+.transport .spacer{flex:1}
+.transport .progress{font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scrub{padding:0 16px 12px}
+.scrub input{width:100%;accent-color:var(--accent);margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.meta .stats{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;border:1.5px solid}
+.lg-visit{background:var(--visit-bg);border-color:var(--visit)!important}.lg-good{background:var(--good-bg);border-color:var(--good)!important}
+.lg-bad{background:var(--bad-bg);border-color:var(--bad)!important}.lg-move{background:var(--move-bg);border-color:var(--move)!important}
+
+.side{display:flex;flex-direction:column;min-width:0}
+.composer{padding:14px 16px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--rule)}
+.composer .row{display:grid;grid-template-columns:104px minmax(0,1fr) minmax(0,1.3fr);gap:8px}
+.composer .row.two{grid-template-columns:104px minmax(0,1fr)}
+.composer .actions{display:flex;gap:8px}
+.composer .actions .primary{flex:1}
+.hint{margin:0;font-size:12.5px;color:var(--muted)}
+.err{margin:0;font-size:13px;color:var(--bad);font-weight:500}
+.log-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
+.log-head button{height:32px;font-size:13px;padding:0 10px}
+.log{list-style:none;margin:0;padding:0 8px 8px;max-height:420px;overflow-y:auto}
+@media (min-width:940px){.log{max-height:min(52vh,520px)}}
+.log li{display:grid;grid-template-columns:minmax(0,1fr) 32px;align-items:center;border-radius:6px}
+.log .go{all:unset;box-sizing:border-box;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 8px;cursor:pointer;border-radius:6px;min-height:36px}
+.log .go:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.log .n{font:400 12px var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.log .c{font:500 13.5px var(--mono);overflow-wrap:anywhere}
+.log .r{font:400 12px var(--mono);color:var(--good);white-space:nowrap}
+.log .r.warn{color:var(--bad)}
+.log .rm{all:unset;width:32px;height:32px;display:grid;place-items:center;color:var(--muted);cursor:pointer;border-radius:6px;font-size:16px}
+.log .rm:hover{color:var(--bad)} .log .rm:focus-visible{outline:2px solid var(--accent)}
+.log li.pending .c,.log li.pending .n{color:var(--muted);opacity:.75}
+.log li.pending .r{visibility:hidden}
+.log li.current{background:var(--visit-bg);box-shadow:inset 3px 0 0 var(--visit)}
+.log li:hover:not(.current){background:var(--ground)}
+.log .none{padding:12px 8px;color:var(--muted);font-size:13.5px;display:block}
+footer{color:var(--muted);font-size:13px;max-width:80ch}
+footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:4px;padding:1px 5px;background:var(--panel)}
+
+/* tree */
+.node rect{fill:var(--node);stroke:var(--node-stroke);stroke-width:1.5;transition:fill .25s,stroke .25s}
+.node.visit rect{fill:var(--visit-bg);stroke:var(--visit);stroke-width:2.5}
+.node.good rect{fill:var(--good-bg);stroke:var(--good);stroke-width:2.5}
+.node.bad rect{fill:var(--bad-bg);stroke:var(--bad);stroke-width:2.5}
+.key rect{fill:var(--cell);stroke:transparent;stroke-width:2;transition:fill .25s,stroke .25s}
+.key text{fill:var(--ink);font-family:var(--mono);text-anchor:middle}
+.key .k{font-size:15px;font-weight:600}
+.key .v{font-size:9.5px;fill:var(--muted)}
+.key.visit rect{fill:var(--visit-bg);stroke:var(--visit)}
+.key.good rect{fill:var(--good-bg);stroke:var(--good)}
+.key.bad rect{fill:var(--bad-bg);stroke:var(--bad)}
+.key.move rect{fill:var(--move-bg);stroke:var(--move)}
+.edge{fill:none;stroke:var(--edge);stroke-width:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>B-Tree Stepper</h1>
+      <p class="sub">Every API call is broken into the steps a B-tree actually takes. Step through them in either direction, or add your own calls anywhere in the log.</p>
+    </div>
+    <div class="settings">
+      <label class="field"><span>Program</span>
+        <select id="preset">
+          <option value="tour">Tour: every mechanism</option>
+          <option value="sequential">Sequential inserts</option>
+          <option value="teardown">Build up, tear down</option>
+          <option value="blank">Blank</option>
+        </select>
+      </label>
+      <label class="field"><span>Keys per page</span>
+        <select id="maxkeys"><option value="2">max 2</option><option value="3">max 3</option><option value="4">max 4</option><option value="5">max 5</option></select>
+      </label>
+      <label class="field"><span>Speed</span>
+        <select id="speed"><option value="0.5">0.5×</option><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select>
+      </label>
+    </div>
+  </header>
+
+  <div class="app">
+    <section class="panel viewer" aria-label="Tree viewer">
+      <div class="stage" id="stage">
+        <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMin meet" role="img" aria-label="B-tree diagram">
+          <g id="l-edges"></g><g id="l-nodes"></g><g id="l-keys"></g>
+        </svg>
+        <div class="empty" id="empty" hidden>empty tree</div>
+      </div>
+      <div class="caption" aria-live="polite">
+        <span class="call" id="cap-call"></span>
+        <p id="cap-text"></p>
+      </div>
+      <div class="transport">
+        <button type="button" id="b-prevcall" aria-label="Back one call" title="Back one call (Shift+←)"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="2.5" height="12"/><path d="M17 4v12L7 10z"/></svg></button>
+        <button type="button" id="b-prev" aria-label="Back one step" title="Back one step (←)"><svg viewBox="0 0 20 20"><path d="M14 4v12L5 10z"/></svg></button>
+        <button type="button" id="b-play" class="primary" aria-label="Play" title="Play / pause (Space)"><svg viewBox="0 0 20 20" id="ico-play"><path d="M6 4v12l10-6z"/></svg></button>
+        <button type="button" id="b-next" aria-label="Forward one step" title="Forward one step (→)"><svg viewBox="0 0 20 20"><path d="M6 4v12l9-6z"/></svg></button>
+        <button type="button" id="b-nextcall" aria-label="Forward one call" title="Forward one call (Shift+→)"><svg viewBox="0 0 20 20"><path d="M3 4v12l10-6z"/><rect x="14.5" y="4" width="2.5" height="12"/></svg></button>
+        <span class="spacer"></span>
+        <span class="progress" id="progress"></span>
+      </div>
+      <div class="scrub"><input type="range" id="scrub" min="0" max="0" value="0" step="1" aria-label="Timeline"></div>
+      <div class="meta">
+        <span class="stats" id="stats"></span>
+        <span class="legend">
+          <span><i class="lg-visit"></i>reading</span><span><i class="lg-good"></i>changed or found</span>
+          <span><i class="lg-bad"></i>overflow, underflow, target</span><span><i class="lg-move"></i>key on the move</span>
+        </span>
+      </div>
+    </section>
+
+    <aside class="panel side" aria-label="API calls">
+      <form class="composer" id="composer" autocomplete="off">
+        <span class="label">Add a call after the current one</span>
+        <div class="row" id="c-row">
+          <select id="c-op" aria-label="Operation">
+            <option value="insert">insert</option><option value="get">get</option><option value="update">update</option><option value="delete">delete</option><option value="range">range</option>
+          </select>
+          <input type="text" inputmode="numeric" id="c-key" placeholder="key" aria-label="Key" maxlength="3">
+          <input type="text" id="c-arg" placeholder="value" aria-label="Value" maxlength="8">
+        </div>
+        <div class="actions">
+          <button type="submit" class="primary">Run call</button>
+          <button type="button" id="c-random">Random insert</button>
+        </div>
+        <p class="err" id="c-err" hidden></p>
+        <p class="hint">Keys are whole numbers 0–999; a value is optional. Calls after the insertion point are re-run against the new tree.</p>
+      </form>
+      <div class="log-head"><span class="label" id="log-title">Call log</span><button type="button" id="b-clear">Clear log</button></div>
+      <ol class="log" id="log"></ol>
+    </aside>
+  </div>
+
+  <footer>
+    <p>Keyboard: <kbd>←</kbd> <kbd>→</kbd> step, <kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> whole calls, <kbd>Space</kbd> play or pause. Click any call in the log to replay it.</p>
+    <p>This is the classic B-tree of Bayer and McCreight (1972), where every page holds keys and values. Most databases use the B+ variant, which keeps values only in the leaves and links the leaves together for range scans. Splitting, borrowing and merging work the same way in both.</p>
+  </footer>
+</div>
+
+<script src="btree.js"></script>
+<script>
+(function(){
+  var NS = "http://www.w3.org/2000/svg", KEY = "btree-stepper.v1";
+  var CW = 46, CH = 40, GAP = 2, PAD = 4, NH = CH + 2*PAD, LEVEL = 104, DUR = 520, DWELL = 1300;
+  function $(id){ return document.getElementById(id); }
+  function I(key, value){ return {type:"insert", key:key, value:value||""}; }
+  function D(key){ return {type:"delete", key:key}; }
+
+  var PRESETS = {
+    tour: { maxKeys:3, start:10, ops:[I(41,"ada"),I(17),I(63,"cy"),I(8),I(29),I(55),I(72),I(90),I(35),I(23),I(48),I(12),I(80),I(66),I(5),
+      {type:"get",key:41},{type:"get",key:50},{type:"update",key:63,value:"cyd"},{type:"range",key:20,hi:50},
+      D(5),D(41),D(72),D(90),D(80),D(66),D(63),D(55),D(48)] },
+    sequential: { maxKeys:3, start:-1, ops:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(function(k){return I(k);}).concat([{type:"get",key:11},{type:"range",key:5,hi:12}]) },
+    teardown: { maxKeys:2, start:-1, ops:[50,20,80,10,30,60,90,5,15,25,35,55,65,85].map(function(k){return I(k);}).concat([5,15,10,25,20,30,35,50,55,60,65,80,85,90].map(D)) },
+    blank: { maxKeys:3, start:-1, ops:[] }
+  };
+
+  var S = { ops:[], maxKeys:3, speed:1, cursor:0, playing:false, until:0, sim:null, preset:"tour" };
+  var timer = null, reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function persist(){
+    try{ localStorage.setItem(KEY, JSON.stringify({ops:S.ops, maxKeys:S.maxKeys, speed:S.speed, preset:S.preset, op:S.sim.frames[S.cursor].op})); }catch(e){}
+  }
+  function restore(){
+    try{ var d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.ops)) return d; }catch(e){}
+    return null;
+  }
+
+  /* ---------- layout ---------- */
+  function nodeW(n){ return n.keys.length ? n.keys.length*CW + (n.keys.length-1)*GAP + 2*PAD : 36; }
+  function computeLayout(frame){
+    var nodes=[], keys=[], edges=[], maxD=0, maxX=0;
+    function rec(n, x, y, w){
+      nodes.push({id:String(n.id), cls:frame.nodes[n.id]||"", t:{x:x,y:y,w:w,o:1}});
+      n.keys.forEach(function(e,i){ keys.push({id:String(e.k), k:e.k, v:e.v, cls:frame.keys[e.k]||"", t:{x:x+PAD+i*(CW+GAP), y:y+PAD, o:1}}); });
+      if (x+w > maxX) maxX = x+w;
+    }
+    function place(n, d, x0){
+      var w = nodeW(n), y = d*LEVEL; if (d > maxD) maxD = d;
+      if (!n.children.length){ rec(n, x0, y, w); return {x1:x0+w, cx:x0+w/2}; }
+      var gap = n.children[0].children.length ? 30 : 14, cur = x0, cs = [];
+      n.children.forEach(function(c){ var r = place(c, d+1, cur); cs.push({id:String(c.id), cx:r.cx}); cur = r.x1 + gap; });
+      var span1 = cur - gap, x = Math.max(x0, (x0+span1)/2 - w/2);
+      rec(n, x, y, w);
+      cs.forEach(function(o,i){
+        var ax = n.keys.length ? x + PAD + i*(CW+GAP) - GAP/2 : x + w/2;
+        ax = Math.max(x+5, Math.min(x+w-5, ax));
+        edges.push({id:o.id, t:{x1:ax, y1:y+NH, x2:o.cx, y2:(d+1)*LEVEL, o:1}});
+      });
+      return {x1:Math.max(span1, x+w), cx:x+w/2};
+    }
+    if (frame.tree) place(frame.tree, 0, 0);
+    return {nodes:nodes, keys:keys, edges:edges, w:maxX, h:maxD*LEVEL+NH};
+  }
+
+  /* ---------- tweened SVG renderer ---------- */
+  var svg = $("svg"), stage = $("stage");
+  var L = {edges:$("l-edges"), nodes:$("l-nodes"), keys:$("l-keys")};
+  var M = {edges:new Map(), nodes:new Map(), keys:new Map()};
+  var vb = {cur:null, from:null, to:null}, anim = {start:0, dur:0, raf:0};
+  function el(tag, attrs){ var e = document.createElementNS(NS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); return e; }
+  function copy(o, extra){ var c = {}, k; for (k in o) c[k] = o[k]; if (extra) for (k in extra) c[k] = extra[k]; return c; }
+
+  var KIND = {
+    nodes: {
+      make: function(){ var g = el("g",{}), r = el("rect",{height:NH, rx:7}); g.appendChild(r); return {root:g, rect:r}; },
+      enter: function(t){ return copy(t, {y:t.y-14, o:0}); },
+      update: function(e, it){ e.root.setAttribute("class", "node " + it.cls); },
+      apply: function(e, c){ e.rect.setAttribute("x", c.x); e.rect.setAttribute("y", c.y); e.rect.setAttribute("width", Math.max(0,c.w)); e.root.setAttribute("opacity", c.o); }
+    },
+    keys: {
+      make: function(){ var g = el("g",{}), r = el("rect",{width:CW, height:CH, rx:4}), k = el("text",{class:"k", x:CW/2}), v = el("text",{class:"v", x:CW/2, y:32}); g.appendChild(r); g.appendChild(k); g.appendChild(v); return {root:g, k:k, v:v}; },
+      enter: function(t){ return copy(t, {y:t.y-28, o:0}); },
+      update: function(e, it){
+        e.root.setAttribute("class", "key " + it.cls); e.k.textContent = it.k;
+        var val = it.v ? (it.v.length > 7 ? it.v.slice(0,6) + "…" : it.v) : "";
+        e.v.textContent = val; e.k.setAttribute("y", val ? 19 : 25);
+      },
+      apply: function(e, c){ e.root.setAttribute("transform", "translate(" + c.x + "," + c.y + ")"); e.root.setAttribute("opacity", c.o); }
+    },
+    edges: {
+      make: function(){ var p = el("path",{class:"edge"}); return {root:p}; },
+      enter: function(t){ return copy(t, {o:0}); },
+      update: function(){},
+      apply: function(e, c){ var m = (c.y2 - c.y1) * 0.5; e.root.setAttribute("d", "M" + c.x1 + " " + c.y1 + "C" + c.x1 + " " + (c.y1+m) + " " + c.x2 + " " + (c.y2-m) + " " + c.x2 + " " + c.y2); e.root.setAttribute("opacity", c.o); }
+    }
+  };
+  function sync(kind, items, origins){
+    var map = M[kind], K = KIND[kind], seen = {};
+    items.forEach(function(it){
+      var rec = map.get(it.id);
+      if (!rec){
+        var e = K.make(); L[kind].appendChild(e.root);
+        var src = origins && origins[it.id] != null ? map.get(String(origins[it.id])) : null;
+        rec = {el:e, cur: src ? copy(src.cur, {o:0}) : K.enter(it.t)}; map.set(it.id, rec);
+      }
+      rec.from = copy(rec.cur); rec.to = it.t; rec.exit = false; seen[it.id] = 1; K.update(rec.el, it);
+    });
+    map.forEach(function(rec, id){ if (!seen[id]){ rec.from = copy(rec.cur); rec.to = copy(rec.cur, {o:0}); rec.exit = true; } });
+  }
+  function lerp(a, b, t){ var o = {}; for (var k in b) o[k] = a[k] + (b[k] - a[k]) * t; return o; }
+  function ease(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+  function tick(now){
+    var t = anim.dur <= 0 ? 1 : Math.min(1, (now - anim.start) / anim.dur), e = ease(t);
+    ["edges","nodes","keys"].forEach(function(kind){
+      M[kind].forEach(function(rec, id){
+        rec.cur = lerp(rec.from, rec.to, e); KIND[kind].apply(rec.el, rec.cur);
+        if (t >= 1 && rec.exit){ rec.el.root.remove(); M[kind].delete(id); }
+      });
+    });
+    vb.cur = lerp(vb.from, vb.to, e);
+    svg.setAttribute("viewBox", vb.cur.x + " " + vb.cur.y + " " + vb.cur.w + " " + vb.cur.h);
+    anim.raf = t < 1 ? requestAnimationFrame(tick) : 0;
+  }
+  function draw(frame, instant){
+    var lay = computeLayout(frame), cw = stage.clientWidth || 600, ch = stage.clientHeight || 400;
+    var contentW = lay.w + 56, contentH = lay.h + 56;
+    var scale = Math.max(0.55, Math.min(1, cw/contentW, ch/contentH));
+    var svgW = Math.max(cw, Math.ceil(contentW*scale)), svgH = Math.max(ch, Math.ceil(contentH*scale));
+    svg.style.width = svgW + "px"; svg.style.height = svgH + "px";
+    vb.to = {x: lay.w/2 - (svgW/scale)/2, y:-28, w:svgW/scale, h:svgH/scale};
+    if (!vb.cur) vb.cur = copy(vb.to);
+    vb.from = copy(vb.cur);
+    sync("edges", lay.edges, frame.origins); sync("nodes", lay.nodes, frame.origins); sync("keys", lay.keys, null);
+    $("empty").hidden = !!frame.tree;
+    anim.start = performance.now(); anim.dur = (instant || reduce) ? 0 : DUR / Math.max(1, S.speed);
+    if (anim.raf) cancelAnimationFrame(anim.raf);
+    if (anim.dur <= 0) tick(anim.start); else anim.raf = requestAnimationFrame(tick);
+  }
+
+  /* ---------- timeline ---------- */
+  function boundaries(){ return [0].concat(S.sim.meta.map(function(m){ return m.end; })); }
+  function opOf(idx){ return S.sim.frames[idx].op; }
+  function go(idx, instant){
+    S.cursor = Math.max(0, Math.min(S.sim.frames.length-1, idx));
+    var f = S.sim.frames[S.cursor];
+    draw(f, instant);
+    $("cap-call").textContent = f.op >= 0 ? BTree.callText(S.ops[f.op]) : "start";
+    $("cap-text").textContent = f.caption;
+    var st = BTree.stats(f.tree), m = f.op >= 0 ? S.sim.meta[f.op] : null;
+    $("stats").textContent = "height " + st.height + " · " + st.pages + (st.pages === 1 ? " page" : " pages") + " · " + st.keys + (st.keys === 1 ? " key" : " keys") + " · " + S.sim.minKeys + "–" + S.sim.maxKeys + " keys per page";
+    $("progress").textContent = m ? "call " + (f.op+1) + "/" + S.ops.length + " · step " + (S.cursor - m.start + 1) + "/" + (m.end - m.start + 1) : "call 0/" + S.ops.length;
+    $("scrub").value = S.cursor;
+    $("b-prev").disabled = $("b-prevcall").disabled = S.cursor === 0;
+    $("b-next").disabled = $("b-nextcall").disabled = S.cursor === S.sim.frames.length-1;
+    markLog(); persist();
+  }
+  function resim(){
+    S.sim = BTree.simulate(S.ops, S.maxKeys);
+    $("scrub").max = S.sim.frames.length - 1;
+    renderLog();
+  }
+  function pause(){ S.playing = false; clearTimeout(timer); setPlayIcon(); }
+  function play(until){
+    if (S.cursor >= S.sim.frames.length-1 && until == null) go(0);
+    S.until = until == null ? S.sim.frames.length-1 : until; S.playing = true; setPlayIcon(); schedule(true);
+  }
+  function schedule(first){
+    clearTimeout(timer);
+    if (!S.playing) return;
+    if (S.cursor >= S.until) return pause();
+    timer = setTimeout(function(){ go(S.cursor+1); schedule(); }, first ? 250 : (DUR + DWELL) / S.speed);
+  }
+  function setPlayIcon(){
+    $("ico-play").innerHTML = S.playing ? '<rect x="5" y="4" width="3.5" height="12"/><rect x="11.5" y="4" width="3.5" height="12"/>' : '<path d="M6 4v12l10-6z"/>';
+    $("b-play").setAttribute("aria-label", S.playing ? "Pause" : "Play");
+  }
+  function prevCall(){ pause(); var b = boundaries().filter(function(x){ return x < S.cursor; }); go(b.length ? b[b.length-1] : 0); }
+  function nextCall(){ pause(); var b = boundaries().filter(function(x){ return x > S.cursor; }); go(b.length ? b[0] : S.cursor); }
+
+  /* ---------- call log ---------- */
+  function renderLog(){
+    var log = $("log"); log.innerHTML = "";
+    $("log-title").textContent = "Call log · " + S.ops.length;
+    if (!S.ops.length){ var s = document.createElement("span"); s.className = "none"; s.textContent = "No calls yet. Add one above."; log.appendChild(s); return; }
+    S.ops.forEach(function(op, i){
+      var li = document.createElement("li"); li.dataset.i = i;
+      var m = S.sim.meta[i];
+      var btn = document.createElement("button"); btn.type = "button"; btn.className = "go"; btn.id = "call-" + i;
+      btn.innerHTML = '<span class="n"></span><span class="c"></span><span class="r"></span>';
+      btn.children[0].textContent = i+1; btn.children[1].textContent = BTree.callText(op);
+      btn.children[2].textContent = m.result; if (m.tone === "warn") btn.children[2].className = "r warn";
+      var rm = document.createElement("button"); rm.type = "button"; rm.className = "rm"; rm.textContent = "×";
+      rm.setAttribute("aria-label", "Remove " + BTree.callText(op));
+      li.appendChild(btn); li.appendChild(rm); log.appendChild(li);
+    });
+  }
+  function markLog(){
+    var cur = opOf(S.cursor), log = $("log");
+    Array.prototype.forEach.call(log.children, function(li){
+      if (li.dataset.i == null) return;
+      var i = +li.dataset.i, m = S.sim.meta[i];
+      var done = S.cursor >= m.end, running = i === cur;
+      li.className = (running ? "current " : "") + (done ? "" : "pending");
+      if (running){ var top = li.offsetTop - log.offsetTop; if (top < log.scrollTop || top + li.offsetHeight > log.scrollTop + log.clientHeight) log.scrollTop = top - log.clientHeight/2 + li.offsetHeight/2; }
+    });
+  }
+  $("log").addEventListener("click", function(e){
+    var li = e.target.closest("li"); if (!li) return;
+    var i = +li.dataset.i;
+    if (e.target.closest(".rm")){
+      pause(); var curOp = opOf(S.cursor);
+      S.ops.splice(i, 1); resim();
+      go(i <= curOp ? (i-1 >= 0 ? S.sim.meta[i-1].end : 0) : S.cursor, true);
+      return;
+    }
+    pause(); go(i > 0 ? S.sim.meta[i-1].end : 0); play(S.sim.meta[i].end);
+  });
+
+  /* ---------- composer ---------- */
+  function syncComposer(){
+    var op = $("c-op").value, arg = $("c-arg"), two = op === "get" || op === "delete";
+    $("c-row").className = two ? "row two" : "row"; arg.hidden = two;
+    arg.placeholder = op === "insert" ? "value" : op === "update" ? "new value" : "to key";
+    arg.setAttribute("aria-label", op === "range" ? "To key" : "Value");
+    if (op === "range"){ arg.setAttribute("inputmode","numeric"); arg.maxLength = 3; } else { arg.removeAttribute("inputmode"); arg.maxLength = 8; }
+    $("c-key").placeholder = op === "range" ? "from key" : "key";
+  }
+  function fail(msg){ $("c-err").textContent = msg; $("c-err").hidden = false; }
+  function parseKey(s){ return /^\d{1,3}$/.test(s.trim()) ? parseInt(s, 10) : null; }
+  function addCall(op){
+    pause();
+    var cur = opOf(S.cursor), at = cur + 1;
+    S.ops.splice(at, 0, op); resim();
+    go(cur >= 0 ? S.sim.meta[cur].end : 0, true);
+    play(S.sim.meta[at].end);
+  }
+  $("c-op").addEventListener("change", function(){ $("c-arg").value = ""; syncComposer(); });
+  $("composer").addEventListener("submit", function(e){
+    e.preventDefault(); $("c-err").hidden = true;
+    var type = $("c-op").value, key = parseKey($("c-key").value), arg = $("c-arg").value.trim();
+    if (key == null) return fail("Enter a whole-number key from 0 to 999.");
+    var op = {type:type, key:key};
+    if (type === "insert" || type === "update") op.value = arg.replace(/"/g, "");
+    if (type === "range"){ var hi = parseKey(arg); if (hi == null) return fail("Enter the end of the range as a whole number from 0 to 999."); op.hi = hi; }
+    addCall(op); $("c-key").value = ""; if (type !== "range") $("c-arg").value = ""; $("c-key").focus();
+  });
+  $("c-random").addEventListener("click", function(){
+    var cur = opOf(S.cursor), f = S.sim.frames[cur >= 0 ? S.sim.meta[cur].end : 0], have = {};
+    (function w(n){ if (!n) return; n.keys.forEach(function(k){ have[k.k] = 1; }); n.children.forEach(w); })(f.tree);
+    var k, tries = 0; do { k = 1 + Math.floor(Math.random()*99); } while (have[k] && ++tries < 300);
+    addCall(I(k));
+  });
+  $("b-clear").addEventListener("click", function(){ pause(); S.ops = []; S.preset = "blank"; $("preset").value = "blank"; resim(); go(0, true); });
+
+  /* ---------- controls ---------- */
+  $("b-play").addEventListener("click", function(){ S.playing ? pause() : play(); });
+  $("b-prev").addEventListener("click", function(){ pause(); go(S.cursor-1); });
+  $("b-next").addEventListener("click", function(){ pause(); go(S.cursor+1); });
+  $("b-prevcall").addEventListener("click", prevCall);
+  $("b-nextcall").addEventListener("click", nextCall);
+  $("scrub").addEventListener("input", function(){ pause(); go(+this.value); });
+  $("speed").addEventListener("change", function(){ S.speed = +this.value; persist(); if (S.playing) schedule(); });
+  $("maxkeys").addEventListener("change", function(){
+    pause(); var cur = opOf(S.cursor); S.maxKeys = +this.value; resim(); go(cur >= 0 ? S.sim.meta[cur].end : 0, true);
+  });
+  function loadPreset(name, autoplay){
+    var p = PRESETS[name]; pause();
+    S.preset = name; S.ops = JSON.parse(JSON.stringify(p.ops)); S.maxKeys = p.maxKeys; $("maxkeys").value = p.maxKeys; $("preset").value = name;
+    resim(); go(p.start >= 0 ? S.sim.meta[p.start].end : 0, true);
+    if (autoplay && S.ops.length) play();
+  }
+  $("preset").addEventListener("change", function(){ loadPreset(this.value, true); });
+  document.addEventListener("keydown", function(e){
+    var t = e.target.tagName;
+    if (t === "INPUT" || t === "SELECT" || t === "TEXTAREA" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "ArrowLeft"){ e.preventDefault(); e.shiftKey ? prevCall() : (pause(), go(S.cursor-1)); }
+    else if (e.key === "ArrowRight"){ e.preventDefault(); e.shiftKey ? nextCall() : (pause(), go(S.cursor+1)); }
+    else if (e.key === " " && t !== "BUTTON"){ e.preventDefault(); S.playing ? pause() : play(); }
+  });
+  var rz; window.addEventListener("resize", function(){ clearTimeout(rz); rz = setTimeout(function(){ draw(S.sim.frames[S.cursor], true); }, 120); });
+
+  /* ---------- boot ---------- */
+  syncComposer();
+  var saved = restore();
+  if (saved){
+    S.ops = saved.ops; S.maxKeys = [2,3,4,5].indexOf(saved.maxKeys) >= 0 ? saved.maxKeys : 3; S.speed = saved.speed || 1;
+    S.preset = PRESETS[saved.preset] ? saved.preset : "blank";
+    $("maxkeys").value = S.maxKeys; $("speed").value = S.speed; $("preset").value = S.preset;
+    resim(); var o = Math.min(saved.op == null ? -1 : saved.op, S.ops.length-1);
+    go(o >= 0 ? S.sim.meta[o].end : 0, true);
+  } else {
+    $("speed").value = "1"; loadPreset("tour", false);
+  }
+})();
+</script>
+</body>
+</html>
