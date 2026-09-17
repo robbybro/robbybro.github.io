@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Belly & Short Rib Smoke Day</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#E8EAE8; --surface:#F5F6F4; --ink:#1F2224; --muted:#5A6266; --rule:#C6CAC8;
+  --smoke:#5F7480; --kraft:#A9794A; --ember:#C9441A; --hold:#D5D8D6; --prep:#9AA19F;
+  --beef:#7B2D2B; --pork:#9C4263; --nowline:#C9441A;
+  --display:"Alfa Slab One","Rockwell","Georgia",serif;
+  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --label:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#17191A; --surface:#202325; --ink:#E6E8E6; --muted:#9AA3A6; --rule:#383D3F;
+    --smoke:#86A0AE; --kraft:#C99A68; --ember:#F0693A; --hold:#3A4042; --prep:#6C7476;
+    --beef:#E08A84; --pork:#E592B0; --nowline:#F0693A;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:28px 56px}
+.wrap{max-width:760px;margin-inline:auto;display:flex;flex-direction:column;gap:32px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,7vw,44px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-family:var(--label);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+.sub{color:var(--muted);margin:8px 0 0;max-width:60ch}
+header{display:flex;flex-direction:column;gap:20px}
+.clock{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+input[type="time"]{font:600 20px var(--body);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;min-height:44px}
+button{font:600 14px var(--label);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:4px;padding:0 14px;min-height:44px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+section{display:flex;flex-direction:column;gap:12px}
+
+.ticket{background:var(--surface);border:1px solid var(--rule);border-radius:4px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--rule);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td.t{font-weight:600}
+
+.gantt{display:flex;flex-direction:column;gap:10px}
+.lane{display:grid;grid-template-columns:48px 1fr;align-items:center;gap:8px}
+.lane-name{font-family:var(--label);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.lane-name.ribs{color:var(--beef)} .lane-name.belly{color:var(--pork)}
+.track{position:relative;height:26px;background:transparent}
+.seg{position:absolute;top:0;bottom:0;border-radius:2px}
+.seg.prep{background:repeating-linear-gradient(135deg,var(--prep) 0 3px,transparent 3px 6px)}
+.seg.smoke{background:var(--smoke)} .seg.wrap{background:var(--kraft)}
+.seg.hold{background:var(--hold)} .seg.crisp{background:var(--ember)}
+.axis{position:relative;height:30px;margin-left:56px;border-top:1px solid var(--rule)}
+.tick{position:absolute;top:0;width:1px;height:6px;background:var(--muted)}
+.tick-label{position:absolute;top:9px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;transform:translateX(-50%);white-space:nowrap}
+.tick-label.first{transform:none} .tick-label.last{transform:translateX(-100%)}
+.plot{position:relative}
+.now{position:absolute;top:-4px;bottom:26px;width:2px;background:var(--nowline);margin-left:56px;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px}
+
+.steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.step{border-bottom:1px solid var(--rule)}
+.step label{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;padding:14px 4px;cursor:pointer}
+.step input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--ember)}
+.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.time{font-weight:600;font-variant-numeric:tabular-nums}
+.tag{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tag.ribs{color:var(--beef)} .tag.belly{color:var(--pork)}
+.temp{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;border:1px solid var(--rule);border-radius:999px;padding:1px 9px;white-space:nowrap}
+.do{grid-column:2;margin:0;max-width:62ch}
+.step.current{background:var(--surface);box-shadow:inset 3px 0 0 var(--ember)}
+.step.done .do,.step.done .time{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.steps-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.notes h3{font:600 16px var(--body);margin:0 0 4px}
+.notes p{margin:0;color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Belly &amp; Short Rib Smoke Day</h1>
+      <p class="sub">Traeger at 250°F, both on together. Clock times are the plan; internal temp and probe feel make the call.</p>
+    </div>
+    <div class="clock">
+      <div class="field"><label for="light">Start the Traeger</label><input type="time" id="light" step="300"></div>
+      <div class="field"><label for="eat">Eat</label><input type="time" id="eat" step="300"></div>
+      <button type="button" id="nowbtn">Start now</button>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-plan">
+    <h2 id="h-plan">The day</h2>
+    <div class="gantt">
+      <div class="plot">
+        <div class="lane"><span class="lane-name ribs">Ribs</span><div class="track" id="track-ribs"></div></div>
+        <div style="height:10px"></div>
+        <div class="lane"><span class="lane-name belly">Belly</span><div class="track" id="track-belly"></div></div>
+        <div style="height:8px"></div>
+        <div class="axis" id="axis"></div>
+        <div class="now" id="now" hidden></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:repeating-linear-gradient(135deg,var(--prep) 0 3px,transparent 3px 6px)"></i>Prep</span>
+        <span><i style="background:var(--smoke)"></i>Open smoke</span>
+        <span><i style="background:var(--kraft)"></i>Wrapped / foil boat</span>
+        <span><i style="background:var(--hold)"></i>Hold or rest</span>
+        <span><i style="background:var(--ember)"></i>500°F crisp</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-targets">
+    <h2 id="h-targets">Internal temps</h2>
+    <div class="ticket">
+      <table>
+        <thead><tr><th></th><th>Wrap / boat at</th><th>Pull at</th><th>Rest</th></tr></thead>
+        <tbody>
+          <tr><td class="t">Short ribs</td><td>170–175°F</td><td>203–208°F</td><td>45–60 min, cooler</td></tr>
+          <tr><td class="t">Pork belly</td><td>~165°F</td><td>185–195°F</td><td>10–15 min after crisping</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-steps">
+    <div class="steps-head">
+      <h2 id="h-steps">Steps</h2>
+      <button type="button" id="clear">Clear checks</button>
+    </div>
+    <ol class="steps" id="steps"></ol>
+  </section>
+
+  <section aria-labelledby="h-traeger">
+    <h2 id="h-traeger">Traeger notes</h2>
+    <div class="notes">
+      <div><h3>Smoke is front-loaded</h3><p>Pellet smoke is mild and sticks best while the meat is cold and wet. If your model has Super Smoke, run it for the first 2 hours, then back to plain 250°F.</p></div>
+      <div><h3>Lid stays shut</h3><p>Every peek costs 10–15 min of recovery. Open it for the foil boat, the paper wrap, and the pulls. That's it.</p></div>
+      <div><h3>Pellets</h3><p>The Home Depot hardwood blend suits both meats. Eight hours at 250°F burns roughly 8–15 lb, so start with a full hopper and glance at it around the wrap.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-fall">
+    <h2 id="h-fall">If it goes sideways</h2>
+    <div class="notes">
+      <div><h3>Skin won't puff</h3><p>Slice the skin layer off, scrape the excess fat, and crisp it alone between two sheet pans at 400°F for 20–30 min. Serve as chicharrón next to the sliced belly.</p></div>
+      <div><h3>Running late</h3><p>Bump the Traeger to 275°F. Ribs hold 2+ hr wrapped in a towel-lined cooler, so finishing early is free; finishing late is not.</p></div>
+      <div><h3>Stall at 160–170°F</h3><p>Normal on both. The paper wrap and the foil boat are what push through it. Don't chase it with more heat before then.</p></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var TOTAL = 480; // minutes from starting the Traeger to eating
+  var STEPS = [
+    {id:"light", a:0,   b:0,   who:"pit",   temp:"Traeger 250°F", text:"Fill the hopper, foil the drip tray, empty the grease bucket. Start the Traeger, set 250°F, and give it 15 min to settle."},
+    {id:"dry",   a:5,   b:5,   who:"belly", text:"Wipe the salt and moisture off the skin. Hair dryer on cool for 10–15 min until the skin feels like parchment, not tacky."},
+    {id:"ribprep", a:15, b:15, who:"ribs",  text:"Pat dry. Trim silverskin and hard fat from the meat side; leave the bone-side membrane. Rub: 2 parts coarse pepper to 1 part granulated garlic, no salt. Binder is optional. Water, oil or mustard all hold the rub and none of them show up in the flavor."},
+    {id:"bellyprep", a:30, b:30, who:"belly", text:"Prick the skin all over, fat-deep only, never into the meat. Dust the skin with a light coat of salt mixed with ¼ tsp baking powder (powder, not soda). No vinegar; acid cancels the powder. Rub the meat sides only: 2 brown sugar, 1 paprika, 1 pepper, ½ garlic, ½ onion."},
+    {id:"on",    a:45,  b:45,  who:"both",  temp:"Traeger 250°F", text:"Both on. Ribs bone side down, since the heat comes from below. Belly skin up. Traeger probe in the thickest rib, away from bone; spot-check the belly with an instant-read. No spritzing the belly."},
+    {id:"boat",  a:195, b:255, who:"belly", temp:"~165°F", text:"Color is set: foil boat. Fold foil up around the bottom and sides, skin left exposed."},
+    {id:"wrap",  a:225, b:285, who:"ribs",  temp:"170–175°F", text:"Bark doesn't smear when you scratch it: wrap tight in butcher paper, or foil with a splash of stock. Check the hopper while the lid is open."},
+    {id:"bellypull", a:315, b:375, who:"belly", temp:"185–195°F", text:"Probe tender: pull it. Hold skin up and uncovered in a 170°F kitchen oven. Never tent it."},
+    {id:"ribpull", a:375, b:435, who:"ribs", temp:"203–208°F", text:"Probe slides in like warm butter: pull, keep wrapped, towel, cooler. Rest 45–60 min. Shut the Traeger down."},
+    {id:"oven",  a:400, b:440, who:"belly", temp:"oven 500°F", text:"Belly out of the holding oven. Crank the kitchen oven to 500°F, convection if you have it. Not the Traeger: its heat comes from under the meat, and a belly's worth of grease at max temp is a flare-up waiting to happen."},
+    {id:"crisp", a:420, b:455, who:"belly", text:"Level the slab with foil balls so the skin sits flat; foil stays on the sides. 10–20 min, rotate once, until blistered and puffed all over. Broiler instead: rack 6–8 in. below, 3–8 min, door cracked, eyes on it."},
+    {id:"slice", a:440, b:470, who:"belly", text:"Rest 10–15 min uncovered. Slice skin side down with a serrated or heavy knife."},
+    {id:"eat",   a:480, b:480, who:"both",  text:"Unwrap the ribs, slice between the bones, eat."}
+  ];
+  var LANES = {
+    ribs:  [["prep",15,45],["smoke",45,255],["wrap",255,405],["hold",405,470]],
+    belly: [["prep",5,45],["smoke",45,225],["wrap",225,345],["hold",345,420],["crisp",420,440],["hold",440,455]]
+  };
+  var WHO = {pit:"Traeger", ribs:"Ribs", belly:"Belly", both:"Both"};
+  var KEY = "smokeday.v1";
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+  var state = load(); state.checks = state.checks || {};
+
+  function toMin(v){ var p = v.split(":"); return (+p[0])*60 + (+p[1]); }
+  function toVal(m){ m = ((m % 1440) + 1440) % 1440; var h = Math.floor(m/60), mm = m % 60; return (h<10?"0":"")+h+":"+(mm<10?"0":"")+mm; }
+  function fmt(m, short){
+    m = ((m % 1440) + 1440) % 1440;
+    var h = Math.floor(m/60), mm = m % 60, ap = h < 12 ? "am" : "pm", h12 = h % 12 || 12;
+    if (short && mm === 0) return h12 + ap;
+    return h12 + ":" + (mm<10?"0":"") + mm + ap;
+  }
+  function nowMin(){ var d = new Date(); return d.getHours()*60 + d.getMinutes(); }
+
+  var light = document.getElementById("light"), eat = document.getElementById("eat");
+  if (!state.light){ state.light = toVal(Math.ceil(nowMin()/15)*15); }
+  light.value = state.light; eat.value = toVal(toMin(state.light) + TOTAL);
+
+  function drawLanes(){
+    Object.keys(LANES).forEach(function(k){
+      var el = document.getElementById("track-"+k); el.innerHTML = "";
+      LANES[k].forEach(function(s){
+        var d = document.createElement("div"); d.className = "seg " + s[0];
+        d.style.left = (s[1]/TOTAL*100) + "%"; d.style.width = ((s[2]-s[1])/TOTAL*100) + "%";
+        el.appendChild(d);
+      });
+    });
+  }
+  function drawAxis(t0){
+    var ax = document.getElementById("axis"); ax.innerHTML = "";
+    for (var h = 0; h <= 8; h++){
+      var t = document.createElement("div"); t.className = "tick"; t.style.left = (h/8*100) + "%"; ax.appendChild(t);
+      if (h % 2 === 0){
+        var l = document.createElement("div");
+        l.className = "tick-label" + (h===0?" first":"") + (h===8?" last":"");
+        l.style.left = (h/8*100) + "%"; l.textContent = fmt(t0 + h*60, true); ax.appendChild(l);
+      }
+    }
+  }
+  function drawSteps(t0){
+    var ol = document.getElementById("steps"); ol.innerHTML = "";
+    STEPS.forEach(function(s){
+      var li = document.createElement("li"); li.className = "step" + (state.checks[s.id] ? " done" : ""); li.dataset.id = s.id;
+      var when = s.a === s.b ? fmt(t0+s.a) : fmt(t0+s.a) + "–" + fmt(t0+s.b);
+      li.innerHTML =
+        '<label for="chk-'+s.id+'"><input type="checkbox" id="chk-'+s.id+'"'+(state.checks[s.id]?" checked":"")+'>' +
+        '<span class="meta"><span class="time">'+when+'</span><span class="tag '+s.who+'">'+WHO[s.who]+'</span>' +
+        (s.temp ? '<span class="temp">'+s.temp+'</span>' : '') + '</span>' +
+        '<p class="do">'+s.text+'</p></label>';
+      ol.appendChild(li);
+    });
+  }
+  function markNow(){
+    var t0 = toMin(light.value), el = ((nowMin() - t0) + 1440) % 1440;
+    var line = document.getElementById("now"), live = el <= TOTAL;
+    line.hidden = !live;
+    if (live){ line.style.left = "calc((100% - 56px) * " + (el/TOTAL) + ")"; }
+    var cur = null;
+    if (live){ STEPS.forEach(function(s){ if (s.a <= el && !state.checks[s.id] && !cur) cur = s.id; }); }
+    document.querySelectorAll(".step").forEach(function(li){ li.classList.toggle("current", li.dataset.id === cur); });
+  }
+  function render(){
+    var t0 = toMin(light.value);
+    drawLanes(); drawAxis(t0); drawSteps(t0); markNow();
+  }
+
+  light.addEventListener("change", function(){ if(!light.value) return; state.light = light.value; eat.value = toVal(toMin(light.value)+TOTAL); save(state); render(); });
+  eat.addEventListener("change", function(){ if(!eat.value) return; light.value = toVal(toMin(eat.value)-TOTAL); state.light = light.value; save(state); render(); });
+  document.getElementById("nowbtn").addEventListener("click", function(){ light.value = toVal(Math.ceil(nowMin()/5)*5); light.dispatchEvent(new Event("change")); });
+  document.getElementById("clear").addEventListener("click", function(){ state.checks = {}; save(state); render(); });
+  document.getElementById("steps").addEventListener("change", function(e){
+    if (e.target.type !== "checkbox") return;
+    var li = e.target.closest(".step"); state.checks[li.dataset.id] = e.target.checked; save(state);
+    li.classList.toggle("done", e.target.checked); markNow();
+  });
+
+  render(); setInterval(markNow, 60000);
+})();
+</script>
+</body>
+</html>
