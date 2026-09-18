@@ -24,6 +24,8 @@ for slug in sorted(os.listdir(ROOT)):
     if not os.path.isfile(page):
         continue
     src = open(page, encoding="utf-8", errors="replace").read()
+    if re.search(r'http-equiv="refresh"', src):   # a redirect stub for a moved artifact, not a page
+        continue
     title = re.search(r"<title>(.*?)</title>", src, re.S)
     title = html.unescape(title.group(1).strip()) if title else slug
     desc = re.search(r'<meta\s+name="description"\s+content="([^"]*)"', src)
