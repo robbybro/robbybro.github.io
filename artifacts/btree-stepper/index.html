@@ -101,6 +101,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:var(--o
 .log .go:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .log .n{font:400 12px var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .log .c{font:500 13.5px var(--mono);overflow-wrap:anywhere}
+.log .lb{display:block;font:400 11.5px/1.3 var(--sans, system-ui);color:var(--muted);margin-top:2px}
 .log .r{font:400 12px var(--mono);color:var(--good);text-align:right}
 .log .r span{display:block;white-space:nowrap}
 .log .r .warn{color:var(--bad)}
@@ -154,6 +155,7 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
           <option value="read">Read-heavy workload</option>
           <option value="sequential">Sequential inserts</option>
           <option value="teardown">Build up, tear down</option>
+          <option value="index">Secondary index on a changing column</option>
           <option value="blank">Blank</option>
         </select>
       </label>
@@ -259,6 +261,7 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
   function D(key){ return {type:"delete", key:key}; }
   function G(key){ return {type:"get", key:key}; }
   function Rg(a, b){ return {type:"range", key:a, hi:b}; }
+  function Lb(op, text){ op.label = text; return op; }
 
   var PRESETS = {
     tour: { maxKeys:3, memCap:4, start:10, base:-1,
@@ -279,6 +282,19 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
     teardown: { maxKeys:2, memCap:4, start:-1, base:-1,
       note:"Fourteen inserts, then fourteen deletes. The B-tree hands pages back as it shrinks. The LSM-tree gets bigger first, because every delete is a new tombstone, and only compaction makes it smaller.",
       ops:[50,20,80,10,30,60,90,5,15,25,35,55,65,85].map(function(k){return I(k);}).concat([5,15,10,25,20,30,35,50,55,60,65,80,85,90].map(D)) },
+    index: { maxKeys:3, memCap:3, start:7, base:7,
+      note:"A secondary index is a second set of keys of the same family, mapping the indexed value to the primary key. Here rows are keys 1–9 (a message, value = its sender) and index entries are keys 71–99 (sender × 10 + message, so 71 means \"sender 7 → message 1\"). Opens with four rows and their index entries loaded and the counters zeroed. \"Who did sender 7 send?\" is a range scan over 70–79. Re-pointing a message to a new sender is three calls on either engine: rewrite the row, delete the old index entry, insert the new one. The B-tree does all three in place. The LSM-tree can only append, so the old index entry stays on disk as a stale pointer under a tombstone until a compaction, and Storage climbs with every change. A real LSM engine writes blind, so the update\u2019s lookup here stands in for the read-before-write it needs to learn which old entry to tombstone. Messages never change sender in practice; this is what any index on a column that does change costs.",
+      ops:[Lb(I(1,"s7"),"row: message 1, sender 7"),Lb(I(71,"\u21921"),"index: sender 7 \u2192 message 1"),
+        Lb(I(2,"s7"),"row: message 2, sender 7"),Lb(I(72,"\u21922"),"index: sender 7 \u2192 message 2"),
+        Lb(I(3,"s9"),"row: message 3, sender 9"),Lb(I(93,"\u21923"),"index: sender 9 \u2192 message 3"),
+        Lb(I(4,"s7"),"row: message 4, sender 7"),Lb(I(74,"\u21924"),"index: sender 7 \u2192 message 4"),
+        Lb(Rg(70,79),"index query: what did sender 7 send?"),
+        Lb(U(1,"s8"),"re-point message 1 to sender 8: rewrite the row"),Lb(D(71),"\u2026 delete the old index entry"),Lb(I(81,"\u21921"),"\u2026 insert the new index entry"),
+        Lb(Rg(70,79),"index query: sender 7, after the change"),Lb(Rg(80,89),"index query: sender 8"),
+        Lb(U(2,"s8"),"re-point message 2 to sender 8: rewrite the row"),Lb(D(72),"\u2026 delete the old index entry"),Lb(I(82,"\u21922"),"\u2026 insert the new index entry"),
+        Lb(U(4,"s9"),"re-point message 4 to sender 9: rewrite the row"),Lb(D(74),"\u2026 delete the old index entry"),Lb(I(94,"\u21924"),"\u2026 insert the new index entry"),
+        Lb(G(71),"a stale pointer: is sender 7 \u2192 message 1 still there?"),
+        Lb(Rg(70,79),"index query: sender 7 now sends nothing")] },
     blank: { maxKeys:3, memCap:4, start:-1, base:-1, note:"An empty store. Add calls on the right.", ops:[] }
   };
 
@@ -515,6 +531,7 @@ footer kbd{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:
       var btn = document.createElement("button"); btn.type = "button"; btn.className = "go"; btn.id = "call-" + i;
       btn.innerHTML = '<span class="n"></span><span class="c"></span><span class="r"></span>';
       btn.children[0].textContent = i+1; btn.children[1].textContent = BTree.callText(op);
+      if (op.label){ var lb = document.createElement("span"); lb.className = "lb"; lb.textContent = op.label; btn.children[1].appendChild(lb); }
       if (S.view !== "lsm") btn.children[2].appendChild(resultSpan(S.view === "both" ? "B" : "", S.bt.meta[i]));
       if (S.view !== "btree") btn.children[2].appendChild(resultSpan(S.view === "both" ? "L" : "", S.lsm.meta[i]));
       var rm = document.createElement("button"); rm.type = "button"; rm.className = "rm"; rm.textContent = "×";
