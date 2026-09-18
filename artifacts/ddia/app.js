@@ -14,7 +14,6 @@
     if (!p.length) return {page:"home"};
     if (p[0] === "ch" && p[1]) return {page:"ch", n:p[1], sec:p[2] || null, item:p[3] || null};
     if (p[0] === "viz") return {page:"viz", slug:p[1] || null};
-    if (p[0] === "beelzebub") return {page:"system", sec:p[1] || null};
     return {page:"home"};
   }
 
@@ -23,7 +22,6 @@
     var items = [["#/", "Overview", r.page === "home"]];
     D.chapters.forEach(function(c){ items.push(["#/ch/" + c.n, "Ch. " + c.n, r.page === "ch" && String(r.n) === String(c.n)]); });
     items.push(["#/viz", "Visualizations", r.page === "viz"]);
-    items.push(["#/beelzebub", "Beelzebub", r.page === "system"]);
     $("topnav").innerHTML = items.map(function(i){ return '<a href="' + i[0] + '"' + (i[2] ? ' class="on"' : "") + '>' + esc(i[1]) + '</a>'; }).join("");
   }
   function renderSide(r){
@@ -35,14 +33,12 @@
         h += '<a class="sub' + (r.sec === "jargon" ? " on" : "") + '" href="#/ch/' + c.n + '/jargon">Jargon</a>';
         c.sections.forEach(function(s){ h += '<a class="sub' + (r.sec === s.id ? " on" : "") + '" href="#/ch/' + c.n + '/' + s.id + '">' + esc(s.title) + '</a>'; });
         h += '<a class="sub' + (r.sec === "takeaways" ? " on" : "") + '" href="#/ch/' + c.n + '/takeaways">Ten takeaways</a>';
-        if (c.applied) h += '<a class="sub' + (r.sec === "applied" ? " on" : "") + '" href="#/ch/' + c.n + '/applied">Applied to Beelzebub</a>';
       }
       h += '</div>';
     });
     h += '<div class="grp"><span>Visualizations</span>';
     D.viz.forEach(function(v){ h += '<a href="#/viz/' + v.slug + '"' + (r.page === "viz" && r.slug === v.slug ? ' class="on"' : "") + '>' + esc(v.title) + '</a>'; });
     h += '</div>';
-    if (D.system) h += '<div class="grp"><span>The system</span><a href="#/beelzebub"' + (r.page === "system" ? ' class="on"' : "") + '>Beelzebub at a glance</a></div>';
     $("side").innerHTML = h;
   }
 
@@ -94,9 +90,9 @@
   /* ---------- pages ---------- */
   function pageHome(){
     var h = '<div class="hero"><span class="kicker">Designing Data-Intensive Applications · 2nd edition</span><h1>Study site</h1>' +
-      '<p>One section per chapter: the jargon defined once, every question we worked through with the corrected answer hidden behind a click, ten takeaways, and the same concepts applied to the Postgres and Dispatch system running on the Mac mini. Interactive visualizations live under their own tab.</p>' +
+      '<p>One section per chapter: the jargon defined once, every question we worked through with the corrected answer hidden behind a click, and ten takeaways. Interactive visualizations live under their own tab.</p>' +
       '<div class="chips">' + D.chapters.map(function(c){ return '<a class="chip" href="#/ch/' + c.n + '">Ch. ' + c.n + ' · ' + esc(c.title) + '</a>'; }).join("") + D.viz.map(function(v){ return '<a class="chip" href="#/viz/' + v.slug + '">▶ ' + esc(v.title) + '</a>'; }).join("") + '</div></div>';
-    h += '<section class="blk"><h2>How to use it</h2><ul><li>Read a question, answer it out loud, then click <b>show</b>. Mark it <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li><b>What I said first</b> boxes are the wrong turns from the live sessions. They are the cheapest thing on the site: each one is a mistake already made once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li><li>The <b>Applied to Beelzebub</b> section under each chapter measures the real system against the chapter, with findings marked <span class="find ok">ok</span>, <span class="find fix">fixed</span>, or <span class="find idea">idea</span>.</li></ul></section>';
+    h += '<section class="blk"><h2>How to use it</h2><ul><li>Read a question, answer it out loud, then click <b>show</b>. Mark it <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li><b>What I said first</b> boxes are the wrong turns from the live sessions. They are the cheapest thing on the site: each one is a mistake already made once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li></ul></section>';
     var g = got(), total = 0, done = 0;
     D.chapters.forEach(function(c){ c.sections.forEach(function(s){ s.items.forEach(function(_, i){ total++; if (g["ch" + c.n + "-" + s.id + "-" + (i+1)]) done++; }); }); });
     h += '<section class="blk"><h2>Progress</h2><p>' + done + ' of ' + total + ' cards marked got it.</p></section>';
@@ -106,18 +102,11 @@
     var c = chapter(r.n); if (!c) return '<p>No such chapter.</p>';
     var h = '<div class="hero"><span class="kicker">Chapter ' + c.n + '</span><h1>' + esc(c.title) + '</h1><p>' + c.why + '</p>' +
       '<div class="chips"><a class="chip" href="#/ch/' + c.n + '/jargon">Jargon</a>' + c.sections.map(function(s){ return '<a class="chip" href="#/ch/' + c.n + '/' + s.id + '">' + esc(s.title) + '</a>'; }).join("") +
-      '<a class="chip" href="#/ch/' + c.n + '/takeaways">Ten takeaways</a>' + (c.applied ? '<a class="chip" href="#/ch/' + c.n + '/applied">Applied to Beelzebub</a>' : "") + (c.worksheet ? '<a class="chip" href="' + c.worksheet + '" target="_blank" rel="noopener">Worksheet Doc ↗</a>' : "") + '</div></div>';
+      '<a class="chip" href="#/ch/' + c.n + '/takeaways">Ten takeaways</a>' + (c.worksheet ? '<a class="chip" href="' + c.worksheet + '" target="_blank" rel="noopener">Worksheet Doc ↗</a>' : "") + '</div></div>';
     h += '<section class="blk" id="sec-jargon"><h2>Jargon, defined once</h2><div class="tbl"><table class="jarg"><thead><tr><th>Term</th><th>Plain meaning</th></tr></thead><tbody>' +
       c.jargon.map(function(j){ return '<tr><td>' + j[0] + '</td><td>' + j[1] + '</td></tr>'; }).join("") + '</tbody></table></div></section>';
     c.sections.forEach(function(s){ h += sectionBlock(c, s, false); });
     h += '<section class="blk" id="sec-takeaways"><h2>Ten takeaways</h2><ol class="take">' + c.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") + '</ol></section>';
-    if (c.applied){
-      h += '<section class="blk apply" id="sec-applied"><div class="blk-head"><div><h2>Applied to Beelzebub</h2><p class="muted" style="margin:4px 0 0;max-width:80ch">' + (c.applied.intro || "") + '</p></div></div>' +
-        c.applied.items.map(function(it, i){
-          var tag = it.tag ? '<span class="find ' + it.tag + '">' + ({ok:"ok",fix:"fixed",idea:"idea"}[it.tag] || it.tag) + '</span>' : "";
-          return '<article class="card" id="ch' + c.n + '-applied-' + (i+1) + '"><div class="q" role="button" tabindex="0"><span class="n">' + (i+1) + '</span><span class="t">' + tag + it.q + '</span><span class="tog">show</span></div><div class="a" hidden>' + it.a + '</div><div class="foot" hidden><a class="prog" href="#/ch/' + c.n + '/applied/' + (i+1) + '">link</a><button type="button" class="got-btn" hidden></button></div></article>';
-        }).join("") + '</section>';
-    }
     return h;
   }
   function pageViz(r){
@@ -129,16 +118,12 @@
     return '<div class="hero"><span class="kicker">Visualizations</span><h1>Interactive</h1><p>Mechanisms from the chapters you can step through.</p></div><div class="viz-list">' +
       D.viz.map(function(v){ return '<a class="card" href="#/viz/' + v.slug + '"><h3>' + esc(v.title) + '</h3><p class="muted" style="margin:0">' + v.blurb + '</p><p class="prog" style="margin:6px 0 0">Chapter ' + v.chapter + '</p></a>'; }).join("") + '</div>';
   }
-  function pageSystem(){
-    var s = D.system; if (!s) return '<p>Nothing here yet.</p>';
-    return '<div class="hero"><span class="kicker">The system the chapters get applied to</span><h1>Beelzebub at a glance</h1><p>' + s.intro + '</p></div>' + s.body;
-  }
 
   /* ---------- render ---------- */
   function render(){
     var r = route(), main = $("main");
     renderNav(r); renderSide(r);
-    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "system" ? pageSystem() : pageHome();
+    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : pageHome();
     bindCards(main); updateProg();
     main.querySelectorAll("[data-show],[data-hide]").forEach(function(b){
       b.addEventListener("click", function(){
@@ -146,13 +131,12 @@
         sec.querySelectorAll(".card").forEach(function(el){ if (el._toggle) el._toggle(open); });
       });
     });
-    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "system" ? "Beelzebub" : "DDIA") + " · DDIA study site";
+    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : "DDIA") + " · DDIA study site";
     $("side").classList.remove("open");
     if (r.page === "ch" && r.sec){
       var target = r.item ? $("ch" + r.n + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
       if (target){
         if (r.item && target._toggle) target._toggle(true);
-        if (r.item && r.sec === "applied"){ var a = target.querySelector(".a"), f = target.querySelector(".foot"); if (a){ a.hidden = false; f.hidden = false; target.querySelector(".tog").textContent = "hide"; } }
         setTimeout(function(){ target.scrollIntoView({block:"start"}); }, 30);
       }
     } else window.scrollTo(0, 0);
