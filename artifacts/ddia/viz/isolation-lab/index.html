@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Isolation Lab</title>
+<meta name="description" content="Step through concurrent bank transactions under each isolation level and each replication topology, and watch which anomalies happen.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF; --cell:#E9EDF5;
+  --t1:#2F6FEB; --t1-bg:#DCE8FF; --t2:#C2410C; --t2-bg:#FDE3D6; --t3:#8B3FD9; --t3-bg:#ECDDFB;
+  --good:#12805C; --good-bg:#D6F2E6; --bad:#B42318; --bad-bg:#FEE4E2; --warn:#8B5A00; --warn-bg:#FFF1CC;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320; --cell:#232B40;
+    --t1:#6EA0FF; --t1-bg:#1D3260; --t2:#FF8A5C; --t2-bg:#47210F; --t3:#C79BFF; --t3-bg:#35205A;
+    --good:#4FD1A1; --good-bg:#12382C; --bad:#FF7A6E; --bad-bg:#4A1A17; --warn:#FFD166; --warn-bg:#3A2E0A;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:20px 16px 48px}
+.wrap{max-width:1280px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:-.01em}
+h2{font-family:var(--mono);font-weight:600;font-size:14px;margin:0}
+.sub{margin:4px 0 0;color:var(--muted);max-width:80ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 14px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field>span,.label{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;max-width:100%}
+select:disabled{opacity:.5}
+button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:40px;padding:0 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 6px 6px 0;max-width:100ch}
+.note b{color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+@media (min-width:1000px){.app{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}}
+.left,.right{display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* tables */
+.store{padding:14px 16px}
+.store-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.store-head span{font-size:12.5px;color:var(--muted)}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+table{border-collapse:collapse;width:100%;font:500 13.5px var(--mono)}
+caption{text-align:left;font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-bottom:4px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td .v{display:inline-block}
+td .pending{display:block;font-size:12px;border-radius:4px;padding:1px 6px;margin-top:3px;white-space:nowrap}
+td .pending.t1{background:var(--t1-bg);color:var(--t1)} td .pending.t2{background:var(--t2-bg);color:var(--t2)} td .pending.t3{background:var(--t3-bg);color:var(--t3)}
+td .hist{display:block;font-size:11.5px;color:var(--muted);text-decoration:line-through;margin-top:2px}
+td.hot{background:var(--cell)}
+tr.new td{background:var(--good-bg)}
+.replicas{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.replica{border:1px dashed var(--rule);border-radius:8px;padding:10px 12px}
+.replica h3{font:600 12.5px var(--mono);margin:0 0 6px;display:flex;justify-content:space-between;gap:8px}
+.replica h3 span{color:var(--muted);font-weight:400}
+.replica.lag h3 span{color:var(--warn)}
+
+/* timeline */
+.tl{padding:14px 16px}
+.tl-grid{display:grid;gap:6px 10px;align-items:stretch}
+.tl-head{font:600 12px var(--mono);padding:4px 8px;border-radius:6px;text-align:center}
+.tl-head.t1{background:var(--t1-bg);color:var(--t1)} .tl-head.t2{background:var(--t2-bg);color:var(--t2)} .tl-head.t3{background:var(--t3-bg);color:var(--t3)}
+.tl-head.tn{color:var(--muted)}
+.step{border:1px solid var(--rule);border-radius:6px;padding:6px 9px;font:500 13px var(--mono);min-height:34px;background:var(--panel);opacity:.55}
+.step.done{opacity:1}
+.step.cur{opacity:1;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.step.t1{border-left:3px solid var(--t1)} .step.t2{border-left:3px solid var(--t2)} .step.t3{border-left:3px solid var(--t3)}
+.step .r{display:block;font:400 12px var(--sans);color:var(--muted);margin-top:2px}
+.step .r.ok{color:var(--good)} .step .r.bad{color:var(--bad)} .step .r.warn{color:var(--warn)}
+.step.blank{border:none;background:transparent}
+.num{font:400 12px var(--mono);color:var(--muted);text-align:right;padding-top:8px}
+
+/* transport + verdict */
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--rule)}
+.transport button{width:44px;height:44px;padding:0;display:grid;place-items:center}
+.transport button.primary{width:56px}
+.transport svg{width:20px;height:20px;fill:currentColor}
+.transport .spacer{flex:1}
+.transport .prog{font:400 12.5px var(--mono);color:var(--muted)}
+.caption{padding:12px 16px;min-height:4.2em;border-top:1px solid var(--rule)}
+.caption p{margin:0;max-width:90ch}
+.verdict{padding:14px 16px}
+.verdict h2{margin-bottom:8px}
+.vrow{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 12px;padding:8px 0;border-top:1px solid var(--rule);font-size:14px}
+.vrow:first-of-type{border-top:none}
+.tag{display:inline-block;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;white-space:nowrap;justify-self:start}
+.tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.good{background:var(--good-bg);color:var(--good)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.info{background:var(--cell);color:var(--muted)}
+.matrix{padding:14px 16px}
+.matrix table{font:500 12.5px var(--mono)}
+.matrix td{text-align:center}
+.matrix td:first-child{text-align:left;font-family:var(--sans);font-weight:500}
+.matrix th{text-align:center}
+.matrix th:first-child{text-align:left}
+.matrix .cell-bad{color:var(--bad)} .matrix .cell-good{color:var(--good)} .matrix .cell-warn{color:var(--warn)} .matrix .cell-na{color:var(--muted)}
+.matrix tr.on td{background:var(--cell)}
+footer{color:var(--muted);font-size:13px;max-width:100ch}
+footer p{margin:6px 0}
+kbd{font:500 12px var(--mono);background:var(--cell);border:1px solid var(--rule);border-radius:4px;padding:1px 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Isolation Lab</h1>
+    <p class="sub">Two or three transactions run against a small bank at the same time. Pick the isolation level and the replication topology, then step through the interleaving and watch what each transaction sees, what blocks, what aborts, and which anomaly survives.</p>
+    <div class="settings">
+      <label class="field"><span>Scenario</span><select id="scenario"></select></label>
+      <label class="field"><span>Variant</span><select id="variant"></select></label>
+      <label class="field"><span>Isolation level</span>
+        <select id="iso">
+          <option value="ru">read uncommitted</option>
+          <option value="rc" selected>read committed</option>
+          <option value="si">snapshot isolation (repeatable read)</option>
+          <option value="ser">serializable (SSI)</option>
+        </select>
+      </label>
+      <label class="field"><span>Topology</span>
+        <select id="topo">
+          <option value="single" selected>single node</option>
+          <option value="leader">single leader + async follower</option>
+          <option value="multi">multi-leader (two regions)</option>
+          <option value="leaderless">leaderless (quorum, no transactions)</option>
+        </select>
+      </label>
+      <label class="field"><span>Speed</span><select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+    </div>
+    <p class="note" id="note"></p>
+  </header>
+
+  <div class="app">
+    <div class="left">
+      <section class="panel store">
+        <div class="store-head"><h2>The bank</h2><span id="store-sub"></span></div>
+        <div id="store"></div>
+      </section>
+      <section class="panel verdict">
+        <h2>Verdict</h2>
+        <div id="verdict"></div>
+      </section>
+    </div>
+    <div class="right">
+      <section class="panel">
+        <div class="tl"><h2 style="margin-bottom:10px">Interleaving</h2><div class="tl-grid" id="tl"></div></div>
+        <div class="caption" aria-live="polite"><p id="cap"></p></div>
+        <div class="transport">
+          <button type="button" id="b-first" aria-label="Reset" title="Reset (Home)"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="2.5" height="12"/><path d="M17 4v12L7 10z"/></svg></button>
+          <button type="button" id="b-prev" aria-label="Back one step" title="Back (←)"><svg viewBox="0 0 20 20"><path d="M14 4v12L5 10z"/></svg></button>
+          <button type="button" id="b-play" class="primary" aria-label="Play" title="Play / pause (Space)"><svg viewBox="0 0 20 20" id="ico-play"><path d="M6 4v12l10-6z"/></svg></button>
+          <button type="button" id="b-next" aria-label="Forward one step" title="Forward (→)"><svg viewBox="0 0 20 20"><path d="M6 4v12l9-6z"/></svg></button>
+          <button type="button" id="b-last" aria-label="Run to end" title="Run to end (End)"><svg viewBox="0 0 20 20"><path d="M3 4v12l10-6z"/><rect x="14.5" y="4" width="2.5" height="12"/></svg></button>
+          <span class="spacer"></span><span class="prog" id="prog"></span>
+        </div>
+      </section>
+      <section class="panel matrix">
+        <h2 style="margin-bottom:8px">This scenario across every level</h2>
+        <div id="matrix"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <p>Keyboard: <kbd>←</kbd> <kbd>→</kbd> step, <kbd>Space</kbd> play or pause, <kbd>Home</kbd> reset, <kbd>End</kbd> run to the end.</p>
+    <p><strong>What the engine models.</strong> Rows are multi-versioned: each version carries the transaction that wrote it. <em>Read uncommitted</em> returns the newest version regardless of commit state and takes no locks. <em>Read committed</em> returns the newest committed version and takes a row lock on write, held to commit. <em>Snapshot isolation</em> reads from the set of transactions committed at the transaction's start, and aborts a writer whose row was committed by someone else after that start (first committer wins). <em>Serializable</em> is snapshot isolation plus a record of every read, including searches; at commit, a transaction aborts if a concurrent transaction committed a write that would have changed one of its reads. A blocked step is deferred until the lock holder ends, then replayed.</p>
+    <p><strong>What the topologies add.</strong> <em>Single leader</em> commits on the leader and applies each commit to the follower three steps later; transactions marked as read-only read the follower. <em>Multi-leader</em> runs each transaction on its own region's copy under the chosen isolation level, then reconciles the two copies by last commit wins. <em>Leaderless</em> has no transactions at all: every statement is an immediate quorum write or read, so there is nothing to isolate and nothing to abort; the isolation selector is disabled.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  /* ---------------- data ---------------- */
+  var CUSTOMERS = [{id:"alice", name:"Alice"}, {id:"bob", name:"Bob"}, {id:"carol", name:"Carol"}];
+  function baseAccounts(){ return [
+    {id:"A1", owner:"alice", balance:500, type:"checking"},
+    {id:"A2", owner:"alice", balance:500, type:"savings"},
+    {id:"B1", owner:"bob",   balance:300, type:"checking"}
+  ]; }
+  var TCOLORS = {T1:"t1", T2:"t2", T3:"t3"};
+
+  /* ---------------- scenarios ----------------
+     step: {t:"T1", op, ...}
+       read  {row:"acc:A1", field:"balance"}
+       scan  {table:"accounts", where:fn, label}
+       write {row, field, value | delta}      value = literal from app; delta = atomic in-db increment
+       insert{row:"acc:A3", data:{...}}
+       commit / abort
+       check {fn(txnReads)->bool, label}      an application-side decision recorded for the verdict
+     ro:true on a step's txn means it is read-only (used by single-leader routing) */
+  var SCENARIOS = {
+    dirty_read: {
+      title: "Dirty read", invariant: "A read must never return a value that was never committed.",
+      note: "T1 moves $100 out of A1 and then changes its mind. T2 reads A1 in between. Under read uncommitted, T2 sees $400, a balance that never existed.",
+      ro: {T2:true},
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"read",  row:"acc:A1", field:"balance"},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:-100, say:"A1 −100"},
+        {t:"T2", op:"read",  row:"acc:A1", field:"balance"},
+        {t:"T1", op:"abort"},
+        {t:"T2", op:"commit"}
+      ],
+      verdict: function(s){
+        var r = s.reads.filter(function(x){ return x.t==="T2" && x.row==="acc:A1"; })[0];
+        if (s.topo === "leaderless") return bad("No atomicity", "T1's −$100 was a quorum write the moment it was issued, so \"abort\" could not undo it: A1 stays at " + money(s.final["acc:A1"].balance) + ". T2's read of " + money(r ? r.value : 0) + " is not dirty, it is simply true, because there is no transaction for it to be dirty relative to. The anomaly moved from the read to the write.");
+        if (r && r.value !== 500) return bad("Dirty read", "T2 read A1 = " + money(r.value) + " from T1's uncommitted write. T1 then aborted, so T2 acted on a balance that never existed.");
+        return good("No dirty read", "T2 read A1 = " + money(r ? r.value : 500) + ", the last committed value, while T1's uncommitted change stayed invisible.");
+      }
+    },
+    dirty_write: {
+      title: "Dirty write", invariant: "Both of an account's fields must be changed by the same transaction.",
+      note: "Alice and Carol both try to take over account B1: each sets its owner and then its type. The two updates interleave. Under read uncommitted, nothing stops T2 from overwriting T1's uncommitted write, and B1 ends up half Alice's, half Carol's.",
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"write", row:"acc:B1", field:"owner", value:"alice", say:"B1.owner = alice"},
+        {t:"T2", op:"write", row:"acc:B1", field:"owner", value:"carol", say:"B1.owner = carol"},
+        {t:"T2", op:"write", row:"acc:B1", field:"type",  value:"carol-savings", say:"B1.type = carol-savings"},
+        {t:"T1", op:"write", row:"acc:B1", field:"type",  value:"alice-savings", say:"B1.type = alice-savings"},
+        {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+      ],
+      verdict: function(s){
+        var b1 = s.final["acc:B1"];
+        var okPair = (b1.owner==="alice" && b1.type==="alice-savings") || (b1.owner==="carol" && b1.type==="carol-savings");
+        if (!okPair) return bad("Dirty write", "B1 ended as owner = " + b1.owner + ", type = " + b1.type + ": one transaction's write was overwritten before it committed, so the row mixes two transactions.");
+        return good("No dirty write", "The second writer waited for the first to finish, so B1 is consistently " + b1.owner + "'s (" + b1.type + ").");
+      }
+    },
+    read_skew: {
+      title: "Read skew (non-repeatable read)", invariant: "Alice's two accounts always total $1,000.",
+      note: "T1 transfers $100 from A2 to A1. T2 is Alice's statement, reading both accounts. Under read committed each read is honest and the total is still wrong, because the two reads saw two different committed states.",
+      ro: {T2:true},
+      steps: [
+        {t:"T2", op:"begin"}, {t:"T1", op:"begin"},
+        {t:"T2", op:"read",  row:"acc:A1", field:"balance"},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:100,  say:"A1 +100"},
+        {t:"T1", op:"write", row:"acc:A2", field:"balance", delta:-100, say:"A2 −100"},
+        {t:"T1", op:"commit"},
+        {t:"T2", op:"read",  row:"acc:A2", field:"balance"},
+        {t:"T2", op:"commit"}
+      ],
+      verdict: function(s){
+        var a1 = rd(s,"T2","acc:A1"), a2 = rd(s,"T2","acc:A2");
+        if (a1==null || a2==null) return info("Incomplete", "T2 did not finish.");
+        if (a1 + a2 !== 1000) return bad("Read skew", "Alice's statement shows A1 = " + money(a1) + " and A2 = " + money(a2) + ", total " + money(a1+a2) + ". Each read saw a committed value, but from two different moments; no state with that total ever existed.");
+        return good("Consistent statement", "T2 read A1 = " + money(a1) + " and A2 = " + money(a2) + " from one snapshot, total " + money(a1+a2) + ".");
+      }
+    },
+    deadlock: {
+      title: "Deadlock", invariant: "Both transfers complete, in some order.",
+      note: "T1 moves $50 from A1 to A2; T2 moves $50 from A2 to A1. Each locks its first account, then wants the other's. Under any level with row locks, both wait forever, until the database notices the cycle and kills one. The serial variant shows the same two transfers with no overlap.",
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:-50, say:"A1 −50"},
+        {t:"T2", op:"write", row:"acc:A2", field:"balance", delta:-50, say:"A2 −50"},
+        {t:"T1", op:"write", row:"acc:A2", field:"balance", delta:50,  say:"A2 +50"},
+        {t:"T2", op:"write", row:"acc:A1", field:"balance", delta:50,  say:"A1 +50"},
+        {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+      ],
+      variants: {
+        ordered: {label:"fix: lock accounts in a fixed order", note:"Fix: every transaction touches accounts in the same order (A1 before A2). T2 now waits for T1's lock on A1 before it holds anything, so no cycle can form.",
+          steps: [
+            {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+            {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:-50, say:"A1 −50"},
+            {t:"T2", op:"write", row:"acc:A1", field:"balance", delta:50,  say:"A1 +50"},
+            {t:"T1", op:"write", row:"acc:A2", field:"balance", delta:50,  say:"A2 +50"},
+            {t:"T2", op:"write", row:"acc:A2", field:"balance", delta:-50, say:"A2 −50"},
+            {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+          ]}
+      },
+      verdict: function(s){
+        var a1 = s.final["acc:A1"].balance, a2 = s.final["acc:A2"].balance, dl = s.aborted.filter(function(x){ return /deadlock/.test(x); });
+        if (dl.length) return warn("Deadlock detected", dl.join(" ") + " A1 = " + money(a1) + ", A2 = " + money(a2) + ": only one transfer applied. The victim must be retried by the application; the database guarantees only that it will not hang forever.");
+        if (a1 === 500 && a2 === 500) return good("Both transfers applied", "A1 = " + money(a1) + ", A2 = " + money(a2) + ". The transfers ran without a lock cycle.");
+        if (s.aborted.length) return warn("One transfer aborted, no deadlock", s.aborted.join(" ") + " A1 = " + money(a1) + ", A2 = " + money(a2) + ". The second transfer's late write hit a row committed after its snapshot; the application retries it and both land.");
+        return bad("A transfer was lost", "A1 = " + money(a1) + ", A2 = " + money(a2) + ": the two transfers overwrote each other instead of composing.");
+      }
+    },
+    lost_update: {
+      title: "Lost update", invariant: "Two $100 deposits must add $200.",
+      note: "Two tellers each read A1, add $100 in application code, and write the result back. Under read committed the second write waits for the first, then overwrites it with a stale sum. The atomic version, SET balance = balance + 100, would not have this problem at any level.",
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"read",  row:"acc:A1", field:"balance"},
+        {t:"T2", op:"read",  row:"acc:A1", field:"balance"},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", fromRead:100, say:"A1 = (what I read) + 100"},
+        {t:"T2", op:"write", row:"acc:A1", field:"balance", fromRead:100, say:"A1 = (what I read) + 100"},
+        {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+      ],
+      variants: {
+        atomic: {label:"fix: atomic UPDATE (balance = balance + 100)", note:"Fix: let the database do the read-modify-write. UPDATE … SET balance = balance + 100 re-reads the row after acquiring its lock, so the second deposit builds on the first at every level that locks.",
+          steps: [
+            {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+            {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:100, say:"A1 = A1 + 100"},
+            {t:"T2", op:"write", row:"acc:A1", field:"balance", delta:100, say:"A1 = A1 + 100"},
+            {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+          ]},
+        forupdate: {label:"fix: SELECT … FOR UPDATE before reading", note:"Fix: lock the row before reading it. T2's read waits behind T1's lock and sees the deposited value when it resumes; under snapshot isolation the late lock instead aborts T2, which is also correct.",
+          steps: [
+            {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+            {t:"T1", op:"lock", rows:["acc:A1"]},
+            {t:"T1", op:"read",  row:"acc:A1", field:"balance"},
+            {t:"T2", op:"lock", rows:["acc:A1"]},
+            {t:"T2", op:"read",  row:"acc:A1", field:"balance"},
+            {t:"T1", op:"write", row:"acc:A1", field:"balance", fromRead:100, say:"A1 = (what I read) + 100"},
+            {t:"T2", op:"write", row:"acc:A1", field:"balance", fromRead:100, say:"A1 = (what I read) + 100"},
+            {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+          ]}
+      },
+      verdict: function(s){
+        var v = s.final["acc:A1"].balance, aborted = s.aborted;
+        if (v === 700) return good("Both deposits kept", "A1 = " + money(v) + ". " + (aborted.length ? aborted.join(" ") + " The application retried and got the right answer." : "The second writer waited and then computed from the current value."));
+        if (aborted.length) return warn("Lost update prevented by abort", "A1 = " + money(v) + ". " + aborted.join(" ") + " The deposit is not lost, it is the application's job to retry the aborted transaction.");
+        return bad("Lost update", "A1 = " + money(v) + " after two $100 deposits. The second transaction wrote a sum computed from the value it read before the first deposit committed, and silently erased it.");
+      }
+    },
+    write_skew: {
+      title: "Write skew", invariant: "Alice's accounts may not total below $0 (a joint overdraft limit).",
+      note: "Alice's balances are $100 and $100. Two withdrawals of $150 run at once, each from a different account, each checking that the combined total covers it. Each check passes on its own snapshot; each write touches a different row; together they overdraw. Only serializable catches it.",
+      setup: function(a){ a[0].balance = 100; a[1].balance = 100; },
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"scan", table:"accounts", where:function(r){ return r.owner==="alice"; }, label:"sum Alice's accounts"},
+        {t:"T2", op:"scan", table:"accounts", where:function(r){ return r.owner==="alice"; }, label:"sum Alice's accounts"},
+        {t:"T1", op:"check", label:"total ≥ 150?", fn:function(rs){ return sumBal(rs) >= 150; }},
+        {t:"T2", op:"check", label:"total ≥ 150?", fn:function(rs){ return sumBal(rs) >= 150; }},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:-150, say:"A1 −150"},
+        {t:"T2", op:"write", row:"acc:A2", field:"balance", delta:-150, say:"A2 −150"},
+        {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+      ],
+      variants: {
+        forupdate: {label:"fix: SELECT … FOR UPDATE on both accounts", note:"Fix: lock every row the decision depends on before reading it. T2 waits behind T1's locks; when it resumes under read committed it re-reads the new balances and stops; under snapshot isolation the late lock aborts it. Both are correct. This is the chapter's \"materialize the conflict\" move: give the invariant a row to lock.",
+          steps: [
+            {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+            {t:"T1", op:"lock", rows:["acc:A1","acc:A2"]},
+            {t:"T1", op:"scan", table:"accounts", where:function(r){ return r.owner==="alice"; }, label:"sum Alice's accounts"},
+            {t:"T2", op:"lock", rows:["acc:A1","acc:A2"]},
+            {t:"T2", op:"scan", table:"accounts", where:function(r){ return r.owner==="alice"; }, label:"sum Alice's accounts"},
+            {t:"T1", op:"check", label:"total ≥ 150?", fn:function(rs){ return sumBal(rs) >= 150; }},
+            {t:"T2", op:"check", label:"total ≥ 150?", fn:function(rs){ return sumBal(rs) >= 150; }},
+            {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:-150, say:"A1 −150"},
+            {t:"T2", op:"write", row:"acc:A2", field:"balance", delta:-150, say:"A2 −150"},
+            {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+          ]}
+      },
+      verdict: function(s){
+        var tot = s.final["acc:A1"].balance + s.final["acc:A2"].balance;
+        if (tot < 0) return bad("Write skew", "Alice's accounts now total " + money(tot) + ". Both withdrawals checked the total, both saw $200, both wrote to different rows, and no row-level conflict was ever detected. The invariant lived between rows.");
+        if (s.aborted.length) return good("Write skew prevented", "Total " + money(tot) + ". " + s.aborted.join(" ") + " Serializable noticed that a committed write changed the rows the other transaction had read, and aborted it.");
+        return good("Invariant held", "Total " + money(tot) + ".");
+      }
+    },
+    phantom: {
+      title: "Phantom (open one account per customer)", invariant: "Each customer has at most one savings account.",
+      note: "Bob has no savings account. Two branch tellers each check for one, find none, and open one. The row each check would have found did not exist yet, so there was nothing to conflict on. A uniqueness constraint would fix this at any level; so does serializable, by tracking the search itself.",
+      steps: [
+        {t:"T1", op:"begin"}, {t:"T2", op:"begin"},
+        {t:"T1", op:"scan", table:"accounts", where:function(r){ return r.owner==="bob" && r.type==="savings"; }, label:"Bob's savings accounts"},
+        {t:"T2", op:"scan", table:"accounts", where:function(r){ return r.owner==="bob" && r.type==="savings"; }, label:"Bob's savings accounts"},
+        {t:"T1", op:"check", label:"none found?", fn:function(rs){ return rs.length===0; }},
+        {t:"T2", op:"check", label:"none found?", fn:function(rs){ return rs.length===0; }},
+        {t:"T1", op:"insert", row:"acc:B2", data:{id:"B2", owner:"bob", balance:0, type:"savings"}, say:"insert B2 (bob, savings)"},
+        {t:"T2", op:"insert", row:"acc:B3", data:{id:"B3", owner:"bob", balance:0, type:"savings"}, say:"insert B3 (bob, savings)"},
+        {t:"T1", op:"commit"}, {t:"T2", op:"commit"}
+      ],
+      variants: {
+        unique: {label:"fix: uniqueness constraint on (owner, type)", note:"Fix: a unique index on (owner, type). The second insert waits on the index entry T1 is holding, and when T1 commits, it fails the constraint. The database materialized the invariant into something it can lock, at every level.", unique:function(r){ return r.owner + "/" + r.type; }}
+      },
+      verdict: function(s){
+        var n = Object.keys(s.final).filter(function(k){ var r=s.final[k]; return r && r.owner==="bob" && r.type==="savings"; }).length;
+        if (n > 1) return bad("Phantom", "Bob now has " + n + " savings accounts. Each transaction searched, found none, and inserted; the search results were invalidated by an insert the search could not have locked.");
+        if (s.aborted.length) return good("Phantom prevented", "Bob has " + n + " savings account. " + s.aborted.join(" ") + " The second insert would have changed the result of a search the first transaction had already relied on.");
+        return good("One account", "Bob has " + n + " savings account.");
+      }
+    },
+    stale_read: {
+      title: "Read-your-writes (replication)", invariant: "After Alice's transfer commits, Alice's own balance check must show it.",
+      note: "Alice transfers $100 into A1 and immediately checks her balance. On a single node any level shows it. With a lagging follower serving reads, her check reads the follower and sees the old balance: an anomaly no isolation level can fix, because it is between nodes, not between transactions.",
+      ro: {T2:true},
+      steps: [
+        {t:"T1", op:"begin"},
+        {t:"T1", op:"write", row:"acc:A1", field:"balance", delta:100, say:"A1 +100"},
+        {t:"T1", op:"commit"},
+        {t:"T2", op:"begin"},
+        {t:"T2", op:"read", row:"acc:A1", field:"balance"},
+        {t:"T2", op:"commit"}
+      ],
+      verdict: function(s){
+        var v = rd(s,"T2","acc:A1");
+        if (v == null) return info("Incomplete", "T2 did not finish.");
+        if (v !== 600) return bad("Stale read", "Alice's own check returned A1 = " + money(v) + " after her $100 transfer committed. The read was served by a replica that had not applied the commit yet. Isolation levels govern one node; this is replication lag.");
+        return good("Read-your-writes held", "Alice saw A1 = " + money(v) + ", including her transfer.");
+      }
+    }
+  };
+  function sumBal(rs){ return rs.reduce(function(a,r){ return a + r.balance; }, 0); }
+  function rd(s, t, row){ var r = s.reads.filter(function(x){ return x.t===t && x.row===row; }); return r.length ? r[r.length-1].value : null; }
+  function money(n){ return (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString(); }
+  function bad(h,d){ return {tag:"bad", head:h, detail:d}; } function good(h,d){ return {tag:"good", head:h, detail:d}; }
+  function warn(h,d){ return {tag:"warn", head:h, detail:d}; } function info(h,d){ return {tag:"info", head:h, detail:d}; }
+
+  /* ---------------- engine: one MVCC store ---------------- */
+  function Store(name){
+    this.name = name;
+    this.rows = {};      // key -> [versions]; version = {data, xmin, xmax, committed, aborted}
+    this.txns = {};      // T -> {status, snap, reads:[], scans:[], writes:Set, locks:Set, waiting}
+    this.clock = 0;      // commit sequence
+    this.log = [];       // committed changes in order: {seq, key, data}
+  }
+  Store.prototype.seed = function(accounts){
+    var self = this;
+    CUSTOMERS.forEach(function(c){ self.rows["cust:"+c.id] = [{data:copy(c), xmin:"init", xmax:null, committed:true, cseq:0}]; });
+    accounts.forEach(function(a){ self.rows["acc:"+a.id] = [{data:copy(a), xmin:"init", xmax:null, committed:true, cseq:0}]; });
+  };
+  Store.prototype.begin = function(t){
+    var inprog = Object.keys(this.txns).filter(function(k){ return this.txns[k].status==="active"; }, this);
+    this.txns[t] = {status:"active", snapSeq:this.clock, inprog:inprog, reads:[], scans:[], writes:{}, locks:{}, deferred:[]};
+  };
+  Store.prototype.visible = function(v, t, iso){
+    var tx = this.txns[t];
+    if (v.aborted) return false;
+    if (v.xmin === t) return true;                          // my own write
+    if (iso === "ru") return true;                          // anything, even uncommitted
+    if (!v.committed) return false;
+    if (iso === "rc") return true;                          // newest committed
+    // si / ser: committed before my snapshot
+    return v.cseq <= tx.snapSeq && tx.inprog.indexOf(v.xmin) < 0;
+  };
+  Store.prototype.current = function(key, t, iso){
+    var vs = this.rows[key] || [];
+    for (var i = vs.length-1; i >= 0; i--) if (this.visible(vs[i], t, iso)) return vs[i];
+    return null;
+  };
+  Store.prototype.committedHead = function(key){
+    var vs = this.rows[key] || [];
+    for (var i = vs.length-1; i >= 0; i--) if (vs[i].committed && !vs[i].aborted) return vs[i];
+    return null;
+  };
+  Store.prototype.lockHolder = function(key, t){
+    for (var k in this.txns){ var tx = this.txns[k]; if (k !== t && tx.status==="active" && tx.locks[key]) return k; }
+    return null;
+  };
+  // returns {result, blockedBy, aborted, text}
+  Store.prototype.exec = function(step, iso){
+    var t = step.t, tx = this.txns[t], key = step.row;
+    if (step.op === "begin"){ this.begin(t); return {text: t + " begins" + (iso==="si"||iso==="ser" ? "; snapshot taken at commit #" + this.clock : "")}; }
+    if (!tx || tx.status !== "active") return {text: t + " is " + (tx ? tx.status : "not started") + "; step ignored", skipped:true};
+    if (step.op === "read"){
+      var v = this.current(key, t, iso), val = v ? v.data[step.field] : null;
+      tx.reads.push({key:key, field:step.field, value:val, xmin:v ? v.xmin : null, cseq:v ? v.cseq : 0});
+      var why = v && !v.committed && v.xmin !== t ? " (uncommitted, from " + v.xmin + ")" : iso==="si"||iso==="ser" ? " (from snapshot)" : " (last committed)";
+      return {result:val, text: t + " reads " + key.split(":")[1] + "." + step.field + " = " + fmt(val) + why, dirty: !!(v && !v.committed && v.xmin !== t)};
+    }
+    if (step.op === "scan"){
+      var out = [], self = this;
+      Object.keys(this.rows).filter(function(k){ return k.indexOf(step.table==="accounts" ? "acc:" : "cust:") === 0; }).forEach(function(k){
+        var v = self.current(k, t, iso); if (v && step.where(v.data)) out.push(copy(v.data));
+      });
+      tx.scans.push({where:step.where, rows:out.map(function(r){ return r.id; }), label:step.label});
+      tx.lastScan = out;
+      return {result:out, text: t + " searches: " + step.label + " → " + (out.length ? out.map(function(r){ return r.id + " " + money(r.balance); }).join(", ") : "none")};
+    }
+    if (step.op === "check"){
+      var ok = step.fn(tx.lastScan || []);
+      tx.decision = ok;
+      return {result:ok, text: t + " decides: " + step.label + " " + (ok ? "yes, proceed" : "no, stop"), decision:ok};
+    }
+    if (step.op === "lock"){
+      if (iso === "ru") return {text: t + " SELECT … FOR UPDATE: no locks are taken under read uncommitted, so this does nothing"};
+      for (var li = 0; li < step.rows.length; li++){
+        var lk = step.rows[li], lh = this.lockHolder(lk, t);
+        if (lh) return {blockedBy: lh, text: t + " SELECT … FOR UPDATE on " + lk.split(":")[1] + ": " + lh + " holds its lock; " + t + " waits"};
+      }
+      if (iso === "si" || iso === "ser"){
+        for (var lj = 0; lj < step.rows.length; lj++){ var lhd = this.committedHead(step.rows[lj]); if (lhd && lhd.cseq > tx.snapSeq && lhd.xmin !== t){ this.abort(t); return {aborted:true, text: t + " SELECT … FOR UPDATE on " + step.rows[lj].split(":")[1] + ": the row was committed by " + lhd.xmin + " after " + t + "'s snapshot — could not serialize access, " + t + " aborts"}; } }
+      }
+      step.rows.forEach(function(k){ tx.locks[k] = 1; });
+      return {text: t + " locks " + step.rows.map(function(k){ return k.split(":")[1]; }).join(", ") + " (SELECT … FOR UPDATE)"};
+    }
+    if (step.op === "write" || step.op === "insert"){
+      if ((step.op === "write" || step.op === "insert") && tx.decision === false) return {text: t + " skips the " + step.op + " (its check said stop)", skipped:true};
+      if (step.op === "insert" && this.unique){
+        var ukey = "uniq:" + this.unique(step.data), uh = this.lockHolder(ukey, t);
+        if (uh) return {blockedBy: uh, text: t + " insert " + step.data.id + ": the unique index entry for (" + this.unique(step.data) + ") is held by " + uh + "; " + t + " waits"};
+        var dup = Object.keys(this.rows).some(function(k){ var h = this.committedHead(k); return h && this.unique(h.data) === this.unique(step.data); }, this);
+        if (dup){ this.abort(t); return {aborted:true, constraint:true, text: t + " insert " + step.data.id + " violates the uniqueness constraint on (" + this.unique(step.data) + "); " + t + " aborts"}; }
+        tx.locks[ukey] = 1;
+      }
+      if (iso !== "ru"){
+        var holder = this.lockHolder(key, t);
+        if (holder) return {blockedBy: holder, text: t + " wants to write " + key.split(":")[1] + " but " + holder + " holds its lock; " + t + " waits"};
+      }
+      // first-committer-wins for si/ser on existing rows
+      if ((iso==="si" || iso==="ser") && step.op === "write"){
+        var head = this.committedHead(key);
+        if (head && head.cseq > tx.snapSeq){ this.abort(t); return {aborted:true, text: t + " tries to write " + key.split(":")[1] + ", but it was committed by " + head.xmin + " after " + t + "'s snapshot: first committer wins, " + t + " aborts"}; }
+      }
+      var base = step.op === "insert" ? null : this.current(key, t, iso === "ru" ? "ru" : "rc");
+      if (step.op === "insert" && this.rows[key] && this.committedHead(key)) return {text: t + " insert " + key + ": already exists", skipped:true};
+      var data = step.op === "insert" ? copy(step.data) : copy(base ? base.data : {});
+      if (step.op === "write"){
+        if (step.delta != null){ var cur = this.committedHead(key); var from = iso==="ru" ? (this.current(key,t,"ru")||cur).data[step.field] : (this.current(key, t, "rc") || cur).data[step.field]; data[step.field] = from + step.delta; }
+        else if (step.fromRead != null){ var r = tx.reads.filter(function(x){ return x.key===key; }).pop(); data[step.field] = (r ? r.value : 0) + step.fromRead; }
+        else data[step.field] = step.value;
+      }
+      var dirty = false, top = (this.rows[key]||[]).slice(-1)[0];
+      if (!this.rows[key]) this.rows[key] = [];
+      if (iso === "ru" && top && !top.committed && !top.aborted){
+        // no locks: overwrite whoever's uncommitted version is on top, in place
+        dirty = top.xmin !== t;
+        top.data = data; top.writers = top.writers || {}; top.writers[top.xmin] = 1; top.writers[t] = 1; top.xmin = t;
+      } else {
+        var v2 = {data:data, xmin:t, xmax:null, committed:false, aborted:false, cseq:null, writers:{}}; v2.writers[t] = 1;
+        var mine = this.rows[key].filter(function(x){ return x.xmin===t && !x.committed && !x.aborted; })[0];
+        if (mine) mine.data = data; else this.rows[key].push(v2);
+      }
+      tx.writes[key] = 1; tx.locks[key] = 1;
+      return {text: t + " " + (step.say || (step.op + " " + key)) + (step.delta != null ? " → " + fmt(data[step.field]) : "") + (dirty ? " — overwrites " + top.xmin + "'s uncommitted write" : ""), dirty:dirty};
+    }
+    if (step.op === "commit"){
+      if (iso === "ser"){
+        var reason = this.ssiConflict(t); if (reason){ this.abort(t); return {aborted:true, text: t + " tries to commit; " + reason + " — serializable aborts " + t}; }
+      }
+      this.commit(t);
+      return {committed:true, text: t + " commits (#" + this.clock + ")"};
+    }
+    if (step.op === "abort"){ this.abort(t); return {aborted:true, voluntary:true, text: t + " aborts; its writes are discarded"}; }
+    return {text:"?"};
+  };
+  Store.prototype.ssiConflict = function(t){
+    var tx = this.txns[t], self = this;
+    // a row I read was committed by someone else after my snapshot
+    for (var i = 0; i < tx.reads.length; i++){
+      var r = tx.reads[i], head = this.committedHead(r.key);
+      if (head && head.cseq > tx.snapSeq && head.xmin !== t) return "a row it read (" + r.key.split(":")[1] + ") was changed and committed by " + head.xmin + " after its snapshot";
+    }
+    // a search I ran would return a different result now
+    for (var j = 0; j < tx.scans.length; j++){
+      var sc = tx.scans[j], now = [];
+      Object.keys(this.rows).forEach(function(k){ var h = self.committedHead(k); if (h && sc.where(h.data)) now.push(h.data.id + ":" + h.data.balance); });
+      var then = sc.rows.map(function(id){ var v = self.rows[Object.keys(self.rows).filter(function(k){ return k.split(":")[1]===id; })[0]]; return id; });
+      var nowIds = now.map(function(x){ return x.split(":")[0]; }).sort().join(","), thenIds = then.slice().sort().join(",");
+      var changedVals = sc.rows.some(function(id){ var k = "acc:"+id; var h = self.committedHead(k); return h && h.cseq > tx.snapSeq && h.xmin !== t; });
+      if (nowIds !== thenIds || changedVals) return "its search '" + sc.label + "' would now return a different result because of a concurrent commit";
+    }
+    return null;
+  };
+  Store.prototype.commit = function(t){
+    var tx = this.txns[t]; this.clock++;
+    for (var k in tx.writes){ this.rows[k].forEach(function(v){ if ((v.xmin===t || (v.writers && v.writers[t])) && !v.committed && !v.aborted){ v.committed = true; v.cseq = this.clock; } }, this); }
+    for (var k2 in tx.writes){ var head = this.committedHead(k2); this.log.push({seq:this.clock, key:k2, data:copy(head.data), by:t}); }
+    tx.status = "committed"; tx.locks = {};
+  };
+  Store.prototype.abort = function(t){
+    var tx = this.txns[t];
+    for (var k in tx.writes){ this.rows[k].forEach(function(v){ if (v.xmin===t && !v.committed) v.aborted = true; }); }
+    tx.status = "aborted"; tx.locks = {};
+  };
+  Store.prototype.snapshotFinal = function(){
+    var out = {}; for (var k in this.rows){ var h = this.committedHead(k); out[k] = h ? copy(h.data) : null; } return out;
+  };
+  Store.prototype.applyCommitted = function(entry){ // used for followers / reconciliation
+    if (!this.rows[entry.key]) this.rows[entry.key] = [];
+    this.rows[entry.key].push({data:copy(entry.data), xmin:entry.by, xmax:null, committed:true, aborted:false, cseq:entry.seq});
+    if (entry.seq > this.clock) this.clock = entry.seq;
+  };
+  function copy(o){ return JSON.parse(JSON.stringify(o)); }
+  function fmt(v){ return typeof v === "number" ? money(v) : String(v); }
+
+  /* ---------------- simulation over a topology ---------------- */
+  // Produces frames: [{stores:{name:rowsSnapshot}, txns, reads, caption, stepIndex, status}]
+  function simulate(scn, iso, topo, variantKey){
+    var variant = (scn.variants && scn.variants[variantKey]) || null;
+    var steps = variant && variant.steps ? variant.steps : (variantKey === "serial" ? serialize(scn.steps) : scn.steps);
+    var accounts = baseAccounts(); if (scn.setup) scn.setup(accounts);
+    var stores = {}, frames = [], reads = [], aborted = [], notes = [];
+    var LAG = 3;
+    if (topo === "single"){ stores.node = new Store("node"); stores.node.seed(accounts); }
+    else if (topo === "leader"){ stores.leader = new Store("leader"); stores.leader.seed(accounts); stores.follower = new Store("follower"); stores.follower.seed(accounts); }
+    else if (topo === "multi"){ stores.west = new Store("west (T1's region)"); stores.west.seed(accounts); stores.east = new Store("east (T2's region)"); stores.east.seed(accounts); }
+    else { stores.quorum = new Store("quorum of 3"); stores.quorum.seed(accounts); }
+    if (variant && variant.unique) for (var un in stores) stores[un].unique = variant.unique;
+    var effIso = topo === "leaderless" ? "ru" : iso;
+    function storeFor(step){
+      if (topo === "single" || topo === "leaderless") return stores[Object.keys(stores)[0]];
+      if (topo === "leader") return (scn.ro && scn.ro[step.t] && (step.op==="read"||step.op==="scan"||step.op==="begin"||step.op==="commit"||step.op==="check")) ? stores.follower : stores.leader;
+      return step.t === "T2" ? stores.east : stores.west;
+    }
+    var pendingApply = [];   // for leader topology: {atStep, entry}
+    var deferred = {};       // T -> [steps] waiting on a lock
+    var stepsDone = [];
+    function snap(){ var s = {}; for (var k in stores) s[k] = stores[k].rows; return copy(s); }
+    function txnStates(){ var o = {}; for (var k in stores) for (var t in stores[k].txns) o[t] = stores[k].txns[t].status; return o; }
+    function push(cap, idx, kind){ frames.push({stores:snap(), txns:txnStates(), reads:copy(reads), caption:cap, step:idx, kind:kind||"", done:stepsDone.slice(), aborted:aborted.slice()}); }
+    push("Starting state. " + (topo==="leaderless" ? "Leaderless: every statement is an immediate quorum write or read; nothing can be undone." : topo==="multi" ? "T1 runs in the west region, T2 in the east. Each region's copy is isolated on its own; they reconcile at the end." : topo==="leader" ? "Writes go to the leader; " + Object.keys(scn.ro||{}).join(", ") + (scn.ro ? " reads the follower, which applies each commit " + LAG + " steps late." : "") : ""), -1);
+
+    function runStep(step, idx, viaDeferred){
+      var st = storeFor(step);
+      // leaderless: no begin/commit/abort semantics
+      if (topo === "leaderless"){
+        if (step.op === "begin"){ st.begin(step.t); st.txns[step.t].status="active"; push(step.t + " starts issuing statements (no transaction exists in a leaderless store)", idx, "info"); return; }
+        if (step.op === "commit"){ st.txns[step.t].status="committed"; push(step.t + " is done. There was nothing to commit: each write was already durable on a quorum the moment it was issued.", idx, "info"); return; }
+        if (step.op === "abort"){ st.txns[step.t].status="aborted"; push(step.t + " wants to abort, but its earlier writes are already on a quorum. Nothing is undone: no atomicity.", idx, "bad"); return; }
+        var r0 = st.exec(step, "ru"); if (step.op==="read") reads.push({t:step.t,row:step.row,value:r0.result});
+        // commit each write immediately
+        var wrote = (step.op==="write"||step.op==="insert") && !r0.skipped && st.rows[step.row];
+        if (wrote){ st.txns[step.t].locks = {}; st.rows[step.row].forEach(function(v){ if (!v.committed && !v.aborted){ st.clock++; v.committed=true; v.cseq=st.clock; } }); }
+        push(r0.text + (wrote ? " (quorum write, visible to everyone immediately)" : ""), idx, r0.dirty ? "bad" : "");
+        return;
+      }
+      var r = st.exec(step, effIso);
+      if (r.blockedBy){
+        // deadlock: is the holder (transitively) waiting on me?
+        var chain = r.blockedBy, seen = {}, cycle = false;
+        while (chain && !seen[chain]){ seen[chain] = 1; if (chain === step.t){ cycle = true; break; } var ct = st.txns[chain]; chain = ct ? ct.waiting : null; }
+        if (cycle){
+          st.abort(step.t); aborted.push(step.t + " was aborted (deadlock victim).");
+          push(r.text.replace("; " + step.t + " waits", "") + ", and " + r.blockedBy + " is waiting on " + step.t + ": deadlock. The database detects the cycle and aborts " + step.t + " so " + r.blockedBy + " can proceed.", idx, "bad");
+          for (var dw in deferred){ var dq = deferred[dw]; if (dq && dq.length && st.txns[dw] && st.txns[dw].waiting === step.t){ st.txns[dw].waiting = null; deferred[dw] = []; dq.forEach(function(qs){ runStep(qs, idx, true); }); } }
+          return;
+        }
+        deferred[step.t] = deferred[step.t] || []; deferred[step.t].push(step);
+        st.txns[step.t].waiting = r.blockedBy;
+        push(r.text, idx, "warn"); return;
+      }
+      if (step.op === "read") reads.push({t:step.t, row:step.row, value:r.result});
+      if (r.aborted && !r.voluntary) aborted.push(step.t + " was aborted (" + (r.constraint ? "uniqueness constraint" : effIso==="ser" && step.op==="commit" ? "serializable validation" : "first committer wins") + ").");
+      if (r.committed && topo === "leader" && st === stores.leader){
+        st.log.filter(function(e){ return e.seq === st.clock; }).forEach(function(e){ pendingApply.push({at: idx + LAG, entry:e}); });
+      }
+      push(r.text, idx, r.aborted ? "bad" : r.committed ? "ok" : r.dirty ? "bad" : (r.skipped ? "info" : ""));
+      // if this txn ended, replay whoever was waiting on it
+      if (r.committed || r.aborted){
+        for (var w in deferred){
+          var q = deferred[w]; if (!q || !q.length) continue;
+          var s0 = storeFor(q[0]); if (s0.txns[w] && s0.txns[w].waiting === step.t){
+            s0.txns[w].waiting = null; deferred[w] = [];
+            q.forEach(function(qs){ runStep(qs, idx, true); });
+          }
+        }
+      }
+    }
+    steps.forEach(function(step, idx){
+      // deliver follower applies that are due
+      if (topo === "leader"){ pendingApply.filter(function(p){ return p.at <= idx; }).forEach(function(p){ stores.follower.applyCommitted(p.entry); }); pendingApply = pendingApply.filter(function(p){ return p.at > idx; }); }
+      stepsDone.push(idx);
+      if (deferred[step.t] && deferred[step.t].length){ deferred[step.t].push(step); push(step.t + " is still waiting; this step queues behind it", idx, "warn"); return; }
+      runStep(step, idx, false);
+    });
+    // wrap up
+    var finalStore;
+    if (topo === "leader"){
+      pendingApply.forEach(function(p){ stores.follower.applyCommitted(p.entry); }); pendingApply = [];
+      push("Replication catches up: the follower now matches the leader.", steps.length, "info");
+      finalStore = stores.leader;
+    } else if (topo === "multi"){
+      // reconcile: last commit wins per key by commit seq, ties -> east (arbitrary)
+      var merged = new Store("reconciled"); merged.seed(accounts);
+      var all = stores.west.log.concat(stores.east.log).sort(function(a,b){ return a.seq - b.seq; });
+      var lost = [];
+      var byKey = {};
+      all.forEach(function(e){ if (byKey[e.key] && byKey[e.key].by !== e.by) lost.push(byKey[e.key].by + "'s write to " + e.key.split(":")[1]); byKey[e.key] = e; });
+      for (var k in byKey) merged.applyCommitted(byKey[k]);
+      stores.reconciled = merged;
+      push("The two regions replicate to each other. Conflicting writes to the same row are resolved last-commit-wins" + (lost.length ? "; discarded: " + lost.join(", ") : "; no row was written in both regions") + ". Neither region's isolation level ever saw the other region's transaction.", scn.steps.length, lost.length ? "bad" : "info");
+      finalStore = merged;
+      notes.push(lost.length ? "Multi-leader reconciliation silently discarded " + lost.join(" and ") + "." : "");
+    } else finalStore = stores[Object.keys(stores)[0]];
+    var final = finalStore.snapshotFinal();
+    var verdict = scn.verdict({final:final, reads:reads, aborted:aborted, topo:topo});
+    return {frames:frames, verdict:verdict, notes:notes.filter(Boolean), stores:Object.keys(stores), steps:steps};
+  }
+  // serial variant: every step of T1, then every step of T2, then T3 (no overlap at all)
+  function serialize(steps){
+    var byT = {}; steps.forEach(function(st){ (byT[st.t] = byT[st.t] || []).push(st); });
+    return ["T1","T2","T3"].reduce(function(acc, t){ return acc.concat(byT[t] || []); }, []);
+  }
+
+  /* ---------------- rendering ---------------- */
+  function $(id){ return document.getElementById(id); }
+  var S = {scn:"dirty_read", iso:"rc", topo:"single", variant:"interleaved", sim:null, cursor:0, playing:false, speed:1};
+  var timer = null;
+  function txnView(){ return S.sim.frames[S.cursor]; }
+
+  function renderStore(){
+    var f = txnView(), html = "";
+    var names = Object.keys(f.stores);
+    var multi = names.length > 1;
+    if (multi) html += '<div class="replicas">';
+    names.forEach(function(n){
+      var rows = f.stores[n];
+      var lag = S.topo === "leader" && n === "follower";
+      html += multi ? '<div class="replica' + (lag ? " lag" : "") + '"><h3>' + n + (lag ? ' <span>applies commits 3 steps late</span>' : n==="reconciled" ? ' <span>after last-commit-wins</span>' : '') + '</h3>' : "";
+      html += '<div class="tables">' + tableHtml("customers", rows, "cust:") + tableHtml("accounts", rows, "acc:") + '</div>';
+      if (multi) html += '</div>';
+    });
+    if (multi) html += '</div>';
+    $("store").innerHTML = html;
+    $("store-sub").textContent = S.topo === "single" ? "one node, multi-versioned rows" : S.topo === "leader" ? "leader + follower" : S.topo === "multi" ? "two regions, each a leader" : "no transactions, quorum reads and writes";
+  }
+  function tableHtml(name, rows, prefix){
+    var keys = Object.keys(rows).filter(function(k){ return k.indexOf(prefix)===0; }).sort();
+    var cols = prefix==="cust:" ? ["id","name"] : ["id","owner","balance","type"];
+    var h = '<table><caption>' + name + '</caption><thead><tr>' + cols.map(function(c){ return '<th>' + c + '</th>'; }).join("") + '</tr></thead><tbody>';
+    keys.forEach(function(k){
+      var vs = rows[k], head = null, i;
+      for (i = vs.length-1; i >= 0; i--) if (vs[i].committed && !vs[i].aborted){ head = vs[i]; break; }
+      var pend = vs.filter(function(v){ return !v.committed && !v.aborted; });
+      var isNew = head && head.xmin !== "init" && vs.length === 1;
+      h += '<tr' + (isNew ? ' class="new"' : '') + '>';
+      cols.forEach(function(c){
+        var cell = '<td' + (pend.length ? ' class="hot"' : '') + '>';
+        cell += '<span class="v">' + (head ? fmt(head.data[c]) : '<span style="color:var(--muted)">—</span>') + '</span>';
+        pend.forEach(function(p){ if (c !== "id" && (!head || p.data[c] !== head.data[c])) cell += '<span class="pending ' + TCOLORS[p.xmin] + '">' + p.xmin + ': ' + fmt(p.data[c]) + '</span>'; });
+        cell += '</td>'; h += cell;
+      });
+      h += '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+  function renderTimeline(){
+    var scn = SCENARIOS[S.scn], steps = S.sim.steps, f = txnView(), ts = ["T1","T2"].concat(steps.some(function(s){ return s.t==="T3"; }) ? ["T3"] : []);
+    var g = $("tl"); g.style.gridTemplateColumns = "28px " + ts.map(function(){ return "minmax(0,1fr)"; }).join(" ");
+    var h = '<div class="num"></div>' + ts.map(function(t){ return '<div class="tl-head ' + TCOLORS[t] + '">' + t + (scn.ro && scn.ro[t] ? ' <span style="font-weight:400;opacity:.8">read-only</span>' : '') + '</div>'; }).join("");
+    // result text per step index from frames
+    var resByStep = {}; S.sim.frames.slice(0, S.cursor+1).forEach(function(fr){ if (fr.step >= 0){ resByStep[fr.step] = resByStep[fr.step] || []; resByStep[fr.step].push(fr); } });
+    steps.forEach(function(st, i){
+      h += '<div class="num">' + (i+1) + '</div>';
+      ts.forEach(function(t){
+        if (st.t !== t){ h += '<div class="step blank"></div>'; return; }
+        var frs = resByStep[i] || [], done = i <= f.step, cur = f.step === i;
+        var label = st.op === "begin" ? "BEGIN" : st.op === "commit" ? "COMMIT" : st.op === "abort" ? "ABORT" : st.op === "read" ? "read " + st.row.split(":")[1] + "." + st.field : st.op === "scan" ? "search: " + st.label : st.op === "check" ? "if " + st.label : st.op === "lock" ? "FOR UPDATE " + st.rows.map(function(k){ return k.split(":")[1]; }).join(", ") : (st.say || st.op);
+        var res = "";
+        if (frs.length){ var last = frs[frs.length-1]; var kind = last.kind; res = '<span class="r ' + (kind==="bad" ? "bad" : kind==="ok" ? "ok" : kind==="warn" ? "warn" : "") + '">' + shortRes(last.caption) + '</span>'; }
+        h += '<div class="step ' + TCOLORS[t] + (done ? " done" : "") + (cur ? " cur" : "") + '">' + label + res + '</div>';
+      });
+    });
+    g.innerHTML = h;
+  }
+  function shortRes(cap){
+    var m = cap.match(/= ([^ (]+)/); if (/reads/.test(cap) && m) return "→ " + m[1];
+    if (/→ (none|[A-Z]\d.*)/.test(cap)) return cap.replace(/^.*→ /, "→ ");
+    if (/deadlock/.test(cap)) return "deadlock → aborted";
+    if (/waits/.test(cap)) return "blocked";
+    if (/locks /.test(cap)) return "locked";
+    if (/aborts/.test(cap)) return "aborted";
+    if (/commits/.test(cap)) return "committed";
+    if (/decides/.test(cap)) return /yes/.test(cap) ? "yes" : "no";
+    if (/overwrites/.test(cap)) return "dirty write!";
+    if (/skips/.test(cap)) return "skipped";
+    if (/→ /.test(cap)) return cap.replace(/^.*→ /, "→ ");
+    return "";
+  }
+  function renderVerdict(){
+    var done = S.cursor === S.sim.frames.length-1, v = S.sim.verdict, scn = SCENARIOS[S.scn], h = "";
+    h += '<div class="vrow"><span class="tag info">invariant</span><div>' + scn.invariant + '</div></div>';
+    if (done){
+      h += '<div class="vrow"><span class="tag ' + v.tag + '">' + (v.tag==="bad" ? "anomaly" : v.tag==="good" ? "held" : v.tag==="warn" ? "aborted" : "note") + '</span><div><b>' + v.head + '.</b> ' + v.detail + '</div></div>';
+      S.sim.notes.forEach(function(n){ h += '<div class="vrow"><span class="tag bad">topology</span><div>' + n + '</div></div>'; });
+      h += '<div class="vrow"><span class="tag info">why</span><div>' + explain(S.scn, S.iso, S.topo, v) + '</div></div>';
+    } else h += '<div class="vrow"><span class="tag info">pending</span><div>Run to the end for the verdict.</div></div>';
+    $("verdict").innerHTML = h;
+  }
+  function explain(scn, iso, topo, v){
+    if (S.variant === "serial" && topo !== "single" && v.tag === "bad") return "The statements did not overlap, and the anomaly still appeared: it came from the topology, not from the interleaving. On a replica, a commit can be applied between two reads of a read-only transaction under read committed; across regions, both sides commit before they reconcile.";
+    if (S.variant === "serial") return "With no overlap there is nothing to isolate: T2 begins after T1 has committed, sees T1's result, and every level behaves identically. Serializable means \"as if this had happened,\" and the point of the other levels is how far they let the real interleaving drift from it.";
+    if (S.variant === "atomic") return iso === "si" || iso === "ser" ? "The database performs the read-modify-write itself, but under snapshot isolation the second UPDATE, resuming after the first committed, finds the row changed since its snapshot and aborts (Postgres: could not serialize access). Nothing is lost; the retry adds on top of the new value." : iso === "rc" ? "The database performs the read-modify-write itself, under the row lock, re-reading the current value after the lock is acquired. There is no stale read for the application to act on." : "Read uncommitted takes no lock, so even the atomic form races: each UPDATE computed from whatever was on top at the time.";
+    if (S.variant === "forupdate") return iso === "si" || iso === "ser" ? "Under snapshot isolation a FOR UPDATE lock on a row that was committed after your snapshot is refused (Postgres: could not serialize access due to concurrent update). The transaction aborts rather than act on a stale premise, and a retry sees the new state." : iso === "rc" ? "FOR UPDATE takes the row locks before the read. T2 blocks until T1 commits, then re-reads the committed state and decides on current data. The invariant now has rows to lock." : "Read uncommitted takes no locks, so FOR UPDATE is a no-op here.";
+    if (S.variant === "unique") return iso === "ru" ? "Even under read uncommitted, the unique index is a shared structure outside any snapshot: the second insert collides with the first in the index and is rejected at commit." : "The unique index is checked against the current committed state, not the transaction's snapshot: snapshot for reading, reality for writing. T2's insert waits on T1's index entry, then fails.";
+    if (S.variant === "ordered") return "Both transactions request locks in the same order, so the second one blocks before it holds anything the first one needs. A lock cycle needs two transactions each holding what the other wants; a global lock order makes that impossible.";
+    if (scn === "deadlock" && iso === "ru") return "No locks, so no deadlock. The transfers happened to compose here because each one's second write read the other's uncommitted value on top; nothing guaranteed that, and under read uncommitted a differently timed interleaving loses one.";
+    if (scn === "deadlock") return "T1 held A1 and wanted A2; T2 held A2 and wanted A1. Neither can finish until the other does. Every lock-based level has this failure mode; the database's deadlock detector finds the cycle and aborts one transaction (the victim) so the other can proceed. The victim is the application's to retry, and the fix that prevents it is a fixed lock order.";
+    if (topo === "leaderless") return "A leaderless store has no transactions: each write is its own quorum operation, visible as soon as it lands, with no lock, no snapshot, and no abort. Every anomaly in this lab is possible, and \"isolation level\" is not a concept it has. The fixes live in the application: idempotent writes, version vectors, and conflict-free data types.";
+    if (topo === "multi" && v.tag === "bad") return "Isolation levels are enforced within one node. With two leaders, each transaction ran alone in its region and was perfectly isolated there; the conflict only exists when the regions reconcile, and by then both have committed. Multi-leader systems need conflict avoidance (route this account's writes to one region) or a merge rule the data can tolerate.";
+    if (topo === "leader" && v.tag === "bad" && scn === "stale_read") return "The transfer committed on the leader under whatever isolation you chose. The balance check read a follower that had not applied it yet. No isolation level speaks to this; the fix is routing a user's own reads to the leader or to a follower that has caught up to their write.";
+    var E = {
+      dirty_read: {ru:"Read uncommitted returns the newest version of a row even if the transaction that wrote it is still running. T2 saw T1's in-flight change.", rc:"Read committed keeps the old committed value beside the uncommitted one and hands readers the old value, with no lock. T1's change stayed invisible until it committed or, here, aborted.", si:"Snapshot isolation reads only versions committed before the transaction started. T1's change was not.", ser:"Same as snapshot isolation; serializable adds nothing here because there was no committed conflict to detect."},
+      dirty_write: {ru:"Read uncommitted takes no locks on write, so T2 overwrote T1's uncommitted value and T1 then overwrote T2's. The row mixes both.", rc:"Read committed takes a row lock on the first write and holds it to commit; T2 blocked until T1 finished, then applied its writes on top. Consistent, and note that the second transaction's values won.", si:"Same lock as read committed. T2 waited on the row lock; when it resumed, its row was committed after its snapshot, so first-committer-wins aborted T2.", ser:"Same as snapshot isolation."},
+      read_skew: {ru:"Each of T2's reads returned whatever was newest. The two reads came from different moments.", rc:"Each read returned the committed value at that instant, and T1 committed between them. Both reads were honest and the statement is wrong: read committed makes no promise across two reads.", si:"Both reads came from the snapshot at T2's start, so T1's transfer, committed later, was invisible to the whole transaction. This is the case snapshot isolation exists for: long reads, backups, statements.", ser:"Same as snapshot isolation."},
+      lost_update: {ru:"No locks, no snapshot: both wrote their stale sum and the last one stood.", rc:"T2 blocked on T1's row lock, then wrote a sum computed from the value it had read before T1 committed. Read committed protects the write, not the read-modify-write. The fix is an atomic UPDATE (SET balance = balance + 100), SELECT FOR UPDATE, or compare-and-set.", si:"T2 blocked on the lock; when it resumed, A1 had been committed after T2's snapshot, so first-committer-wins aborted T2 rather than let it overwrite. Postgres does this under repeatable read; MySQL does not, and would show the lost update.", ser:"Detected the same way as snapshot isolation, by first-committer-wins on the row."},
+      write_skew: {ru:"No coordination of any kind.", rc:"Each transaction read the committed balances, decided, and wrote its own row. No row was written by both, so no lock ever collided, and the invariant across the two rows broke.", si:"Each transaction's snapshot showed $200; each wrote a different row; first-committer-wins only checks the row being written, which the other transaction never touched. Write skew is the anomaly snapshot isolation cannot see.", ser:"Serializable recorded what each transaction read. When T2 tried to commit, a row it had read (A1) had been changed and committed by T1 after T2's snapshot, so T2's decision was based on a stale premise and it aborted. The retry would see $50 and refuse."},
+      phantom: {ru:"No coordination.", rc:"Each search found no savings account, and each insert created a new row that the other's search had no way to lock: the row did not exist when the search ran. A uniqueness constraint on (owner, type) would have rejected the second insert at commit.", si:"Same as read committed: first-committer-wins looks at rows being written, and the two inserts are different rows. The phantom is the write skew of searches.", ser:"Serializable tracked the search itself, not just rows. T2's insert changed the result of T1's search, so at commit the second transaction aborted. That is a predicate check, the SSI answer to phantoms."},
+      stale_read: {ru:"On one node, every level shows a committed write to a later transaction.", rc:"T1 committed before T2 began; T2 reads the committed value.", si:"T2's snapshot was taken after T1's commit, so it includes the transfer.", ser:"Same."}
+    };
+    return (E[scn] && E[scn][iso]) || "";
+  }
+  var ISO_NAMES = {ru:"read uncommitted", rc:"read committed", si:"snapshot isolation", ser:"serializable"};
+  var TOPO_NAMES = {single:"single node", leader:"leader + follower", multi:"multi-leader", leaderless:"leaderless"};
+  function renderMatrix(){
+    var scn = SCENARIOS[S.scn], isos = ["ru","rc","si","ser"], topos = ["single","leader","multi","leaderless"];
+    var h = '<table><thead><tr><th>topology</th>' + isos.map(function(i){ return '<th>' + ISO_NAMES[i] + '</th>'; }).join("") + '</tr></thead><tbody>';
+    topos.forEach(function(tp){
+      h += '<tr' + (tp===S.topo ? ' class="on"' : '') + '><td>' + TOPO_NAMES[tp] + '</td>';
+      isos.forEach(function(i){
+        if (tp === "leaderless" && i !== "ru"){ h += '<td class="cell-na">n/a</td>'; return; }
+        var r = simulate(scn, i, tp, S.variant).verdict;
+        var cls = r.tag === "bad" ? "cell-bad" : r.tag === "good" ? "cell-good" : r.tag === "warn" ? "cell-warn" : "cell-na";
+        var sym = r.tag === "bad" ? "✗ " + shortHead(r.head) : r.tag === "good" ? "✓" : r.tag === "warn" ? "abort" : "?";
+        h += '<td class="' + cls + '"' + (tp===S.topo && i===S.iso ? ' style="outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px"' : '') + '>' + sym + '</td>';
+      });
+      h += '</tr>';
+    });
+    $("matrix").innerHTML = h + '</tbody></table>';
+  }
+  function shortHead(hd){ return hd.replace(/ \(.*\)/, "").toLowerCase(); }
+
+  function go(idx, instant){
+    S.cursor = Math.max(0, Math.min(S.sim.frames.length-1, idx));
+    renderStore(); renderTimeline(); renderVerdict();
+    $("cap").textContent = txnView().caption;
+    $("prog").textContent = "step " + S.cursor + " / " + (S.sim.frames.length-1);
+    $("b-prev").disabled = $("b-first").disabled = S.cursor === 0;
+    $("b-next").disabled = $("b-last").disabled = S.cursor === S.sim.frames.length-1;
+  }
+  function variantsOf(scn){
+    var v = {interleaved:{label:"the race (interleaved)"}, serial:{label:"no overlap (T1 then T2)"}};
+    if (scn.variants) for (var k in scn.variants) v[k] = scn.variants[k];
+    return v;
+  }
+  function fillVariants(){
+    var vs = variantsOf(SCENARIOS[S.scn]), sel = $("variant"); sel.innerHTML = "";
+    Object.keys(vs).forEach(function(k){ var o = document.createElement("option"); o.value = k; o.textContent = vs[k].label; sel.appendChild(o); });
+    if (!vs[S.variant]) S.variant = "interleaved"; sel.value = S.variant;
+  }
+  function resim(){
+    var scn = SCENARIOS[S.scn], vs = variantsOf(scn);
+    S.sim = simulate(scn, S.iso, S.topo, S.variant);
+    var vnote = S.variant === "serial" ? " <em>Serial variant: the same statements with no overlap, so every level behaves the same. This is what \"as if one at a time\" means.</em>" : (vs[S.variant] && vs[S.variant].note ? " <em>" + vs[S.variant].note + "</em>" : "");
+    $("note").innerHTML = '<b>' + scn.title + '.</b> ' + scn.note + vnote;
+    renderMatrix(); go(0, true);
+  }
+  function pause(){ S.playing = false; clearTimeout(timer); setIcon(); }
+  function play(){ if (S.cursor >= S.sim.frames.length-1) go(0); S.playing = true; setIcon(); schedule(); }
+  function schedule(){ clearTimeout(timer); if (!S.playing) return; if (S.cursor >= S.sim.frames.length-1) return pause(); timer = setTimeout(function(){ go(S.cursor+1); schedule(); }, 1500 / S.speed); }
+  function setIcon(){ $("ico-play").innerHTML = S.playing ? '<rect x="5" y="4" width="3.5" height="12"/><rect x="11.5" y="4" width="3.5" height="12"/>' : '<path d="M6 4v12l10-6z"/>'; }
+
+  /* ---------------- controls ---------------- */
+  var sel = $("scenario");
+  Object.keys(SCENARIOS).forEach(function(k){ var o = document.createElement("option"); o.value = k; o.textContent = SCENARIOS[k].title; sel.appendChild(o); });
+  sel.addEventListener("change", function(){ pause(); S.scn = this.value; S.variant = "interleaved"; fillVariants(); resim(); });
+  $("variant").addEventListener("change", function(){ pause(); S.variant = this.value; resim(); });
+  $("iso").addEventListener("change", function(){ pause(); S.iso = this.value; resim(); });
+  $("topo").addEventListener("change", function(){ pause(); S.topo = this.value; $("iso").disabled = S.topo === "leaderless"; resim(); });
+  $("speed").addEventListener("change", function(){ S.speed = +this.value; if (S.playing) schedule(); });
+  $("b-play").addEventListener("click", function(){ S.playing ? pause() : play(); });
+  $("b-prev").addEventListener("click", function(){ pause(); go(S.cursor-1); });
+  $("b-next").addEventListener("click", function(){ pause(); go(S.cursor+1); });
+  $("b-first").addEventListener("click", function(){ pause(); go(0); });
+  $("b-last").addEventListener("click", function(){ pause(); go(S.sim.frames.length-1); });
+  document.addEventListener("keydown", function(e){
+    var t = e.target.tagName; if (t === "INPUT" || t === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "ArrowLeft"){ e.preventDefault(); pause(); go(S.cursor-1); }
+    else if (e.key === "ArrowRight"){ e.preventDefault(); pause(); go(S.cursor+1); }
+    else if (e.key === "Home"){ e.preventDefault(); pause(); go(0); }
+    else if (e.key === "End"){ e.preventDefault(); pause(); go(S.sim.frames.length-1); }
+    else if (e.key === " " && t !== "BUTTON"){ e.preventDefault(); S.playing ? pause() : play(); }
+  });
+  window.__lab = {simulate:simulate, SCENARIOS:SCENARIOS, variantsOf:variantsOf};
+  var q = new URLSearchParams(location.search);
+  if (q.get("s") && SCENARIOS[q.get("s")]) S.scn = q.get("s");
+  if (q.get("i") && ISO_NAMES[q.get("i")]) S.iso = q.get("i");
+  if (q.get("t") && TOPO_NAMES[q.get("t")]) S.topo = q.get("t");
+  if (q.get("v")) S.variant = q.get("v");
+  sel.value = S.scn; $("iso").value = S.iso; $("topo").value = S.topo; $("iso").disabled = S.topo === "leaderless";
+  fillVariants(); resim();
+})();
+</script>
+</body>
+</html>
