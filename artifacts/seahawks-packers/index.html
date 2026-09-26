@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Will the Seahawks play the Packers this season? The NFL scheduling and playoff rules that decide it, a season simulation, and every win/loss path that puts them on the same field, at Lumen or Lambeau.">
+<title>Seahawks × Packers — will they play?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#E9EBE9; --surface:#F7F8F6; --ink:#1E2224; --muted:#5B6367; --rule:#C8CCCA; --rule-soft:#DFE2E0;
+  --sea:#0B3B6F; --gb:#1E5E3A; --accent:#B9860B;
+  --y0:#F7F8F6; --y1:#FFF3B0; --y2:#FFE566; --y3:#FFD21F; --y4:#E6B800; --y5:#B98F00;
+  --neutral-mark:#B4BAB8;
+  --display:"Alfa Slab One","Rockwell","Georgia",serif;
+  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --label:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#151718; --surface:#1F2224; --ink:#E7E9E7; --muted:#9AA3A6; --rule:#3A4042; --rule-soft:#2C3134;
+    --sea:#7FB3E6; --gb:#7FC69C; --accent:#E0B32A;
+    --y0:#1F2224; --y1:#4A4214; --y2:#7A6A12; --y3:#A98F0E; --y4:#D4B21A; --y5:#F2CF3D;
+    --neutral-mark:#4A5153;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:880px;margin-inline:auto;display:flex;flex-direction:column;gap:36px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,7vw,46px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-family:var(--label);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+h3{font-family:var(--body);font-weight:700;font-size:17px;margin:0}
+p{margin:0}
+.sub{color:var(--muted);margin-top:8px;max-width:62ch}
+section{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.card.pad0{padding:0;overflow:hidden}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.sea{color:var(--sea);font-weight:700}
+.gb{color:var(--gb);font-weight:700}
+a{color:inherit}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+
+/* detector banner */
+.banner{border-left:6px solid var(--neutral-mark);padding:12px 16px;background:var(--surface);border-radius:6px;display:flex;flex-direction:column;gap:4px}
+.banner.live{border-left-color:var(--y4);background:var(--y1)}
+.banner strong{font-size:18px}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile .v{font-size:34px;font-weight:700;line-height:1.05;letter-spacing:-.01em}
+.tile .k{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tile .d{font-size:13px;color:var(--muted)}
+.tile.hi{background:var(--y1);border-color:var(--y3)}
+
+/* tables */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--label);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+td.n,th.n{text-align:right;white-space:nowrap}
+td.hi{background:var(--y1)}
+tr.hi td{background:var(--y1)}
+tbody tr.clickable{cursor:pointer}
+tbody tr.clickable:hover td{background:var(--rule-soft)}
+tr.hi.clickable:hover td{background:var(--y2)}
+.bar{position:relative;height:10px;background:var(--rule-soft);border-radius:3px;min-width:80px}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--neutral-mark)}
+.bar.sea i{background:var(--sea)} .bar.gb i{background:var(--gb)}
+
+/* lattice */
+.latt{overflow-x:auto;padding:6px 0}
+.latt svg{display:block;font-family:var(--label);font-size:12px}
+.latt .grid{stroke:var(--rule-soft);stroke-width:1}
+.latt text{fill:var(--muted)}
+.latt text.rec{fill:var(--ink);font-family:var(--body);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--muted)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid var(--rule)}
+
+/* heatmap */
+.heat{overflow-x:auto}
+.heat table{width:auto}
+.heat td{padding:0;border:2px solid var(--surface);width:34px;height:34px;text-align:center;font-size:12px;font-family:var(--label);color:var(--ink)}
+.heat th{padding:4px 6px;text-align:center}
+.heat td.empty{background:transparent;color:var(--rule)}
+
+/* bracket */
+.bracket{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;overflow-x:auto;padding:4px 0}
+.bcol{display:flex;flex-direction:column;gap:8px}
+.bcol h4{margin:0 0 2px;font-family:var(--label);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.game{border:1px solid var(--rule);border-radius:5px;padding:6px 8px;font-size:13px;background:var(--surface);display:flex;flex-direction:column;gap:2px}
+.game .t{display:flex;justify-content:space-between;gap:8px}
+.game .t.w{font-weight:700}
+.game .t.l{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.game .seed{color:var(--muted);font-family:var(--label);margin-right:6px}
+.game.path{background:var(--y3);border-color:var(--y4);color:#1E2224}
+.game.path .t.l{color:#5B5230}
+.game.req{background:var(--y1);border-color:var(--y2)}
+.game.meet{background:var(--y4);border-color:var(--y5);color:#1E2224;box-shadow:0 0 0 2px var(--y5)}
+.game.meet .t.l{color:#4A4214}
+.game .venue{font-size:12px;margin-top:3px;font-weight:600}
+.game.after{opacity:.85}
+.scen{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-top:1px solid var(--rule-soft);background:var(--ground)}
+.scen p{font-size:14px}
+details summary{cursor:pointer;font-weight:600}
+.pill{display:inline-block;font-family:var(--label);font-size:12px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--rule);border-radius:999px;padding:1px 8px;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--ground);padding:6px 9px;border-radius:4px;font-size:13px;line-height:1.35;max-width:260px;z-index:9;opacity:0;transition:opacity .08s}
+ul{margin:0;padding-left:20px} li{margin:3px 0}
+.foot{font-size:13px;color:var(--muted)}
+@media (max-width:600px){ .bracket{grid-template-columns:repeat(4,160px)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Seahawks × Packers — will they play?</h1>
+  <p class="sub">A Seattle fan and a Wisconsin fan share a couch. This page tracks the only ways the two teams can end up on the same field this season, what the rules say about it, and the odds from a simulation of the rest of the year.</p>
+  <p class="sub small" id="stamp"></p>
+</header>
+
+<section id="detect"></section>
+
+<section>
+  <h2>The odds right now</h2>
+  <div class="tiles" id="tiles"></div>
+  <p class="foot">A meeting can only happen in the NFC playoffs. Both teams are in the NFC, so the Super Bowl is impossible. The higher seed always hosts: Seattle at Lumen Field (the building that was CenturyLink Field until 2020), Green Bay at Lambeau Field.</p>
+</section>
+
+<section>
+  <h2>How a Seahawks–Packers game gets made</h2>
+  <div class="card">
+    <h3>The three routes, and whether 2026 has one</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Route</th><th>How it is decided</th><th>When it is decided</th><th>2026</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Preseason</strong></td><td>Teams negotiate their own exhibition opponents (allowed since 2002); the league fills any gaps and sets dates. No formula. Same-division matchups are avoided, and a preseason pair is never repeated the same year.</td><td>Announced with the regular-season schedule in mid May. The 2026 schedule was released Thursday, May 14, 2026.</td><td>No. Seattle played Dallas, Tennessee and Kansas City. Green Bay's slate had no Seattle game.</td></tr>
+        <tr><td><strong>Regular season</strong></td><td>The 17-game formula below. Seattle (NFC West) and Green Bay (NFC North) meet in the years the two divisions rotate together, or in an off year if both finish in the same place in their divisions.</td><td>Opponents are fixed the moment Week 18 ends (the Sunday after New Year's); dates and kickoff times come in mid May.</td><td>No. 2026 pairs the NFC West with the NFC East and the NFC North with the NFC South. Seattle finished 1st in 2025 and Green Bay 2nd, so the same-place game also missed. <strong>Next guaranteed meeting: 2027, Seahawks at Lambeau</strong> (the West–North rotation year).</td></tr>
+        <tr><td><strong>Playoffs</strong></td><td>Seven NFC teams: the four division winners seeded 1–4 by record, three wild cards 5–7. A meeting needs both to qualify and the bracket to line up.</td><td>Seeding is final when Week 18 ends on Sunday, January 10, 2027; the league announces Wild Card dates and kickoffs that night. Wild Card weekend is January 16–18, Divisional January 23–24, NFC Championship January 31. Super Bowl LXI is February 14, 2027 at SoFi Stadium.</td><td class="hi">Only route left. See the odds and the paths below.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h3>The 17-game regular-season formula</h3>
+      <div class="tablewrap"><table>
+        <thead><tr><th class="n">Games</th><th>Against</th><th>Rotation</th></tr></thead>
+        <tbody>
+          <tr><td class="n">6</td><td>Own division, home and away</td><td>Every year</td></tr>
+          <tr><td class="n">4</td><td>One other division in the same conference</td><td>3-year cycle. NFC West vs NFC North in 2021, 2024, <strong>2027</strong>, 2030…</td></tr>
+          <tr><td class="n">4</td><td>One division in the other conference</td><td>4-year cycle (Seattle: AFC West in 2026)</td></tr>
+          <tr><td class="n">2</td><td>Same-place finishers in the two remaining same-conference divisions</td><td>Set by the previous season's standings. This is the only off-year route to a Seattle–Green Bay game.</td></tr>
+          <tr><td class="n">1</td><td>Same-place finisher in a division of the other conference (the 17th game)</td><td>NFC hosts in even years, AFC in odd years</td></tr>
+        </tbody>
+      </table></div>
+      <p class="foot" style="margin-top:8px">Recent meetings from the formula: 2021 at Lambeau (rotation), Jan 2020 Divisional at Lambeau (playoffs, the game you went to), 2024 at Lumen (rotation). 2026 is an off year with mismatched finishes, so nothing was scheduled.</p>
+    </div>
+    <div class="card">
+      <h3>Playoff bracket rules</h3>
+      <ul class="small">
+        <li><strong>Seeds.</strong> Division winners 1–4 by win percentage, wild cards 5–7. Ties among division winners for seeding use the wild-card tiebreakers.</li>
+        <li><strong>Wild Card round.</strong> Seed 1 rests. 2 hosts 7, 3 hosts 6, 4 hosts 5.</li>
+        <li><strong>Divisional round (re-seeded).</strong> Seed 1 hosts the lowest surviving seed; the other two survivors pair up, higher seed hosts.</li>
+        <li><strong>NFC Championship.</strong> Higher seed hosts. Super Bowl is neutral, so two NFC teams never meet there.</li>
+        <li><strong>Tiebreakers (division):</strong> head-to-head, division record, common games, conference record, strength of victory, strength of schedule, point rankings, net points, coin toss.</li>
+        <li><strong>Tiebreakers (wild card):</strong> head-to-head (sweep when 3+), conference record, common games (min 4), strength of victory, strength of schedule, point rankings, net points, coin toss. With 3+ teams tied across divisions, each division's best survives first.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Which seed pairs can meet, and where</h3>
+    <p class="small muted">Pure rule logic, no odds. Row = Seattle's seed, column = Green Bay's seed. The cell is the earliest round the bracket allows them to meet; the higher seed hosts in every round.</p>
+    <div class="heat" id="seedrules"></div>
+  </div>
+</section>
+
+<section>
+  <h2>Remaining schedules</h2>
+  <div class="two" id="sched"></div>
+  <p class="foot">Win probability per game from the rating model (Elo with home field). The simulation replays the whole league game by game, so the numbers below are consistent with the odds above.</p>
+</section>
+
+<section>
+  <h2>The win/loss tree</h2>
+  <p class="small muted">Every path through the rest of the season, one team at a time. Left to right is each remaining game; up is a win, flat is a loss. Node size is how likely that record is. <strong>Yellow is the chance the two teams meet in the playoffs given you are standing on that record</strong>: the deeper the yellow, the more that path ends in a Seahawks–Packers game. Hover or tap a node for the numbers. The full tree over all 32 teams is 2<sup>250</sup> branches, so those are folded into the simulation and shown here as probabilities.</p>
+  <div id="trees"></div>
+  <div class="legend" id="treelegend"></div>
+</section>
+
+<section>
+  <h2>Final records that put them on the same field</h2>
+  <p class="small muted">Row = Seattle's final win total, column = Green Bay's. Color is the chance they meet given those two records; cells are blank when the record pair is under 0.2% likely. Hover for the numbers.</p>
+  <div class="card pad0"><div class="heat" id="records" style="padding:10px"></div></div>
+  <details><summary class="small">Table view</summary><div class="tablewrap" id="recordstable"></div></details>
+</section>
+
+<section>
+  <h2>Every seed permutation, played out to the Super Bowl</h2>
+  <p class="small muted">Each row is one way the NFC seeding can land for the two teams. Yellow rows are the ones where a meeting happens. Tap a row for the bracket: the yellow games are the ones each team must win to reach the other, the strong yellow game is the meeting itself, and everything after it is the most likely continuation to the Super Bowl.</p>
+  <div class="card pad0"><div class="tablewrap" id="scen"></div></div>
+</section>
+
+<section>
+  <h2>The rest of the league</h2>
+  <div class="card pad0"><div class="tablewrap" id="league"></div></div>
+</section>
+
+<section>
+  <h2>Model notes</h2>
+  <div class="card small" id="method"></div>
+</section>
+</div>
+<div class="tip" id="tip"></div>
+<script src="data/sim.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
