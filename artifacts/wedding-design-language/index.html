@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Emily &amp; Robby Design Language</title>
+<meta name="description" content="Canon for the Emily &amp; Robby wedding brand: Fraunces-led type, the Citrus Grove palette with roles and contrast, motifs, naming, and where each applies.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Archivo:wght@400;500;600&family=Shrikhand&family=Sacramento&family=Caveat:wght@600&family=Gochi+Hand&family=Rubik+Mono+One&display=swap">
+<style>
+  :root {
+    --cream: #FAF3E3; --olive: #77722E; --honey: #E3AA52; --orange: #E2690D;
+    --coral: #EE7170; --peri: #92AAC3; --butter: #F2C94C; --cobalt: #2E4DA7;
+    --lilac: #E0B5E4; --bluebell: #A1A8BE; --ink-brand: #3B3722;
+
+    --bg: var(--cream);
+    --ink: var(--ink-brand);
+    --muted: #6F6849;
+    --rule: rgba(59, 55, 34, 0.18);
+    --panel: #FFFBF1;
+    --accent: var(--olive);
+    --line-ink: var(--cobalt);
+    --chip-ink: var(--ink-brand);
+    --swatch-edge: rgba(59, 55, 34, 0.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #1F1D13; --ink: #F1E9D6; --muted: #B9B08F; --rule: rgba(241, 233, 214, 0.18);
+      --panel: #2A2718; --accent: #C9C26A; --line-ink: #9DB4EA; --swatch-edge: rgba(241, 233, 214, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 17px; line-height: 1.55;
+    padding-inline: 20px;
+  }
+  .wrap { max-width: 68rem; margin: 0 auto; padding-block: 40px 96px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--line-ink); outline-offset: 3px; }
+
+  /* ---- type roles ---- */
+  .display { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1; letter-spacing: -0.015em; line-height: 1; text-wrap: balance; }
+  .ital { font-family: "Fraunces", Georgia, serif; font-style: italic; font-weight: 500; font-variation-settings: "opsz" 72, "SOFT" 50, "WONK" 1; }
+  .label { font-family: "Archivo", system-ui, sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-variation-settings: "opsz" 72, "SOFT" 20, "WONK" 0; font-size: clamp(30px, 4vw, 40px); line-height: 1.05; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+  h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-variation-settings: "opsz" 36, "SOFT" 20; font-size: 22px; line-height: 1.2; margin: 0 0 6px; }
+  p { margin: 0; max-width: 66ch; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86em; }
+
+  /* ---- masthead ---- */
+  .top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 14px; }
+  .top a.home { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14px; }
+  .top a.home:hover { color: var(--accent); }
+  .masthead { padding-block: 44px 28px; display: grid; gap: 22px; }
+  .masthead h1 { margin: 0; font-size: clamp(56px, 11vw, 132px); }
+  .masthead h1 .amp { font-style: italic; font-weight: 400; color: var(--accent); font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
+  .masthead .sub { display: flex; gap: 10px 22px; flex-wrap: wrap; align-items: baseline; }
+  .masthead .sub .ital { font-size: 26px; }
+  .masthead .sub .label { align-self: center; }
+  .stamp { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--line-ink); color: var(--line-ink); border-radius: 999px; padding: 5px 12px; font-family: "Rubik Mono One", monospace; font-size: 11px; letter-spacing: 0.04em; }
+  .thesis { font-size: 19px; max-width: 62ch; }
+  .thesis strong { font-weight: 600; }
+
+  /* ---- sections ---- */
+  section { padding-block: 40px; border-top: 1px solid var(--rule); display: grid; gap: 22px; }
+  .sec-head { display: grid; gap: 8px; }
+  .sec-head .label { color: var(--accent); }
+
+  /* ---- decisions grid ---- */
+  .decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 14px 28px; }
+  .decisions div { display: grid; gap: 4px; border-top: 2px solid var(--ink); padding-top: 10px; }
+  .decisions .k { font-size: 12px; }
+  .decisions .v { font-size: 17px; font-weight: 500; }
+
+  /* ---- type specimens ---- */
+  .spec { display: grid; grid-template-columns: 9.5rem 1fr; gap: 6px 24px; align-items: baseline; padding: 18px 0; border-bottom: 1px dashed var(--rule); }
+  .spec:last-child { border-bottom: 0; }
+  .spec .meta { display: grid; gap: 2px; }
+  .spec .meta .name { font-weight: 600; }
+  .spec .meta .use { font-size: 13px; color: var(--muted); }
+  .spec .sample { overflow-wrap: anywhere; }
+  .spec .rule-note { grid-column: 2; font-size: 13.5px; color: var(--muted); max-width: 60ch; }
+  @media (max-width: 560px) { .spec { grid-template-columns: 1fr; } .spec .rule-note { grid-column: 1; } }
+  .s-fraunces { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(40px, 7vw, 64px); line-height: 1; font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1; letter-spacing: -0.015em; }
+  .s-fraunces-i { font-family: "Fraunces", Georgia, serif; font-style: italic; font-weight: 500; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; font-variation-settings: "opsz" 72, "SOFT" 50, "WONK" 1; }
+  .s-shrikhand { font-family: "Shrikhand", "Fraunces", serif; font-size: clamp(34px, 6vw, 56px); line-height: 1; color: var(--orange); }
+  .s-hand { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; }
+  .s-caveat { font-family: "Caveat", cursive; font-weight: 600; }
+  .s-sacramento { font-family: "Sacramento", cursive; font-size: clamp(30px, 5vw, 44px); }
+  .s-gochi { font-family: "Gochi Hand", cursive; }
+  .s-rubik { font-family: "Rubik Mono One", monospace; font-size: clamp(16px, 2.6vw, 22px); letter-spacing: 0.04em; text-transform: uppercase; }
+  .s-archivo { font-size: 17px; max-width: 60ch; }
+  .scale { display: grid; gap: 8px; font-size: 14px; }
+  .scale table { border-collapse: collapse; width: 100%; max-width: 44rem; font-variant-numeric: tabular-nums; }
+  .scale th, .scale td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .scale th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  /* ---- palette ---- */
+  .pal-group { display: grid; gap: 10px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); gap: 12px; }
+  .sw { border: 0; padding: 0; text-align: left; font: inherit; color: var(--ink); background: var(--panel); border-radius: 10px; overflow: hidden; cursor: pointer; box-shadow: 0 0 0 1px var(--swatch-edge); transition: transform .12s ease; }
+  .sw:hover { transform: translateY(-2px); }
+  .sw .chip { height: 84px; display: flex; align-items: flex-end; justify-content: space-between; padding: 8px 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; }
+  .sw .chip .aa { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 500; font-size: 11px; opacity: .85; }
+  .sw .body { padding: 9px 10px 11px; display: grid; gap: 2px; }
+  .sw .name { font-weight: 600; font-size: 14px; }
+  .sw .hex { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--muted); }
+  .sw .role { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+  .rules { display: grid; gap: 8px; padding-left: 1.1em; margin: 0; max-width: 66ch; }
+  .rules li::marker { color: var(--accent); }
+  .contrast-note { font-size: 13.5px; color: var(--muted); max-width: 66ch; }
+
+  /* ---- lockups ---- */
+  .lockups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 14px; }
+  .lock { border-radius: 12px; padding: 26px 22px; min-height: 180px; display: grid; align-content: center; justify-items: start; gap: 6px; }
+  .lock .cap { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; opacity: .8; }
+  .lock-a { background: var(--cream); color: var(--ink-brand); box-shadow: 0 0 0 1px var(--swatch-edge); }
+  .lock-a .big { font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 44px; line-height: .95; font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1; letter-spacing: -0.02em; }
+  .lock-a .big em { font-style: italic; font-weight: 400; color: var(--olive); }
+  .lock-b { background: var(--cobalt); color: var(--butter); }
+  .lock-b .big { font-family: "Fraunces", Georgia, serif; font-weight: 800; font-size: 40px; line-height: .95; font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1; letter-spacing: -0.02em; }
+  .lock-b .big .sh { font-family: "Shrikhand", serif; font-weight: 400; display: block; font-size: 46px; letter-spacing: 0; }
+  .lock-c { background: var(--lilac); color: var(--cobalt); }
+  .lock-c .big { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1; font-variation-settings: "opsz" 96, "SOFT" 60, "WONK" 1; }
+  .lock-c .hand { font-family: "Caveat", cursive; font-weight: 600; font-size: 26px; }
+  .lock .fine { font-family: "Rubik Mono One", monospace; font-size: 10px; letter-spacing: 0.06em; opacity: .85; }
+
+  /* ---- motifs ---- */
+  .motifs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 22px 28px; }
+  .motif { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: start; }
+  .motif svg { width: 64px; height: 64px; display: block; }
+  .motif .t { font-weight: 600; margin-bottom: 3px; }
+  .motif p { font-size: 15px; color: var(--muted); max-width: 40ch; }
+  .doodle { stroke: var(--line-ink); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---- applications ---- */
+  .apps { display: grid; gap: 0; }
+  .app { display: grid; grid-template-columns: 11rem 1fr; gap: 6px 24px; padding: 18px 0; border-bottom: 1px dashed var(--rule); }
+  .app:last-child { border-bottom: 0; }
+  .app .t { font-weight: 600; }
+  .app .status { font-size: 12.5px; color: var(--muted); display: block; margin-top: 2px; }
+  .app ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: 15.5px; max-width: 62ch; }
+  .app li::marker { color: var(--accent); }
+  @media (max-width: 560px) { .app { grid-template-columns: 1fr; } }
+
+  /* ---- tokens block ---- */
+  pre { margin: 0; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  .tok-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .btn { font: inherit; font-size: 13px; font-weight: 600; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+
+  /* ---- sources / open ---- */
+  .sources { display: grid; gap: 8px; padding-left: 1.1em; margin: 0; font-size: 15.5px; max-width: 70ch; }
+  .sources li::marker { color: var(--accent); }
+  .open-items { display: grid; gap: 8px; padding-left: 1.1em; margin: 0; font-size: 15.5px; max-width: 66ch; }
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .sw, .toast { transition: none; } .sw:hover { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <a class="home" href="/artifacts/">← Artifacts</a>
+    <span class="stamp">Canon v1 · Sep 27, 2026</span>
+  </div>
+
+  <header class="masthead">
+    <h1 class="display">Emily <span class="amp">&amp;</span> Robby</h1>
+    <div class="sub">
+      <span class="ital">Design language</span>
+      <span class="label">July 31, 2027 · IslandWood · Bainbridge Island</span>
+    </div>
+    <p class="thesis">One system for everything with our names on it: the website, the save the dates, the invitation suite, signage, the welcome map. <strong>Fraunces leads the type.</strong> The Citrus Grove palette stands as derived from Emily's Pinterest board. Emily's name goes first, always.</p>
+  </header>
+
+  <section id="decisions">
+    <div class="sec-head">
+      <span class="label">At a glance</span>
+      <h2>The decisions</h2>
+    </div>
+    <div class="decisions">
+      <div><span class="label k">Title face</span><span class="v">Fraunces, 600–800, wonky on</span></div>
+      <div><span class="label k">Accent face</span><span class="v">Fraunces italic, 400–500</span></div>
+      <div><span class="label k">Body face</span><span class="v">Archivo 400 / 600</span></div>
+      <div><span class="label k">Punch script</span><span class="v">Shrikhand, one word at a time</span></div>
+      <div><span class="label k">Handwriting</span><span class="v">Caveat · Sacramento · Gochi Hand</span></div>
+      <div><span class="label k">Utility caps</span><span class="v">Rubik Mono One, small only</span></div>
+      <div><span class="label k">Ground</span><span class="v">Cream #FAF3E3, ink #3B3722</span></div>
+      <div><span class="label k">Line-art ink</span><span class="v">Cobalt #2E4DA7, single color</span></div>
+      <div><span class="label k">Names</span><span class="v">Emily &amp; Robby · Ball &amp; Brosman</span></div>
+    </div>
+  </section>
+
+  <section id="type">
+    <div class="sec-head">
+      <span class="label">Typography</span>
+      <h2>Fraunces first, then a supporting cast that stays in its lane</h2>
+      <p>Fraunces replaced Rubik Mono One as the title face in the most recent round and now leads everywhere. It is a variable font with four axes we actually use: weight, optical size, softness, and the wonky alternates. Big sizes get opsz 144 and WONK 1 so the soft, leaning forms show; text sizes get opsz auto and WONK 0.</p>
+    </div>
+
+    <div>
+      <div class="spec">
+        <div class="meta"><span class="name">Fraunces</span><span class="use">Titles, headings, name lockups</span></div>
+        <div class="sample s-fraunces">Let’s get married</div>
+        <div class="rule-note">Weight 600 for headings, 700–800 for hero lockups. Tight tracking (−0.015em). Sentence case, never all caps.</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Fraunces italic</span><span class="use">Eyebrows, dates, pull quotes, the ampersand</span></div>
+        <div class="sample s-fraunces-i">Friday to Sunday at summer camp</div>
+        <div class="rule-note">Weight 400–500, SOFT 50. The one place the type gets romantic. Pair with roman Fraunces on the same line for emphasis.</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Shrikhand</span><span class="use">One-word punch inside a Fraunces lockup</span></div>
+        <div class="sample s-shrikhand">married!</div>
+        <div class="rule-note">Never a full sentence. Burnt orange or butter, 40px and up. Kept from the cookbook-cover vibe as the loud moment.</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Caveat</span><span class="use">Map labels, doodle captions, margin notes</span></div>
+        <div class="sample s-hand s-caveat">turn left at the big cedar →</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Sacramento</span><span class="use">Signatures, monogram flourishes</span></div>
+        <div class="sample s-sacramento">with love, Emily &amp; Robby</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Gochi Hand</span><span class="use">Kids’ table, camp-sign energy, menu scrawl</span></div>
+        <div class="sample s-hand s-gochi">S’MORES AFTER DARK</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Rubik Mono One</span><span class="use">Utility caps: dates, QR captions, wayfinding</span></div>
+        <div class="sample s-rubik">07 · 31 · 2027 &nbsp; RSVP by May 1</div>
+        <div class="rule-note">Demoted from title face. 10–22px only, letter-spaced 0.04em. It reads as a stamp, not a headline.</div>
+      </div>
+      <div class="spec">
+        <div class="meta"><span class="name">Archivo</span><span class="use">Body, forms, labels, this paragraph</span></div>
+        <div class="sample s-archivo">Take the 8:45 am ferry from Colman Dock as a walk-on and be at the terminal fifteen minutes early. The shuttle meets the boat on the Bainbridge side and the ride to IslandWood is about fifteen minutes.</div>
+        <div class="rule-note">400 for running text, 600 for labels. Uppercase labels get 0.12em tracking at 12px.</div>
+      </div>
+    </div>
+
+    <div class="scale">
+      <span class="label">Scale</span>
+      <table>
+        <thead><tr><th>Role</th><th>Face</th><th>Size</th><th>Fraunces axes</th></tr></thead>
+        <tbody>
+          <tr><td>Hero lockup</td><td>Fraunces 700–800</td><td>72–132px</td><td>opsz 144 · SOFT 30 · WONK 1</td></tr>
+          <tr><td>Section title</td><td>Fraunces 600</td><td>30–40px</td><td>opsz 72 · SOFT 20 · WONK 0</td></tr>
+          <tr><td>Subhead</td><td>Fraunces 600</td><td>22px</td><td>opsz 36 · SOFT 20</td></tr>
+          <tr><td>Accent line</td><td>Fraunces italic 500</td><td>22–30px</td><td>opsz 72 · SOFT 50 · WONK 1</td></tr>
+          <tr><td>Body</td><td>Archivo 400</td><td>17px / 1.55</td><td></td></tr>
+          <tr><td>Label</td><td>Archivo 600 caps</td><td>12px / 0.12em</td><td></td></tr>
+          <tr><td>Stamp</td><td>Rubik Mono One</td><td>10–14px / 0.04em</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="color">
+    <div class="sec-head">
+      <span class="label">Color</span>
+      <h2>Citrus Grove, with a job for every swatch</h2>
+      <p>Derived from the full 43-pin board: cream grounds, olive and honey as the workhorses, burnt orange and coral as heat, periwinkle as air. Butter and cobalt punch in from the cookbook-cover direction. Lilac and bluebell are the wildflower card stocks. Tap a swatch to copy its hex.</p>
+    </div>
+
+    <div class="pal-group">
+      <span class="label">Core</span>
+      <div class="swatches">
+        <button class="sw" data-hex="#FAF3E3"><div class="chip" style="background:#FAF3E3;color:#3B3722">ground <span class="aa">ink 10.8:1</span></div><div class="body"><span class="name">Cream</span><span class="hex">#FAF3E3</span><span class="role">Page, card, and paper ground. The default.</span></div></button>
+        <button class="sw" data-hex="#3B3722"><div class="chip" style="background:#3B3722;color:#FAF3E3">ink <span class="aa">AAA</span></div><div class="body"><span class="name">Ink</span><span class="hex">#3B3722</span><span class="role">All body text. Warm olive-black, never pure black.</span></div></button>
+        <button class="sw" data-hex="#77722E"><div class="chip" style="background:#77722E;color:#FAF3E3">text ok <span class="aa">4.5:1</span></div><div class="body"><span class="name">Olive</span><span class="hex">#77722E</span><span class="role">Primary accent. Headings and links on cream, panels with cream text.</span></div></button>
+        <button class="sw" data-hex="#E3AA52"><div class="chip" style="background:#E3AA52;color:#3B3722">fill <span class="aa">ink 5.8:1</span></div><div class="body"><span class="name">Honey</span><span class="hex">#E3AA52</span><span class="role">Fills, buttons, highlights. Ink text on top, never honey text on cream.</span></div></button>
+        <button class="sw" data-hex="#E2690D"><div class="chip" style="background:#E2690D;color:#FAF3E3">display <span class="aa">3.0:1</span></div><div class="body"><span class="name">Burnt orange</span><span class="hex">#E2690D</span><span class="role">Large type only (24px+) on cream. Shrikhand’s color.</span></div></button>
+        <button class="sw" data-hex="#EE7170"><div class="chip" style="background:#EE7170;color:#3B3722">decor <span class="aa">no text</span></div><div class="body"><span class="name">Coral</span><span class="hex">#EE7170</span><span class="role">Florals, poppies, stickers, shapes. Never text.</span></div></button>
+        <button class="sw" data-hex="#92AAC3"><div class="chip" style="background:#92AAC3;color:#3B3722">decor <span class="aa">no text</span></div><div class="body"><span class="name">Periwinkle</span><span class="hex">#92AAC3</span><span class="role">Sky, water, air on the map. Never text.</span></div></button>
+      </div>
+    </div>
+
+    <div class="pal-group">
+      <span class="label">Punch</span>
+      <div class="swatches">
+        <button class="sw" data-hex="#F2C94C"><div class="chip" style="background:#F2C94C;color:#3B3722">over photo <span class="aa">ink 7.5:1</span></div><div class="body"><span class="name">Butter</span><span class="hex">#F2C94C</span><span class="role">Lockups over photography, and the ground under cobalt line-art.</span></div></button>
+        <button class="sw" data-hex="#2E4DA7"><div class="chip" style="background:#2E4DA7;color:#FAF3E3">line-art <span class="aa">6.9:1</span></div><div class="body"><span class="name">Cobalt</span><span class="hex">#2E4DA7</span><span class="role">The one ink for doodles, QR codes, and hand-drawn suites. Also fine as text.</span></div></button>
+      </div>
+    </div>
+
+    <div class="pal-group">
+      <span class="label">Card stock</span>
+      <div class="swatches">
+        <button class="sw" data-hex="#E0B5E4"><div class="chip" style="background:#E0B5E4;color:#3B3722">stock <span class="aa">ink 6.8:1</span></div><div class="body"><span class="name">Lilac</span><span class="hex">#E0B5E4</span><span class="role">Paper color in a mixed stack. Cobalt or ink printed on it.</span></div></button>
+        <button class="sw" data-hex="#A1A8BE"><div class="chip" style="background:#A1A8BE;color:#3B3722">stock <span class="aa">ink 5.1:1</span></div><div class="body"><span class="name">Bluebell</span><span class="hex">#A1A8BE</span><span class="role">Paper color in a mixed stack. Cobalt or ink printed on it.</span></div></button>
+      </div>
+    </div>
+
+    <ul class="rules">
+      <li><strong>Text is ink, olive, or cobalt.</strong> Nothing else carries words at body size.</li>
+      <li><strong>Burnt orange is display only.</strong> It clears 3:1 on cream, which is enough for 24px and up, not for a sentence.</li>
+      <li><strong>Honey and butter are grounds, not text.</strong> Put ink on them.</li>
+      <li><strong>Coral, periwinkle, lilac, bluebell never carry text.</strong> They are shapes, florals, sky, and paper.</li>
+      <li><strong>One ink per print run.</strong> A stationery stack varies the paper color and keeps the ink fixed, the way the board does it.</li>
+    </ul>
+    <p class="contrast-note">Ratios are WCAG contrast against cream #FAF3E3 unless the chip says “ink”, which is ink #3B3722 on that swatch. 4.5:1 passes AA for text, 3:1 passes for large text.</p>
+  </section>
+
+  <section id="names">
+    <div class="sec-head">
+      <span class="label">Names &amp; lockups</span>
+      <h2>Emily first, every time</h2>
+      <p>“Emily &amp; Robby”, “Emily + Robby”, “Emily Ball &amp; Robby Brosman”, and for the camp voice, “Ball &amp; Brosman”. In the split-photo hero, Emily’s half is on the left. Three lockups cover most uses.</p>
+    </div>
+    <div class="lockups">
+      <div class="lock lock-a">
+        <span class="cap">Formal · cream</span>
+        <div class="big">Emily <em>&amp;</em> Robby</div>
+        <span class="fine">07 · 31 · 2027 · ISLANDWOOD</span>
+      </div>
+      <div class="lock lock-b">
+        <span class="cap">Hero · over photo</span>
+        <div class="big">Let’s get <span class="sh">married!</span></div>
+        <span class="fine">EMILY &amp; ROBBY</span>
+      </div>
+      <div class="lock lock-c">
+        <span class="cap">Camp · card stock</span>
+        <div class="big">Camp Ball &amp; Brosman</div>
+        <span class="hand">est. Mazama, Jan 10, 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="motifs">
+    <div class="sec-head">
+      <span class="label">Motifs</span>
+      <h2>Drawn in one ink, on many papers</h2>
+      <p>Everything illustrated is single-color line art in cobalt (or ink on a dark ground), the way the board’s doodle suites work. Photography stays real and warm; illustration stays flat and hand-drawn.</p>
+    </div>
+    <div class="motifs">
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path class="doodle" d="M8 44 C 14 30, 26 30, 30 40 S 46 50, 56 30"/><path class="doodle" d="M14 22 l4 -6 l4 6 z M40 18 l4 -6 l4 6 z"/><circle class="doodle" cx="32" cy="46" r="2.5"/><path class="doodle" d="M20 52 h24"/></svg>
+        <div><div class="t">The IslandWood map</div><p>An illustrated site map built from the pins we love: lodges, the dining hall, the dock, the suspension bridge. Invitation back, website footer, welcome sign.</p></div>
+      </div>
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect class="doodle" x="8" y="10" width="21" height="44" rx="2"/><rect class="doodle" x="35" y="10" width="21" height="44" rx="2"/><path class="doodle" d="M29 32 h6"/><circle class="doodle" cx="18" cy="26" r="4"/><circle class="doodle" cx="46" cy="26" r="4"/></svg>
+        <div><div class="t">Parent Trap split hero</div><p>The proposal-shoot photo cut in two, Emily left, sliding back together on scroll into the butter “Let’s get married!” lockup.</p></div>
+      </div>
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path class="doodle" d="M8 50 C 18 20, 30 56, 40 26 S 52 20, 56 12"/><circle class="doodle" cx="8" cy="50" r="3"/><circle class="doodle" cx="26" cy="38" r="3"/><circle class="doodle" cx="40" cy="26" r="3"/><circle class="doodle" cx="56" cy="12" r="3"/></svg>
+        <div><div class="t">Tour de Wedding</div><p>Our relationship as a stage route: Mount Lemmon, the Gorge, Rocky Mountain, Lake Michigan, NYC, Bordeaux, Mazama, IslandWood. Bikes, jersey stripes, stage numbers.</p></div>
+      </div>
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path class="doodle" d="M32 6 l4 12 l12 -6 l-6 12 l12 4 l-12 4 l6 12 l-12 -6 l-4 12 l-4 -12 l-12 6 l6 -12 l-12 -4 l12 -4 l-6 -12 l12 6 z"/></svg>
+        <div><div class="t">Starbursts &amp; wavy edges</div><p>Card borders scallop or wave; starbursts flag the date or the RSVP. Both come from the pinned Charline &amp; Ethan save the date.</p></div>
+      </div>
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path class="doodle" d="M22 26 h20 v28 a4 4 0 0 1 -4 4 h-12 a4 4 0 0 1 -4 -4 z"/><path class="doodle" d="M22 34 h20"/><path class="doodle" d="M32 26 v-8 M28 12 c0 -5 8 -5 8 0 c0 4 -8 4 -8 0"/></svg>
+        <div><div class="t">Tomato-can bud vases</div><p>Table florals in labeled tins: poppies and wildflowers in coral, honey, periwinkle. The cookbook doodle language, absorbed.</p></div>
+      </div>
+      <div class="motif">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect class="doodle" x="10" y="10" width="16" height="16"/><rect class="doodle" x="38" y="10" width="16" height="16"/><rect class="doodle" x="10" y="38" width="16" height="16"/><path class="doodle" d="M38 38 h6 v6 h-6 z M48 38 h6 M38 48 h6 M48 44 v10 M54 48 v6"/></svg>
+        <div><div class="t">QR as ornament</div><p>Every printed piece carries one QR to the site, drawn in the same cobalt as the doodles so it reads as part of the suite.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="applications">
+    <div class="sec-head">
+      <span class="label">Where it applies</span>
+      <h2>Applications</h2>
+    </div>
+    <div class="apps">
+      <div class="app">
+        <div><span class="t">Website</span><span class="status">Custom build on GitHub Pages · Zola registry widget · RSVP links out to Zola</span></div>
+        <ul>
+          <li>Parent Trap split hero into the butter lockup.</li>
+          <li>Tour de Wedding stage map as the “our story” section.</li>
+          <li>IslandWood map on the travel page. Logistics copy follows the Colman Dock walk-on, shuttle, and lodge pattern.</li>
+        </ul>
+      </div>
+      <div class="app">
+        <div><span class="t">Save the dates</span><span class="status">Mail target Aug 2026 · past due, in progress</span></div>
+        <ul>
+          <li>Chunky Fraunces type, a wavy-framed photo, and a QR, after the pinned reference card.</li>
+          <li>Print via Minted upload-your-own, or a Minted design with Rebecca’s 35% code.</li>
+          <li>Blockers: final photo pick, the website URL, guest addresses.</li>
+        </ul>
+      </div>
+      <div class="app">
+        <div><span class="t">Invitation suite</span><span class="status">Not started</span></div>
+        <ul>
+          <li>One cobalt ink across a stack of cream, lilac, bluebell, and butter stocks.</li>
+          <li>IslandWood map on the reverse of the details card.</li>
+        </ul>
+      </div>
+      <div class="app">
+        <div><span class="t">On site</span><span class="status">Not started</span></div>
+        <ul>
+          <li>Welcome sign as the map, large. Camp voice (“Ball &amp; Brosman”) on wayfinding.</li>
+          <li>Tomato-can bud vases, mixed-color bridesmaids, Tony’s custom chocolate bars as favors.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="tokens">
+    <div class="sec-head tok-head">
+      <div>
+        <span class="label">Tokens</span>
+        <h2>Copy these</h2>
+      </div>
+      <button class="btn" id="copy-tokens" type="button">Copy CSS</button>
+    </div>
+    <pre id="tokens-src">:root {
+  /* ground + ink */
+  --wb-bg: #FAF3E3;          /* cream */
+  --wb-ink: #3B3722;
+
+  /* core */
+  --wb-accent: #77722E;      /* olive — text + headings on cream (4.5:1) */
+  --wb-accent-2: #E2690D;    /* burnt orange — display ≥24px only (3.0:1) */
+  --wb-accent-3: #E3AA52;    /* honey — fills, ink text on top */
+  --wb-decor-1: #EE7170;     /* coral — decorative, never text */
+  --wb-decor-2: #92AAC3;     /* periwinkle — decorative, never text */
+
+  /* punch */
+  --wb-punch-1: #F2C94C;     /* butter — lockups over photos */
+  --wb-punch-2: #2E4DA7;     /* cobalt — line-art ink, QR, also text (6.9:1) */
+
+  /* card stock */
+  --wb-decor-3: #E0B5E4;     /* lilac */
+  --wb-decor-4: #A1A8BE;     /* bluebell */
+
+  /* type */
+  --wb-font-display: 'Fraunces', Georgia, serif;
+  --wb-font-display-weight: 600;
+  --wb-font-display-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+  --wb-font-accent: 'Fraunces', Georgia, serif;   /* italic 400–500 */
+  --wb-font-punch: 'Shrikhand', serif;
+  --wb-font-script: 'Caveat', cursive;            /* + Sacramento, Gochi Hand */
+  --wb-font-stamp: 'Rubik Mono One', monospace;
+  --wb-font-label: 'Archivo', sans-serif;
+  --wb-font-body: 'Archivo', system-ui, sans-serif;
+}</pre>
+  </section>
+
+  <section id="sources">
+    <div class="sec-head">
+      <span class="label">Sources &amp; open items</span>
+      <h2>Where this came from</h2>
+    </div>
+    <ul class="sources">
+      <li><strong>Design Lab mockups</strong> (four vibes, Jul 20, 2026): <a href="https://claude.ai/code/artifact/b76f601f-27f6-4042-af5a-108c020b17cd">claude.ai artifact</a>. Citrus Grove won; cookbook doodles absorbed; camp is the motif layer; botanist retired.</li>
+      <li><strong>Component library:</strong> the “Wedding Brand” project in claude.ai/design, synced from the code in <code>~/git/wedding-brand</code> (WeddingTheme tokens, Hero, SaveTheDate, StageMap, IslandWoodMap, ParentTrapHero, Lockup, and friends).</li>
+      <li><strong>Evidence:</strong> Emily’s 43-pin Pinterest wedding board, catalogued pin by pin. The palette, the card-stock stacks, the wavy borders, and the tomato cans all trace back to it.</li>
+      <li><strong>Reference card:</strong> the pinned Charline &amp; Ethan save the date (giant type, wavy photo frame, QR).</li>
+    </ul>
+    <div>
+      <h3>Open items</h3>
+      <ul class="open-items">
+        <li>The repo’s citrus theme still lists Bricolage Grotesque as its display face. Update the tokens to Fraunces and re-sync the design project.</li>
+        <li>Save the dates are past the Aug 2026 mail target. Photo, URL, and addresses are the only blockers.</li>
+        <li>Pick and register the website URL; it gates the QR on every printed piece.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <span>Emily &amp; Robby · July 31, 2027 · IslandWood</span>
+    <span>Canon v1, Sep 27, 2026. Supersedes the vibe-exploration notes.</span>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function say(msg) {
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(timer); timer = setTimeout(function () { toast.classList.remove('show'); }, 1400);
+  }
+  function copy(text, label) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { say('Copied ' + label); }, function () { say(label); });
+    } else { say(label); }
+  }
+  document.querySelectorAll('.sw').forEach(function (b) {
+    b.addEventListener('click', function () { copy(b.dataset.hex, b.dataset.hex); });
+  });
+  document.getElementById('copy-tokens').addEventListener('click', function () {
+    copy(document.getElementById('tokens-src').textContent, 'tokens');
+  });
+})();
+</script>
+</body>
+</html>
