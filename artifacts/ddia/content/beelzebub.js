@@ -1,6 +1,10 @@
 window.DDIA = window.DDIA || {chapters:[], viz:[], system:null};
 
 window.DDIA.viz.push({
+  slug: "messaging-map", chapter: 10, title: "Messaging System Map", path: "viz/messaging-map/index.html",
+  blurb: "The whole messaging system in one picture: two regions, leased owner processes sharded by conversation, a five-node Raft lock service across three zones, Cassandra at quorum, Postgres leader and follower, async cross-region copies. Cut the cross-region link, take down the lock service's majority, pause an owner, or darken a region; slide time forward through lease expiry and the paused owner waking; trace a send from either region to either home; and compare the consistent design as built against an available variant that keeps writing on both sides."
+});
+window.DDIA.viz.push({
   slug: "isolation-lab", chapter: 8, title: "Isolation Lab", path: "viz/isolation-lab/index.html",
   blurb: "A small bank, two or three concurrent transactions, and every anomaly from chapter 8: dirty read, dirty write, read skew, lost update, write skew, phantom, deadlock, stale reads. Pick the isolation level (read uncommitted → serializable) and the topology (single node, leader + follower, multi-leader, leaderless), step through the interleaving, and compare the race against the serial run and the fix (atomic update, SELECT FOR UPDATE, a uniqueness constraint, a fixed lock order)."
 });

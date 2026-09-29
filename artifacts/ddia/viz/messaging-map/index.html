@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Messaging System Map</title>
+<meta name="description" content="A distributed messaging system across two regions: leased owner processes sharded by conversation, a Raft lock service, Cassandra and Postgres. Inject a partition, a pause, or a region outage, watch time pass, and compare the consistent design against an available one.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF; --cell:#E9EDF5;
+  --ok:#12805C; --ok-bg:#D6F2E6; --bad:#B42318; --bad-bg:#FEE4E2; --warn:#8B5A00; --warn-bg:#FFF1CC; --dim:#9AA3B8;
+  --region:#F8FAFF; --region-stroke:#B9C3DB; --box:#FFFFFF; --box-stroke:#8A94AB; --link:#9AA3B8; --trace:#3B4CCA;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320; --cell:#232B40;
+    --ok:#4FD1A1; --ok-bg:#12382C; --bad:#FF7A6E; --bad-bg:#4A1A17; --warn:#FFD166; --warn-bg:#3A2E0A; --dim:#4A5470;
+    --region:#121A2C; --region-stroke:#2F3A55; --box:#1B2236; --box-stroke:#56617D; --link:#4A5470; --trace:#8C9BFF;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:20px 16px 48px}
+.wrap{max-width:1320px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:-.01em}
+h2{font-family:var(--mono);font-weight:600;font-size:14px;margin:0 0 8px}
+.sub{margin:4px 0 0;color:var(--muted);max-width:90ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px}
+.field>span,.label{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;max-width:100%}
+button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:40px;padding:0 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;height:40px}
+.seg button.on{background:var(--accent);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+@media (min-width:1100px){.app{grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr)}}
+.map{padding:10px;overflow:auto}
+.map svg{display:block;width:100%;height:auto;min-width:760px}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.caption{padding:12px 16px;border-top:1px solid var(--rule);min-height:3.6em}
+.caption p{margin:0;max-width:90ch}
+.status{padding:14px 16px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--rule)}
+th{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.ok{background:var(--ok)} .dot.bad{background:var(--bad)} .dot.warn{background:var(--warn)} .dot.dim{background:var(--dim)}
+.tag{display:inline-block;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.info{background:var(--cell);color:var(--muted)}
+.trade{padding:14px 16px}
+.trade .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.trade .col{border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.trade .col.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.trade h3{font:600 13px var(--mono);margin:0 0 6px}
+.trade ul{margin:0;padding-left:18px;font-size:13.5px}
+.trade li{margin-bottom:4px}
+.users{padding:14px 16px}
+.users ul{margin:0;padding-left:18px;font-size:13.5px}
+.users li{margin-bottom:5px}
+.send{padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.result{padding:0 16px 14px;font-size:13.5px}
+.result b{color:var(--accent)}
+footer{color:var(--muted);font-size:13px;max-width:100ch}
+footer p{margin:6px 0}
+
+/* svg */
+.rg{fill:var(--region);stroke:var(--region-stroke);stroke-width:1.5}
+.rg-title{font:600 13px var(--mono);fill:var(--ink)}
+.rg-sub{font:400 11px var(--sans);fill:var(--muted)}
+.box{fill:var(--box);stroke:var(--box-stroke);stroke-width:1.2}
+.box.ok{stroke:var(--ok);stroke-width:1.6} .box.bad{stroke:var(--bad);stroke-width:2;stroke-dasharray:4 3} .box.warn{stroke:var(--warn);stroke-width:2} .box.dim{opacity:.35}
+.bt{font:600 11.5px var(--mono);fill:var(--ink)}
+.bs{font:400 10.5px var(--sans);fill:var(--muted)}
+.badge{font:600 10px var(--mono);fill:var(--accent)}
+.badge.bad{fill:var(--bad)}
+.zone{fill:none;stroke:var(--region-stroke);stroke-dasharray:3 3}
+.zl{font:400 9.5px var(--sans);fill:var(--muted)}
+.lk{stroke:var(--link);stroke-width:1.4;fill:none}
+.lk.async{stroke-dasharray:6 4}
+.lk.cut{stroke:var(--bad);stroke-width:2.2;stroke-dasharray:2 5}
+.lk.trace{stroke:var(--trace);stroke-width:3}
+.lkl{font:400 10px var(--sans);fill:var(--muted)}
+.cut-x{font:700 22px var(--mono);fill:var(--bad)}
+.phone{fill:var(--box);stroke:var(--box-stroke);stroke-width:1.2}
+.dotp{fill:var(--trace)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Messaging System Map</h1>
+    <p class="sub">The messaging system from chapters 2 through 10: two regions, each the home for half the conversations. Sequence numbers come from leased owner processes; the leases come from a Raft lock service; messages live in Cassandra at quorum; membership and inbox state in Postgres. Inject a fault, let time pass, trace a send, and switch between the consistent design as built and an available variant that keeps writing on both sides.</p>
+    <div class="settings">
+      <label class="field"><span>Fault</span>
+        <select id="fault">
+          <option value="none">none: healthy</option>
+          <option value="partition">cut the cross-region link (network partition)</option>
+          <option value="lock">Oregon lock service loses its majority</option>
+          <option value="pause">Oregon owner #2 pauses (GC, 40 s)</option>
+          <option value="region">Oregon region goes dark</option>
+        </select>
+      </label>
+      <label class="field"><span>Time since fault</span>
+        <select id="time">
+          <option value="0">0 s</option>
+          <option value="5">5 s</option>
+          <option value="15">15 s (leases expired)</option>
+          <option value="45">45 s (paused owner wakes)</option>
+          <option value="600">10 min (regional failover decided)</option>
+        </select>
+      </label>
+      <div class="field"><span>Design</span>
+        <div class="seg"><button type="button" id="m-cp" class="on">consistent (as built)</button><button type="button" id="m-ap">available (keep writing)</button></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app">
+    <section class="panel">
+      <div class="map"><svg id="svg" viewBox="0 0 1240 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="System map"></svg></div>
+      <div class="caption" aria-live="polite"><p id="cap"></p></div>
+      <div class="send">
+        <label class="field"><span>Sender</span><select id="sender"><option value="or">a phone in Oregon</option><option value="mu">a phone in Mumbai</option></select></label>
+        <label class="field"><span>Conversation home</span><select id="home"><option value="or">Oregon-homed conversation</option><option value="mu">Mumbai-homed conversation</option></select></label>
+        <button type="button" class="primary" id="b-send">Send a message</button>
+        <button type="button" id="b-clear">Clear trace</button>
+      </div>
+      <div class="result" id="result"></div>
+    </section>
+    <div class="side">
+      <section class="panel status"><h2>Component status</h2><div id="status"></div></section>
+      <section class="panel users"><h2>What users see</h2><ul id="users"></ul></section>
+      <section class="panel trade"><h2>The tradeoff under this fault</h2><div class="cols"><div class="col" id="col-cp"><h3>Consistent (as built)</h3><ul id="cp-list"></ul></div><div class="col" id="col-ap"><h3>Available (keep writing)</h3><ul id="ap-list"></ul></div></div></section>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>What the map models.</strong> Each region homes half the conversations (hashed by conversation ID, with the home region in the ID). A send goes phone → API tier → the owner process holding the lease for that conversation's range → a Cassandra quorum write in the home region and a Postgres transaction on the home leader, then async fan-out. Owners renew a 10-second lease every 2 seconds with the region's lock service, a five-node Raft cluster spread across three zones; each lease carries an epoch that every write is stamped with and that Cassandra checks. Cassandra and Postgres replicate asynchronously to the other region for reads and disaster recovery.</p>
+    <p><strong>The two designs.</strong> <em>Consistent</em> is the system as designed: an owner that cannot confirm its lease stops sequencing; a region cut off from a conversation's home can read stale copies but not send; nothing is ever decided twice. <em>Available</em> is the multi-leader variant: each side keeps assigning sequence numbers during a partition and reconciles afterward, which keeps sends flowing and produces the conflicts the chapters spent their time avoiding.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var NS = "http://www.w3.org/2000/svg";
+  function $(id){ return document.getElementById(id); }
+  var S = {fault:"none", t:0, mode:"cp", trace:null};
+
+  /* ---------------- layout ---------------- */
+  // region geometry
+  var R = { or:{x:20,  y:20, w:590, h:580, name:"Oregon (us-west)", sub:"home of conversations A–M"},
+            mu:{x:630, y:20, w:590, h:580, name:"Mumbai (ap-south)", sub:"home of conversations N–Z"} };
+  function comp(region, key){
+    var r = R[region], o = r.x, y = r.y;
+    var L = {
+      phones: {x:o+20,  y:y+40,  w:120, h:64,  t:"phones", s:"outbox, cursor, local store"},
+      api:    {x:o+170, y:y+40,  w:150, h:64,  t:"API tier", s:"stateless, routes by conv_id"},
+      owners: {x:o+350, y:y+40,  w:220, h:110, t:"owner tier", s:"leased sequencers, sharded by conv_id"},
+      lock:   {x:o+20,  y:y+180, w:300, h:150, t:"lock service", s:"Raft, 5 nodes, 3 zones · leases + epochs"},
+      cass:   {x:o+350, y:y+180, w:220, h:150, t:"Cassandra", s:"messages (conv_id, seq) · quorum 2 of 3"},
+      pg:     {x:o+20,  y:y+360, w:300, h:110, t:"Postgres", s:"participants, conversations · leader + follower"},
+      copy:   {x:o+350, y:y+360, w:220, h:110, t:"async copies of the other region", s:"Cassandra replica + Postgres follower"}
+    };
+    return L[key];
+  }
+  var OWNERS = [{id:1,rng:"A–D"},{id:2,rng:"E–H"},{id:3,rng:"I–M"}];
+  var OWNERS_MU = [{id:1,rng:"N–Q"},{id:2,rng:"R–U"},{id:3,rng:"V–Z"}];
+
+  function el(tag, attrs, parent){ var e = document.createElementNS(NS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); (parent||svg).appendChild(e); return e; }
+  function text(x, y, cls, str, parent){ var t = el("text", {x:x, y:y, "class":cls}, parent); t.textContent = str; return t; }
+  var svg = $("svg");
+
+  function drawRegion(key, st){
+    var r = R[key], g = el("g", {});
+    el("rect", {x:r.x, y:r.y, width:r.w, height:r.h, rx:12, "class":"rg" + (st.regionDown ? " bad" : "")}, g);
+    if (st.regionDown){ el("rect", {x:r.x, y:r.y, width:r.w, height:r.h, rx:12, fill:"var(--bad)", opacity:"0.06"}, g); }
+    text(r.x+14, r.y+22, "rg-title", r.name + (st.regionDown ? "   — DARK" : ""), g);
+    text(r.x+14, r.y+34, "rg-sub", r.sub, g);
+    // phones
+    var p = comp(key,"phones");
+    [0,1].forEach(function(i){ el("rect", {x:p.x+8+i*56, y:p.y+8, width:40, height:52, rx:6, "class":"phone"}, g); el("rect", {x:p.x+14+i*56, y:p.y+14, width:28, height:34, rx:2, fill:"var(--cell)"}, g); });
+    text(p.x, p.y+p.h+14, "bs", "phones · outbox · cursor", g);
+    // api
+    box(g, comp(key,"api"), st.api);
+    // owners
+    var o = comp(key,"owners"), owners = key==="or" ? OWNERS : OWNERS_MU;
+    el("rect", {x:o.x, y:o.y, width:o.w, height:o.h, rx:8, "class":"box " + (st.ownersOuter||"")}, g);
+    text(o.x+10, o.y+16, "bt", o.t, g); text(o.x+10, o.y+29, "bs", o.s, g);
+    owners.forEach(function(ow, i){
+      var ost = st.owners[ow.id] || {cls:"ok", badge:"epoch " + (12+ow.id), note:""};
+      var bx = o.x+10+i*70, by = o.y+40;
+      el("rect", {x:bx, y:by, width:62, height:58, rx:6, "class":"box " + ost.cls}, g);
+      text(bx+6, by+14, "bt", "#" + ow.id, g); text(bx+6, by+26, "bs", ow.rng, g);
+      text(bx+6, by+40, "badge" + (ost.cls==="bad" ? " bad" : ""), ost.badge, g);
+      if (ost.note) text(bx+6, by+52, "bs", ost.note, g);
+    });
+    // lock service
+    var l = comp(key,"lock");
+    el("rect", {x:l.x, y:l.y, width:l.w, height:l.h, rx:8, "class":"box " + (st.lockOuter||"")}, g);
+    text(l.x+10, l.y+16, "bt", l.t + (st.lockLabel ? "   " + st.lockLabel : ""), g); text(l.x+10, l.y+29, "bs", l.s, g);
+    var zones = [{n:"zone a", nodes:[0,1]},{n:"zone b", nodes:[2,3]},{n:"zone c", nodes:[4]}];
+    zones.forEach(function(z, zi){
+      var zx = l.x+12+zi*96, zy = l.y+40;
+      el("rect", {x:zx, y:zy, width:86, height:96, rx:6, "class":"zone"}, g); text(zx+6, zy+12, "zl", z.n, g);
+      z.nodes.forEach(function(n, ni){
+        var nst = st.lockNodes[n] || "ok", nx = zx+8+ni*38, ny = zy+22;
+        el("rect", {x:nx, y:ny, width:32, height:32, rx:5, "class":"box " + nst}, g);
+        text(nx+9, ny+20, "bt", n===st.lockLeader ? "L" : String(n+1), g);
+      });
+      if (z.nodes.length===1) text(zx+46, zy+42, "bs", "", g);
+    });
+    text(l.x+12, l.y+l.h-8, "bs", st.lockNote || "majority 3 of 5 · epochs only go up", g);
+    // cassandra
+    var c = comp(key,"cass");
+    el("rect", {x:c.x, y:c.y, width:c.w, height:c.h, rx:8, "class":"box " + (st.cassOuter||"")}, g);
+    text(c.x+10, c.y+16, "bt", c.t, g); text(c.x+10, c.y+29, "bs", c.s, g);
+    [0,1,2].forEach(function(i){ var nx = c.x+14+i*66, ny = c.y+44; el("rect", {x:nx, y:ny, width:56, height:56, rx:6, "class":"box " + (st.cass[i]||"ok")}, g); text(nx+8, ny+22, "bt", "rep " + (i+1), g); text(nx+8, ny+38, "bs", "checks epoch", g); });
+    text(c.x+14, c.y+c.h-12, "bs", st.cassNote || "leaderless · write-once keys · LSM", g);
+    // postgres
+    var pg = comp(key,"pg");
+    el("rect", {x:pg.x, y:pg.y, width:pg.w, height:pg.h, rx:8, "class":"box " + (st.pgOuter||"")}, g);
+    text(pg.x+10, pg.y+16, "bt", pg.t, g); text(pg.x+10, pg.y+29, "bs", pg.s, g);
+    el("rect", {x:pg.x+14, y:pg.y+42, width:120, height:52, rx:6, "class":"box " + (st.pgLeader||"ok")}, g); text(pg.x+22, pg.y+62, "bt", "leader", g); text(pg.x+22, pg.y+78, "bs", "semi-sync ack", g);
+    el("rect", {x:pg.x+160, y:pg.y+42, width:120, height:52, rx:6, "class":"box " + (st.pgFollower||"ok")}, g); text(pg.x+168, pg.y+62, "bt", "follower", g); text(pg.x+168, pg.y+78, "bs", "same region", g);
+    // copies
+    var cp = comp(key,"copy");
+    el("rect", {x:cp.x, y:cp.y, width:cp.w, height:cp.h, rx:8, "class":"box " + (st.copyOuter||"")}, g);
+    text(cp.x+10, cp.y+16, "bt", cp.t, g); text(cp.x+10, cp.y+29, "bs", cp.s, g);
+    text(cp.x+10, cp.y+52, "bs", st.copyNote1 || "reads of the other region's conversations: served here, seconds stale", g);
+    text(cp.x+10, cp.y+68, "bs", st.copyNote2 || "not writable: the home owner assigns seq", g);
+    text(cp.x+10, cp.y+90, "badge", st.copyLag || "lag ≈ 0.5 s", g);
+    // intra links
+    link(g, comp(key,"phones"), comp(key,"api"), "", false);
+    link(g, comp(key,"api"), comp(key,"owners"), "", false);
+    linkV(g, comp(key,"owners"), comp(key,"cass"), "seq write + epoch", false);
+    linkD(g, comp(key,"owners"), comp(key,"pg"), "preview + bumps (one txn)");
+    linkV(g, comp(key,"lock"), comp(key,"owners"), "lease + epoch, renew 2 s", true, key);
+    return g;
+  }
+  function box(g, c, cls){ el("rect", {x:c.x, y:c.y, width:c.w, height:c.h, rx:8, "class":"box " + (cls||"")}, g); text(c.x+10, c.y+16, "bt", c.t, g); text(c.x+10, c.y+29, "bs", c.s, g); }
+  function link(g, a, b, label, async){ var y = a.y + a.h/2; el("path", {d:"M"+(a.x+a.w)+" "+y+" L"+b.x+" "+(b.y+b.h/2), "class":"lk"+(async?" async":"")}, g); if (label) text((a.x+a.w+b.x)/2-30, y-6, "lkl", label, g); }
+  function linkV(g, a, b, label, up, key){ var x = a.x + a.w/2; if (up){ x = a.x + a.w - 10; var p = el("path", {d:"M"+x+" "+a.y+" C"+x+" "+(a.y-30)+" "+(b.x+30)+" "+(b.y+b.h+30)+" "+(b.x+30)+" "+(b.y+b.h), "class":"lk"}, g); text(x+6, a.y-14, "lkl", label, g); return; } el("path", {d:"M"+x+" "+(a.y+a.h)+" L"+x+" "+b.y, "class":"lk"}, g); if (label) text(x+6, (a.y+a.h+b.y)/2, "lkl", label, g); }
+  function linkD(g, a, b, label){ var x1 = a.x + 30, y1 = a.y + a.h, x2 = b.x + b.w - 30, y2 = b.y; el("path", {d:"M"+x1+" "+y1+" C"+x1+" "+(y1+120)+" "+x2+" "+(y2-120)+" "+x2+" "+y2, "class":"lk"}, g); if (label) text(x1-10, y1+60, "lkl", label, g); }
+
+  function drawCross(st){
+    var g = el("g", {});
+    // cassandra async both ways, postgres follower both ways: draw as two dashed links between region copies
+    var a = comp("or","copy"), b = comp("mu","cass"), c = comp("mu","copy"), d = comp("or","cass");
+    var y1 = a.y + 30, y2 = b.y + 30;
+    el("path", {d:"M"+(d.x+d.w)+" "+(d.y+d.h-20)+" L"+c.x+" "+(c.y+30), "class":"lk async" + (st.crossCut ? " cut" : "")}, g);
+    el("path", {d:"M"+(b.x)+" "+(b.y+b.h-20)+" L"+(a.x+a.w)+" "+(a.y+30), "class":"lk async" + (st.crossCut ? " cut" : "")}, g);
+    // api cross link (a Mumbai phone sending to an Oregon-homed conversation)
+    var oa = comp("or","owners"), ma = comp("mu","api");
+    el("path", {d:"M"+(oa.x+oa.w)+" "+(oa.y+20)+" C"+(oa.x+oa.w+40)+" "+(oa.y+20)+" "+(ma.x-40)+" "+(ma.y+20)+" "+ma.x+" "+(ma.y+20), "class":"lk" + (st.crossCut ? " cut" : "")}, g);
+    text(615, 52, "lkl", st.crossCut ? "" : "cross-region sends → home owner", g);
+    text(600, 470, "lkl", st.crossCut ? "" : "async replication, both ways", g);
+    if (st.crossCut){ text(608, 300, "cut-x", "✕", g); text(560, 330, "lkl", "network partition", g); }
+    return g;
+  }
+
+  /* ---------------- effects: fault × time × mode ---------------- */
+  var TTL = 10;
+  function effects(){
+    var f = S.fault, t = +S.t, ap = S.mode === "ap";
+    var or = base(), mu = base(), cross = {crossCut:false}, users = [], cap = "", status = [], cp = [], apl = [];
+    function base(){ return {api:"ok", owners:{}, ownersOuter:"", lockNodes:{}, lockLeader:0, lockOuter:"", lockLabel:"", lockNote:"", cass:{}, cassOuter:"", cassNote:"", pgLeader:"ok", pgFollower:"ok", pgOuter:"", copyOuter:"", copyNote1:"", copyNote2:"", copyLag:"", regionDown:false}; }
+    var sends = {}; // sends[sender+home] = {ok, text}
+
+    if (f === "none"){
+      cap = "Healthy. Every send goes to its conversation's home owner, gets the next sequence number stamped with the owner's epoch, lands on a Cassandra quorum and a Postgres transaction in the home region, and replicates to the other region within a second.";
+      users.push("Everything works. A Mumbai user in an Oregon-homed conversation pays one cross-region hop per send, about 200 ms, and reads the thread from Mumbai's async copy.");
+      status = rows([["Oregon owners","ok","leased, epochs 13–15"],["Oregon lock service","ok","leader in zone a, 5 of 5"],["Oregon Cassandra","ok","quorum 2 of 3"],["Oregon Postgres","ok","leader + semi-sync follower"],["Cross-region link","ok","async lag ≈ 0.5 s"],["Mumbai (all)","ok","symmetric"]]);
+      cp = ["Nothing to trade: no fault.", "Sends: one owner per conversation, one in-memory increment, one quorum write.", "Reads: local replicas everywhere, stale by under a second for the other region's conversations."];
+      apl = ["Same picture when healthy.", "The difference only appears under a partition: whether the cut-off side may keep assigning sequence numbers."];
+      sends["or-or"] = {ok:true, text:"Oregon phone → Oregon API → owner #2 (E–H) assigns seq 1042, epoch 14 → Cassandra quorum + Postgres → fan-out. <b>Acked in ~20 ms.</b>"};
+      sends["mu-or"] = {ok:true, text:"Mumbai phone → Mumbai API → <b>cross-region hop</b> to Oregon owner #2 → seq 1042 → Oregon Cassandra + Postgres → replicates back to Mumbai. <b>Acked in ~200 ms.</b> The phone renders it immediately from its own send; the Mumbai copy catches up half a second later."};
+      sends["mu-mu"] = {ok:true, text:"Mumbai phone → Mumbai API → Mumbai owner #1 (N–Q) → seq 88 → Mumbai Cassandra + Postgres. <b>Acked in ~20 ms.</b>"};
+      sends["or-mu"] = {ok:true, text:"Oregon phone → Oregon API → cross-region hop to Mumbai owner #1 → seq 88. <b>Acked in ~200 ms.</b>"};
+    }
+
+    if (f === "partition"){
+      cross.crossCut = true;
+      or.copyLag = "lag: growing (" + t + " s behind)"; mu.copyLag = "lag: growing (" + t + " s behind)";
+      or.copyNote1 = "Mumbai-homed conversations: readable here, " + t + " s stale"; mu.copyNote1 = "Oregon-homed conversations: readable here, " + t + " s stale";
+      or.copyOuter = "warn"; mu.copyOuter = "warn";
+      cap = "The link between regions is cut. Each region's lock service still has its own majority, so each region's owners keep their leases. Every conversation still has exactly one home owner; what's lost is the path from a phone to an owner in the other region.";
+      if (!ap){
+        users.push("A Mumbai user in an Oregon-homed conversation: the thread reads from the Mumbai copy, " + t + " s stale; sends sit at 'sending…' in the outbox. Nothing is lost; nothing is decided twice.");
+        users.push("An Oregon user in an Oregon-homed conversation: everything works. Their Mumbai friends' messages stopped arriving " + t + " s ago.");
+        users.push("Symmetric for Mumbai-homed conversations.");
+        or.copyNote2 = "sends to Mumbai-homed conversations: held (no path to their owner)"; mu.copyNote2 = "sends to Oregon-homed conversations: held (no path to their owner)";
+        status = rows([["Oregon owners","ok","leased; Oregon lock service majority intact"],["Mumbai owners","ok","leased; Mumbai lock service majority intact"],["Cross-region sends","bad","no route to the home owner; outbox holds"],["Cross-region reads","warn","served from async copies, staleness growing"],["Both Cassandra / Postgres","ok","quorum and leader are within each region"]]);
+        sends["or-or"] = {ok:true, text:"Unaffected: home owner is local. <b>Acked in ~20 ms.</b> Mumbai members won't see it until the link returns."};
+        sends["mu-mu"] = {ok:true, text:"Unaffected: home owner is local. <b>Acked in ~20 ms.</b>"};
+        sends["mu-or"] = {ok:false, text:"Mumbai phone → Mumbai API → tries the Oregon owner → <b>no route</b>. The API retries with the same client ID, then holds. The phone shows a clock icon; the outbox keeps the message. <b>No seq assigned. No duplicate possible.</b> Delivered when the link heals, with whatever seq the Oregon owner assigns then."};
+        sends["or-mu"] = {ok:false, text:"Oregon phone → no route to the Mumbai owner → <b>held in the outbox</b>. Same as above, mirrored."};
+      } else {
+        or.owners[1] = {cls:"warn", badge:"epoch 13 · +local", note:"also N–Z locally"}; mu.owners[1] = {cls:"warn", badge:"epoch 13 · +local", note:"also A–M locally"};
+        or.copyNote2 = "AP: Oregon assigns seq for Mumbai-homed convs too"; mu.copyNote2 = "AP: Mumbai assigns seq for Oregon-homed convs too";
+        users.push("Every send works on both sides. A Mumbai user in an Oregon-homed conversation gets an ack from a Mumbai owner that has no lease for it.");
+        users.push("Both sides hand out sequence numbers for the same conversations. When the link heals, two messages carry seq 1042 in conversation E. One of them is renumbered or dropped; every device that already displayed it sees the thread change.");
+        status = rows([["Oregon owners","warn","sequencing conversations they don't own"],["Mumbai owners","warn","sequencing conversations they don't own"],["Cross-region sends","ok","accepted locally, without a lease"],["Sequence numbers","bad","duplicated across regions: a safety violation waiting for reconciliation"],["Reconciliation on heal","bad","last-commit-wins or manual merge; acked messages may be renumbered or lost"]]);
+        sends["mu-or"] = {ok:true, text:"Mumbai phone → Mumbai owner #1 <b>assigns seq 1042 for conversation E without a lease</b> → Mumbai Cassandra. <b>Acked in ~20 ms.</b> Meanwhile an Oregon phone's send to E also got 1042 from the real owner. <b>Two messages, one sequence number.</b> On heal: reconcile, renumber, or drop."};
+        sends["or-mu"] = {ok:true, text:"Same, mirrored: Oregon assigns for a Mumbai-homed conversation. Duplicate seq on heal."};
+        sends["or-or"] = {ok:true, text:"Local owner, acked; but a Mumbai phone may have written the same seq on its side. Not safe until the link heals and the two logs are merged."};
+        sends["mu-mu"] = sends["or-or"];
+      }
+      cp = ["Cross-region sends stall for the partition's duration. Liveness lost on the far side.", "Every sequence number is still assigned exactly once, by the one leased owner. Safety kept.", "Reads keep flowing everywhere, honestly stale.", "When the link heals, outboxes drain in seconds and the thread order is whatever the owner assigned. No reconciliation."];
+      apl = ["Every send is acked on both sides. Liveness kept.", "The same conversation gets sequence numbers from two owners: duplicate seq, the one thing chapters 6–10 were built to prevent.", "On heal: last-commit-wins renumbers or drops acked messages; devices that displayed them see the thread rewrite.", "Multi-leader without a merge rule for an ordered log."];
+    }
+
+    if (f === "lock"){
+      or.lockNodes = {1:"bad", 3:"bad", 4:"bad"}; or.lockLeader = -1; or.lockOuter = "bad"; or.lockLabel = "· 2 of 5, no majority"; or.lockNote = "no leader can be elected; no grants, no renewals";
+      var expired = t >= TTL;
+      OWNERS.forEach(function(ow){ or.owners[ow.id] = expired ? {cls:"bad", badge:"lease unconfirmed", note:"stopped"} : {cls:"warn", badge:"epoch " + (12+ow.id), note:"renewal failing"}; });
+      or.ownersOuter = expired ? "bad" : "warn";
+      cap = expired ? "Ten seconds on: every Oregon owner has failed to renew for a full TTL. The safe rule is to stop sequencing when the lease can't be confirmed, so every Oregon-homed conversation stops accepting sends. Reads are untouched." : "Three of five lock-service nodes are down in Oregon. The survivors can't form a majority, so nothing can be granted or renewed. Owners keep working on their current leases, for now.";
+      if (!ap){
+        users.push(expired ? "Every Oregon-homed conversation is read-only. Sends from anyone, anywhere, sit at 'sending…'. Mumbai-homed conversations are fine." : "Nothing visible yet. Owners are still inside their lease TTL.");
+        status = rows([["Oregon lock service","bad","2 of 5; cannot elect; cannot decide"],["Oregon owners", expired ? "bad" : "warn", expired ? "leases unconfirmed → stopped sequencing" : "renewals failing; " + (TTL - t) + " s of lease left"],["Oregon Cassandra / Postgres","ok","reads and existing state fine; nothing to sequence"],["Mumbai (all)","ok","its own lock service is healthy"],["Sends to Oregon-homed conversations", expired ? "bad" : "ok", expired ? "held in outboxes" : "flowing"]]);
+        sends["or-or"] = expired ? {ok:false, text:"Oregon phone → API → owner #2 refuses: <b>it can't confirm its lease</b>, so it won't assign a sequence number. Outbox holds. Nothing lost, nothing duplicated. Resumes seconds after the lock service regains a majority."} : {ok:true, text:"Owner #2 still holds a valid lease (" + (TTL - t) + " s left). <b>Acked.</b> The lock service is not on the send path."};
+        sends["mu-or"] = expired ? {ok:false, text:"Cross-region hop to the Oregon owner, which refuses for the same reason. <b>Held.</b>"} : {ok:true, text:"Acked via the Oregon owner, ~200 ms."};
+        sends["mu-mu"] = {ok:true, text:"Unaffected. <b>Acked in ~20 ms.</b>"}; sends["or-mu"] = {ok:true, text:"Unaffected. <b>Acked in ~200 ms.</b>"};
+      } else {
+        OWNERS.forEach(function(ow){ or.owners[ow.id] = {cls:"warn", badge:"epoch " + (12+ow.id) + " (stale?)", note:"keeps going"}; }); or.ownersOuter = "warn";
+        users.push("Nothing visible: Oregon owners keep sequencing on leases they can't confirm.");
+        users.push("If one of them was actually reassigned before the lock service died (a paused owner, a rebalance in flight), two processes now believe they own the same range, and both hand out sequence numbers.");
+        status = rows([["Oregon lock service","bad","2 of 5; no majority"],["Oregon owners","warn","sequencing on unconfirmed leases"],["Sequence numbers","warn","safe only if no reassignment was in flight; nobody can check"],["Sends","ok","flowing"]]);
+        sends["or-or"] = {ok:true, text:"Owner #2 assigns seq 1042 on an unconfirmed lease. <b>Acked.</b> Correct if #2 really still owns E–H; if a reassignment was in flight when the lock service died, another process also thinks it owns E–H, and this is one of two 1042s."};
+        sends["mu-or"] = sends["or-or"]; sends["mu-mu"] = {ok:true, text:"Unaffected."}; sends["or-mu"] = sends["mu-mu"];
+      }
+      cp = ["The lock service is a liveness dependency for every write in its region: within one TTL of losing its majority, all sends there stop.", "That's the whole cost. No split brain, no duplicate seq, no lost message.", "Reads never touched it.", "Five nodes across three zones make this a rare event; the TTL decides how long owners coast."];
+      apl = ["Sends keep flowing on leases nobody can confirm.", "Safe only if no ownership change was in progress; there's no way to know, because knowing is what the lock service was for.", "A paused owner that was already reassigned now has a twin. Duplicate seq.", "The lock service being down is invisible until it isn't."];
+    }
+
+    if (f === "pause"){
+      var reassigned = t >= TTL, woke = t >= 45;
+      or.owners[2] = woke ? {cls:"bad", badge:"epoch 14 · fenced", note:"writes rejected"} : reassigned ? {cls:"bad", badge:"epoch 14 · expired", note:"still paused"} : {cls:"warn", badge:"epoch 14 · paused", note:"no heartbeat"};
+      if (reassigned) or.owners[3] = {cls:"ok", badge:"epoch 15 · +E–H", note:"took over"};
+      or.cassNote = woke ? "rejected a write with epoch 14 (highest seen: 15)" : reassigned ? "highest epoch seen for E–H: 15" : "";
+      cap = woke ? "Forty-five seconds: owner #2 wakes from its pause with no idea any time passed, finishes the write it was in the middle of, and sends seq 1041 for conversation E stamped epoch 14. Cassandra has already seen epoch 15 for that range and rejects it. The paused owner learns it lost the lease from the rejection, and steps down."
+                : reassigned ? "Ten seconds: owner #2 hasn't renewed, its lease expired, and the lock service granted E–H to owner #3 with epoch 15. Owner #3 read max(seq) for each conversation it touches and continues from there. Sends to E–H flow again."
+                : "Owner #2 is in a garbage-collection pause. It's not renewing its lease and not answering the API. From outside, this is indistinguishable from a crash or a partition.";
+      if (!ap){
+        users.push(woke ? "Nothing. The stale write was refused; the user's message was already delivered with seq 1042 by owner #3 after the outbox retried." : reassigned ? "Sends to E–H resumed after about " + TTL + " seconds of 'sending…'. The outbox retried with the same client ID; owner #3 deduped and assigned." : "Sends to conversations E–H show a clock icon. The API retries and waits; " + (TTL - t) + " s until the lease expires.");
+        status = rows([["Owner #2 (E–H)", woke ? "bad" : reassigned ? "bad" : "warn", woke ? "woke, tried to write with epoch 14, fenced" : reassigned ? "lease expired; range reassigned" : "paused; lease has " + (TTL - t) + " s left"],["Owner #3", reassigned ? "ok" : "ok", reassigned ? "now owns E–H too, epoch 15, counters rebuilt from max(seq)" : "unaffected"],["Cassandra","ok", woke ? "rejected epoch 14 < 15" : "quorum fine"],["Sends to E–H", reassigned ? "ok" : "bad", reassigned ? "flowing via #3" : "held in outboxes"],["Everything else","ok","unaffected"]]);
+        sends["or-or"] = woke ? {ok:true, text:"Owner #3 assigns seq 1043, epoch 15. <b>Acked.</b> (Owner #2's late 1041 with epoch 14 was rejected by Cassandra: <b>no duplicate sequence number.</b>)"} : reassigned ? {ok:true, text:"API routes to owner #3, the new lease holder for E–H. It has read max(seq)=1040 and assigns <b>1041, epoch 15</b>. <b>Acked.</b>"} : {ok:false, text:"API → owner #2 → silence. Retry, silence. The API asks the lock service: lease still valid for " + (TTL - t) + " s. <b>Held.</b> The API does not assign a number itself."};
+        sends["mu-or"] = sends["or-or"]; sends["mu-mu"] = {ok:true, text:"Unaffected."}; sends["or-mu"] = sends["mu-mu"];
+      } else {
+        or.owners[2] = woke ? {cls:"bad", badge:"epoch 14 · no fence", note:"write accepted!"} : or.owners[2];
+        or.cassNote = woke ? "AP variant: no epoch check; accepted 1041 from #2" : or.cassNote;
+        users.push(woke ? "Conversation E now has two messages numbered 1041: owner #3's from 30 seconds ago and owner #2's late one. Devices that synced in between show different threads." : reassigned ? "Sends resumed via owner #3." : "Sends to E–H held.");
+        status = rows([["Owner #2", woke ? "bad" : "warn", woke ? "woke and wrote 1041 with no epoch check" : "paused"],["Owner #3", reassigned ? "ok" : "ok", reassigned ? "owns E–H, assigned 1041 already" : "unaffected"],["Cassandra", woke ? "bad" : "ok", woke ? "two rows with seq 1041 in E" : "fine"]]);
+        sends["or-or"] = woke ? {ok:true, text:"Owner #3 assigns 1043. But owner #2's late 1041 was <b>accepted</b>, so conversation E has two 1041s. Duplicate sequence number: a permanent safety violation."} : (reassigned ? {ok:true, text:"Owner #3 assigns 1041, epoch 15. Acked."} : {ok:false, text:"Held."});
+        sends["mu-or"] = sends["or-or"]; sends["mu-mu"] = {ok:true, text:"Unaffected."}; sends["or-mu"] = sends["mu-mu"];
+      }
+      cp = ["Sends to the paused owner's range stall for one lease TTL, then move to a new owner with a higher epoch.", "The paused owner's late write is refused by the storage, not by anyone telling it. It couldn't be told; it was paused.", "Cost: ~10 s of 'sending…' for one range of conversations, absorbed by the outbox.", "The TTL is the dial: shorter means faster recovery and more false failovers."];
+      apl = ["Without the epoch check, the woken owner's write lands next to the new owner's. Two 1041s.", "Nothing detects it at write time; it surfaces as a thread that reads differently on different phones.", "The lease alone can't prevent this, because the holder is the one party that can't know it paused.", "This is the fencing-token row from chapter 9, run to its conclusion."];
+    }
+
+    if (f === "region"){
+      or.regionDown = true; or.api = "bad"; or.ownersOuter = "bad"; OWNERS.forEach(function(ow){ or.owners[ow.id] = {cls:"bad", badge:"dark", note:""}; });
+      or.lockNodes = {0:"bad",1:"bad",2:"bad",3:"bad",4:"bad"}; or.lockLeader = -1; or.lockOuter = "bad"; or.lockLabel = "· dark"; or.lockNote = "all five down";
+      or.cass = {0:"bad",1:"bad",2:"bad"}; or.cassOuter = "bad"; or.pgLeader = "bad"; or.pgFollower = "bad"; or.pgOuter = "bad"; or.copyOuter = "bad";
+      var failover = t >= 600;
+      mu.copyLag = failover ? "PROMOTED: now the home" : "frozen at t=0 (" + t + " s stale)";
+      mu.copyNote1 = failover ? "Oregon-homed conversations: re-homed to Mumbai" : "Oregon-homed conversations: readable, frozen";
+      mu.copyNote2 = failover ? "Mumbai owners took over; epochs bumped; max(seq) read here" : "not writable: home owner is dark";
+      mu.copyOuter = failover ? "warn" : "warn";
+      if (failover){ OWNERS_MU.forEach(function(ow){ mu.owners[ow.id] = {cls:"warn", badge:"epoch " + (20+ow.id) + " · +A–M", note:"re-homed"}; }); mu.ownersOuter = "warn"; }
+      cap = failover ? "Ten minutes: someone decided Oregon isn't coming back soon. Mumbai's copies are promoted to home; Mumbai's lock service grants A–M to Mumbai owners with new epochs; each new owner reads max(seq) from the promoted copy. The last ~0.5 s of Oregon's acknowledged sends never crossed the ocean, so those sequence numbers get reissued to new messages. When Oregon returns, its unreplicated tail carries the old epochs and is rejected: those messages are gone."
+                     : "Oregon has lost power. Every Oregon-homed conversation has no owner, no lock service, no quorum. Mumbai holds async copies frozen at the moment of the outage.";
+      if (!ap){
+        users.push(failover ? "Sends to Oregon-homed conversations work again, through Mumbai. A handful of messages acked in Oregon's last half-second are gone: their senders see them vanish from the thread, and their outboxes already deleted them on ack." : "Every Oregon-homed conversation is read-only from Mumbai's frozen copy. Sends from anyone sit at 'sending…'. Mumbai-homed conversations are unaffected.");
+        status = rows([["Oregon (everything)","bad","dark"],["Mumbai copies of A–M", failover ? "warn" : "warn", failover ? "promoted to home; missing Oregon's last ~0.5 s" : "readable, frozen"],["Sends to A–M", failover ? "ok" : "bad", failover ? "via Mumbai owners, new epochs" : "held in outboxes"],["Mumbai-homed conversations","ok","unaffected"],["On Oregon's return", failover ? "bad" : "ok", failover ? "its unreplicated tail is fenced out: acked messages lost" : "rehydrate from local logs; nothing lost; minutes"]]);
+        sends["or-or"] = {ok:false, text:"The Oregon phone has no API to reach. <b>Outbox holds</b> until Oregon returns."};
+        sends["mu-or"] = failover ? {ok:true, text:"Mumbai owner (re-homed A–M) assigns seq <b>1041, epoch 21</b>, from max(seq) on the promoted copy. <b>Acked.</b> Oregon had already handed out 1041 to a message that never replicated; that one is lost when Oregon returns and its epoch-14 rows are rejected."} : {ok:false, text:"Mumbai API → Oregon owner → <b>dark</b>. Held. The Mumbai copy is readable but has no owner and assigns nothing."};
+        sends["mu-mu"] = {ok:true, text:"Unaffected."}; sends["or-mu"] = {ok:false, text:"The Oregon phone can't reach any API. Held."};
+      } else {
+        mu.owners = {}; OWNERS_MU.forEach(function(ow){ mu.owners[ow.id] = {cls:"warn", badge:"epoch " + (12+ow.id) + " · +A–M", note:"took over at t=0"}; }); mu.ownersOuter = "warn";
+        mu.copyNote2 = "AP: Mumbai started assigning seq for A–M immediately";
+        users.push("Sends to Oregon-homed conversations kept working from the first second, via Mumbai, on the frozen copy.");
+        users.push("Every message Oregon acked in its last half-second before the outage shares a sequence number with a Mumbai-assigned one. And if Oregon wasn't actually dark, only unreachable, both regions are sequencing every A–M conversation for as long as the outage lasts.");
+        status = rows([["Oregon (everything)","bad","dark, or maybe just unreachable"],["Mumbai owners","warn","sequencing A–M without a lease from A–M's lock service"],["Sequence numbers","bad","duplicated for the last ~0.5 s at minimum; for the whole outage if Oregon was merely partitioned"],["Sends","ok","flowing"]]);
+        sends["mu-or"] = {ok:true, text:"Mumbai assigns 1041 for E immediately. <b>Acked.</b> Oregon's own 1041, acked half a second before the outage, is a different message. If Oregon was only partitioned, it keeps assigning 1042, 1043… in parallel."};
+        sends["or-or"] = {ok:false, text:"No API reachable. Held."}; sends["mu-mu"] = {ok:true, text:"Unaffected."}; sends["or-mu"] = sends["or-or"];
+      }
+      cp = ["Wait: Oregon-homed conversations are read-only until Oregon returns, then rehydrate from local logs with nothing lost. Minutes of outage, zero loss.", "Fail over: a human decision after a threshold. Sends resume through Mumbai; the async lag becomes permanent loss of a few hundred milliseconds of acked messages; epochs make it a clean loss rather than duplicate seq.", "Either way, no two owners for a conversation at any instant."];
+      apl = ["Failover at t=0, automatically, with no way to know whether Oregon is dark or merely unreachable.", "If it was unreachable, both regions sequence the same conversations for the whole outage: the partition case, at region scale.", "If it was dark, the last half-second's sequence numbers are reused immediately.", "Fast, and it decides twice."];
+    }
+
+    return {or:or, mu:mu, cross:cross, users:users, cap:cap, status:status, cp:cp, ap:apl, sends:sends};
+  }
+  function rows(list){ return list.map(function(r){ return {name:r[0], cls:r[1], note:r[2]}; }); }
+
+  /* ---------------- render ---------------- */
+  function render(){
+    var e = effects();
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    drawRegion("or", e.or); drawRegion("mu", e.mu); drawCross(e.cross);
+    if (S.trace) drawTrace(S.trace, e);
+    $("cap").textContent = e.cap;
+    $("status").innerHTML = '<table><tbody>' + e.status.map(function(r){ return '<tr><td><span class="dot ' + r.cls + '"></span>' + r.name + '</td><td>' + r.note + '</td></tr>'; }).join("") + '</tbody></table>';
+    $("users").innerHTML = e.users.map(function(u){ return '<li>' + u + '</li>'; }).join("");
+    $("cp-list").innerHTML = e.cp.map(function(u){ return '<li>' + u + '</li>'; }).join("");
+    $("ap-list").innerHTML = e.ap.map(function(u){ return '<li>' + u + '</li>'; }).join("");
+    $("col-cp").classList.toggle("on", S.mode === "cp"); $("col-ap").classList.toggle("on", S.mode === "ap");
+    $("result").innerHTML = S.trace ? ('<span class="tag ' + (S.trace.res.ok ? "ok" : "bad") + '">' + (S.trace.res.ok ? "acked" : "held / rejected") + '</span> &nbsp;' + S.trace.res.text) : "";
+    var opt = $("time").querySelector('option[value="600"]'); opt.hidden = S.fault !== "region"; var opt45 = $("time").querySelector('option[value="45"]'); opt45.textContent = S.fault === "pause" ? "45 s (paused owner wakes)" : "45 s";
+  }
+  function drawTrace(tr, e){
+    var g = el("g", {});
+    var sender = tr.sender, home = tr.home, ok = tr.res.ok;
+    var ph = comp(sender,"phones"), api = comp(sender,"api"), own = comp(home,"owners"), cass = comp(home,"cass"), pg = comp(home,"pg");
+    function seg(a, b, cls){ el("path", {d:"M"+a[0]+" "+a[1]+" L"+b[0]+" "+b[1], "class":"lk trace" + (cls||""), opacity:"0.85"}, g); }
+    var p1 = [ph.x+ph.w, ph.y+ph.h/2], p2 = [api.x, api.y+api.h/2], p3 = [api.x+api.w, api.y+api.h/2];
+    seg(p1, p2); seg(p2, p3);
+    var target = [own.x + (sender===home ? 0 : (home==="or" ? own.w : 0)), own.y+20];
+    if (sender === home) seg(p3, [own.x, own.y+own.h/2]); else seg(p3, target);
+    var stalled = !ok;
+    if (!stalled){
+      seg([own.x+own.w/2, own.y+own.h], [cass.x+cass.w/2, cass.y]);
+      seg([own.x+30, own.y+own.h], [pg.x+pg.w-30, pg.y]);
+    }
+    var mark = stalled ? (sender===home ? [own.x-12, own.y+own.h/2] : target) : [cass.x+cass.w/2, cass.y-8];
+    el("circle", {cx:mark[0], cy:mark[1], r:9, fill: stalled ? "var(--bad)" : "var(--ok)"}, g);
+    text(mark[0]-4, mark[1]+4, "bt", stalled ? "✕" : "✓", g).setAttribute("fill", "#fff");
+  }
+
+  /* ---------------- controls ---------------- */
+  $("fault").addEventListener("change", function(){ S.fault = this.value; S.trace = null; if (S.fault !== "region" && S.t === 600) S.t = 15; $("time").value = String(S.t); render(); });
+  $("time").addEventListener("change", function(){ S.t = +this.value; if (S.trace) S.trace.res = effects().sends[S.trace.sender + "-" + S.trace.home]; render(); });
+  $("m-cp").addEventListener("click", function(){ S.mode = "cp"; this.classList.add("on"); $("m-ap").classList.remove("on"); if (S.trace) S.trace.res = effects().sends[S.trace.sender + "-" + S.trace.home]; render(); });
+  $("m-ap").addEventListener("click", function(){ S.mode = "ap"; this.classList.add("on"); $("m-cp").classList.remove("on"); if (S.trace) S.trace.res = effects().sends[S.trace.sender + "-" + S.trace.home]; render(); });
+  $("b-send").addEventListener("click", function(){ var s = $("sender").value, h = $("home").value; S.trace = {sender:s, home:h, res: effects().sends[s + "-" + h] || {ok:false, text:"?"}}; render(); });
+  $("b-clear").addEventListener("click", function(){ S.trace = null; render(); });
+  var q = new URLSearchParams(location.search);
+  if (q.get("f")) { S.fault = q.get("f"); $("fault").value = S.fault; }
+  if (q.get("t")) { S.t = +q.get("t"); $("time").value = q.get("t"); }
+  if (q.get("m") === "ap") { S.mode = "ap"; $("m-ap").classList.add("on"); $("m-cp").classList.remove("on"); }
+  window.__map = {effects:effects, S:S};
+  render();
+})();
+</script>
+</body>
+</html>
