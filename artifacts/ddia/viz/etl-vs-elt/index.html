@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>ETL vs ELT</title>
+<meta name="description" content="Two pipelines side by side: transform before loading, or load raw and transform in SQL. Change how much data survives the transform, then throw a bug, a new question, or a privacy rule at both and see which one copes.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF; --cell:#E9EDF5;
+  --good:#12805C; --good-bg:#D6F2E6; --bad:#B42318; --bad-bg:#FEE4E2; --warn:#8B5A00; --warn-bg:#FFF1CC;
+  --raw:#C2410C; --raw-bg:#FDE3D6; --der:#2F6FEB; --der-bg:#DCE8FF;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320; --cell:#232B40;
+    --good:#4FD1A1; --good-bg:#12382C; --bad:#FF7A6E; --bad-bg:#4A1A17; --warn:#FFD166; --warn-bg:#3A2E0A;
+    --raw:#FF8A5C; --raw-bg:#47210F; --der:#6EA0FF; --der-bg:#1D3260;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:20px 16px 48px}
+.wrap{max-width:1180px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:-.01em}
+h2{font-family:var(--mono);font-weight:600;font-size:13px;margin:0;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sub{margin:4px 0 0;color:var(--muted);max-width:80ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px}
+.field>span{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select,input[type=range]{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;max-width:100%}
+input[type=range]{padding:0;width:220px;max-width:60vw}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 6px 6px 0;max-width:110ch;min-height:44px}
+.note b{color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+
+.lane{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.lane-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lane-head b{font:600 15px var(--mono)}
+.lane-head span{font-size:12.5px;color:var(--muted)}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;align-items:stretch}
+@media (max-width:760px){.flow{grid-template-columns:1fr}}
+.box{border:1px solid var(--rule);border-radius:8px;padding:10px 10px;display:flex;flex-direction:column;gap:5px;min-height:112px;position:relative;background:var(--panel)}
+.box.src{border-style:dashed}
+.box.raw{border-color:var(--raw);background:var(--raw-bg)}
+.box.der{border-color:var(--der);background:var(--der-bg)}
+.box.dim{opacity:.45}
+.box.alert{box-shadow:0 0 0 2px var(--bad) inset;border-color:var(--bad)}
+.box.ok{box-shadow:0 0 0 2px var(--good) inset;border-color:var(--good)}
+.box b{font:600 12px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.box span{font-size:12.5px;color:var(--muted)}
+.box .sz{font:600 18px var(--mono);color:var(--ink)}
+.box .tag{position:absolute;top:-9px;right:8px;font:600 10.5px var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--rule)}
+.box .tag.bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg)}
+.box .tag.good{color:var(--good);border-color:var(--good);background:var(--good-bg)}
+.box .tag.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
+.arrow{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;padding:0 4px;font-size:11.5px;color:var(--muted);text-align:center}
+.arrow i{display:block;height:3px;width:100%;background:var(--rule);border-radius:2px;position:relative;font-style:normal}
+.arrow i::after{content:"";position:absolute;right:-1px;top:-4px;border-left:8px solid var(--rule);border-top:5.5px solid transparent;border-bottom:5.5px solid transparent}
+.arrow i.fat{height:9px}.arrow i.fat::after{top:-3px;border-left-color:var(--rule)}
+.arrow.hot i{background:var(--accent)} .arrow.hot i::after{border-left-color:var(--accent)}
+.arrow.dead i{background:var(--bad);opacity:.6} .arrow.dead i::after{border-left-color:var(--bad)}
+@media (max-width:760px){.arrow{padding:4px 0}.arrow i{height:24px;width:3px}.arrow i::after{left:-4px;right:auto;top:auto;bottom:-1px;border-left:5.5px solid transparent;border-right:5.5px solid transparent;border-top:8px solid var(--rule);border-bottom:none}}
+.pii{display:inline-block;font:600 10.5px var(--mono);padding:0 5px;border-radius:3px;background:var(--bad-bg);color:var(--bad);margin-left:4px}
+.pii.masked{background:var(--good-bg);color:var(--good)}
+.cmp{display:grid;grid-template-columns:1fr;gap:0;padding:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.k{color:var(--muted);width:30%}
+td.g{color:var(--good);font-weight:600} td.b{color:var(--bad);font-weight:600} td.w{color:var(--warn);font-weight:600}
+.foot{font-size:12.5px;color:var(--muted)}
+.foot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ETL vs ELT</h1>
+    <p class="sub">The same source, the same final table. One pipeline transforms before it loads; the other loads raw and transforms with SQL inside the warehouse. Change how much of the source survives the transform, then put a problem in front of both.</p>
+  </header>
+
+  <div class="settings">
+    <label class="field"><span>Source survives the transform: <b id="keepLabel">10 %</b></span>
+      <input type="range" id="keep" min="1" max="100" value="10"></label>
+    <label class="field"><span>Scenario</span>
+      <select id="scenario">
+        <option value="normal">Normal nightly run</option>
+        <option value="bug">The transform had a bug</option>
+        <option value="newq">A new question needs a dropped field</option>
+        <option value="pii">Source rows carry personal data</option>
+        <option value="nonsql">The transform isn't expressible in SQL</option>
+        <option value="source_gone">The source only keeps 7 days</option>
+      </select></label>
+  </div>
+
+  <p class="note" id="note"></p>
+
+  <div class="panel lane" id="etl"></div>
+  <div class="panel lane" id="elt"></div>
+
+  <div class="panel cmp"><table id="cmp"></table></div>
+  <p class="foot">Chapter 11. Sizes are for one day of source data at 100 GB. The transform is the same logic in both lanes; the only difference is <i>where</i> it runs and <i>what gets kept</i>. <a href="../../#/ch/11">Back to the chapter</a>.</p>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var SRC = 100; // GB per day
+
+  function fmt(gb){ return gb >= 1 ? (Math.round(gb * 10) / 10) + " GB" : Math.round(gb * 1000) + " MB"; }
+
+  function compute(){
+    var keep = parseInt($("keep").value, 10) / 100, sc = $("scenario").value;
+    var out = SRC * keep;
+    var etl = {moved: out, stored: out, raw: false, transformWhere: "a job between source and warehouse (code)", pii: "masked before load"};
+    var elt = {moved: SRC, stored: SRC + out, raw: true, transformWhere: "SQL inside the warehouse", pii: "lands raw, masked by a later model"};
+    var notes = {
+      normal: "<b>Normal run.</b> ETL moves only what survives the transform: " + fmt(etl.moved) + " of " + fmt(SRC) + ". ELT moves everything, " + fmt(SRC) + ", and stores the raw copy plus the derived table. The slider is the whole argument for ETL: drag it left and ELT is loading data it will throw away." + (keep < 0.2 ? " At " + Math.round(keep*100) + " % kept, ELT moves " + Math.round(1/keep) + "× the bytes." : ""),
+      bug: "<b>The transform had a bug.</b> Last night's derived table is wrong. ELT: fix the SQL, re-run it over the raw table that is still sitting in the warehouse, done. ETL: the raw data was never loaded, so you go back to the source and re-extract, if the source still has yesterday. This is chapter 11's immutable-input lesson applied to the pipeline itself.",
+      newq: "<b>A new question needs a field the transform dropped.</b> ELT: the field is in the raw table; write a new SQL model, backfill from day one. ETL: the field was discarded before loading. Every day since the pipeline started is gone unless the source kept it, and you change the extract code and wait for history to accumulate again.",
+      pii: "<b>Source rows carry personal data.</b> ETL masks or drops the sensitive columns in the transform, so nothing sensitive ever reaches the warehouse. ELT lands it raw, and every analyst with access to the raw schema can see it until a downstream model masks it. Compliance teams often force the masking step before the load, which makes this part of the pipeline ETL whatever you call the rest.",
+      nonsql: "<b>The transform isn't SQL.</b> Parsing a binary log format, running a model to score each row, calling an external service. The warehouse can't run it. ETL does this naturally: the transform is code. ELT needs a code step too, which usually becomes load raw, run code, write derived, and the clean SQL story is gone.",
+      source_gone: "<b>The source only keeps 7 days.</b> A queue, an API, a database with short retention. With ELT the warehouse's raw table <i>is</i> the long-term record, and the source's retention stops mattering. With ETL, whatever the transform dropped is unrecoverable after a week. Combine this with the bug scenario and ETL's weakness compounds: a bug found on day 8 can't be fixed for days 1 through 7."
+    };
+    return {keep:keep, sc:sc, out:out, etl:etl, elt:elt, note:notes[sc]};
+  }
+
+  function box(cls, title, size, sub, tag, tagCls){
+    return '<div class="box ' + cls + '">' + (tag ? '<span class="tag ' + (tagCls || "") + '">' + tag + '</span>' : '') + '<b>' + title + '</b>' + (size ? '<span class="sz">' + size + '</span>' : '') + '<span>' + sub + '</span></div>';
+  }
+  function arrow(label, cls, fat){ return '<div class="arrow ' + (cls || "") + '"><i class="' + (fat ? "fat" : "") + '"></i><span>' + label + '</span></div>'; }
+
+  function render(){
+    var c = compute(), sc = c.sc, pct = Math.round(c.keep * 100);
+    $("keepLabel").textContent = pct + " %";
+    $("note").innerHTML = c.note;
+    var piiSrc = sc === "pii" ? '<span class="pii">PII</span>' : "";
+
+    // ETL lane: Source → Extract → Transform → Load → Warehouse(derived)
+    var etlT = sc === "bug" ? ["re-run needs the source", "bad"] : sc === "newq" ? ["field was dropped here", "bad"] : sc === "pii" ? ["masks here", "good"] : sc === "nonsql" ? ["code: fine", "good"] : null;
+    var etlW = sc === "bug" ? ["wrong, no raw to rebuild from", "alert"] : sc === "newq" ? ["history lost", "alert"] : sc === "pii" ? ["clean", "ok"] : sc === "source_gone" ? ["only what was kept", "alert"] : ["", ""];
+    var etlSrc = sc === "source_gone" ? ["7-day retention", "warn"] : sc === "bug" || sc === "newq" ? ["re-extract from here, if it still has it", "warn"] : null;
+    $("etl").innerHTML = '<div class="lane-head"><b>ETL · extract, transform, load</b><span>transform runs in ' + c.etl.transformWhere + '</span></div><div class="flow">' +
+      box("src", "Source", fmt(SRC) + "/day", "operational database, logs, API" + piiSrc, etlSrc && etlSrc[0], etlSrc && etlSrc[1]) +
+      arrow("extract " + fmt(SRC), "hot", true) +
+      box(etlT ? "" : "", "Transform (code)", null, "filter, join, reshape, " + (sc === "pii" ? 'mask <span class="pii masked">PII</span>' : "aggregate") + ". Keeps " + pct + " %.", etlT && etlT[0], etlT && etlT[1]) +
+      arrow("load " + fmt(c.out), "", false) +
+      box("der " + etlW[1], "Warehouse", fmt(c.etl.stored), "derived table only. No raw copy.", etlW[0] || null, etlW[1] === "alert" ? "bad" : etlW[1] === "ok" ? "good" : "") +
+      '</div>';
+
+    // ELT lane: Source → Load → Warehouse raw → Transform (SQL) → Derived table
+    var eltRaw = sc === "bug" || sc === "newq" ? ["still here: re-derive", "good"] : sc === "pii" ? ["raw PII visible", "bad"] : sc === "source_gone" ? ["this is the record now", "good"] : null;
+    var eltT = sc === "nonsql" ? ["SQL can't do it", "bad"] : sc === "bug" ? ["fix SQL, re-run", "good"] : sc === "newq" ? ["new model, backfill", "good"] : null;
+    $("elt").innerHTML = '<div class="lane-head"><b>ELT · extract, load, transform</b><span>transform runs as ' + c.elt.transformWhere + '</span></div><div class="flow">' +
+      box("src", "Source", fmt(SRC) + "/day", "same source" + piiSrc, sc === "source_gone" ? "7-day retention" : null, "warn") +
+      arrow("load " + fmt(SRC) + " raw", "hot", true) +
+      box("raw " + (eltRaw && eltRaw[1] === "bad" ? "alert" : eltRaw ? "ok" : ""), "Warehouse: raw tables", fmt(SRC) + "/day kept", "every column, every row, as extracted" + (sc === "pii" ? ' <span class="pii">PII</span>' : ""), eltRaw && eltRaw[0], eltRaw && eltRaw[1]) +
+      arrow("transform in SQL", eltT && eltT[1] === "bad" ? "dead" : "", false) +
+      box("der" + (eltT && eltT[1] === "bad" ? " dim" : ""), "Warehouse: derived table", fmt(c.out), "same " + pct + " % as the ETL output, rebuilt any time from raw", eltT && eltT[0], eltT && eltT[1]) +
+      '</div>';
+
+    var rows = [
+      ["Bytes moved per day", fmt(c.etl.moved), fmt(c.elt.moved), c.keep < 0.5 ? "g" : "", c.keep < 0.5 ? "b" : ""],
+      ["Bytes stored per day", fmt(c.etl.stored), fmt(c.elt.stored), "g", ""],
+      ["Raw copy kept", "no", "yes", "b", "g"],
+      ["Fix a bug in the transform", "re-extract from source", "re-run the SQL over raw", "b", "g"],
+      ["Answer a question that needs a dropped field", "history gone", "backfill from raw", "b", "g"],
+      ["Personal data before masking", "never leaves the transform", "sits in raw tables", "g", "b"],
+      ["Transform that isn't SQL", "it's code already", "needs a code step anyway", "g", "w"],
+      ["Who pays for transform compute", "your job's cluster", "warehouse, metered", "", "w"],
+      ["Source has short retention", "whatever was dropped is lost", "raw tables are the record", "b", "g"]
+    ];
+    $("cmp").innerHTML = '<tr><th></th><th>ETL</th><th>ELT</th></tr>' + rows.map(function(r){ return '<tr><td class="k">' + r[0] + '</td><td class="' + r[3] + '">' + r[1] + '</td><td class="' + r[4] + '">' + r[2] + '</td></tr>'; }).join("");
+  }
+
+  $("keep").addEventListener("input", render);
+  $("scenario").addEventListener("change", render);
+  var q = (location.hash || "").replace(/^#/, "");
+  if (q && $("scenario").querySelector('option[value="' + q + '"]')) $("scenario").value = q;
+  render();
+  window.__etl = {compute:compute, render:render, set:function(sc, keep){ $("scenario").value = sc; if (keep != null) $("keep").value = keep; render(); }};
+})();
+</script>
+</body>
+</html>
