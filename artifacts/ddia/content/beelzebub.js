@@ -1,6 +1,11 @@
 window.DDIA = window.DDIA || {chapters:[], viz:[], system:null};
 
 window.DDIA.viz.push({
+  slug: "batch-joins", chapter: 11, title: "Batch Joins Stepper", path: "viz/batch-joins/index.html",
+  blurb: "Six users, twenty-four messages, three mappers, three reducers. Step a count job through map, shuffle, sort and reduce and watch the network count; flip on a combiner. Then the three joins side by side: sort-merge (everything crosses), broadcast hash (ship the small table, no shuffle), partitioned hash (co-partitioned inputs, no shuffle). Finally a hot key: Taylor sends 14 of 24 and one reducer holds 18 records while the others idle, fixed by salting her key or by joining the hot keys map-side."
+});
+
+window.DDIA.viz.push({
   slug: "messaging-map", chapter: 10, title: "Messaging System Map", path: "viz/messaging-map/index.html",
   blurb: "The whole messaging system in one picture: two regions, leased owner processes sharded by conversation, a five-node Raft lock service across three zones, Cassandra at quorum, Postgres leader and follower, async cross-region copies. Cut the cross-region link, take down the lock service's majority, pause an owner, or darken a region; slide time forward through lease expiry and the paused owner waking; trace a send from either region to either home; and compare the consistent design as built against an available variant that keeps writing on both sides."
 });

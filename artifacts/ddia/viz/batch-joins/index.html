@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Batch Joins Stepper</title>
+<meta name="description" content="Step a small MapReduce job through map, shuffle, sort and reduce; compare sort-merge, broadcast hash and partitioned hash joins; watch a hot key stall one reducer and fix it with a combiner, a salt, or a map-side join.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --ground:#F3F5F9; --panel:#FFFFFF; --ink:#131A2B; --muted:#5B6479; --rule:#D5DAE5; --accent:#3B4CCA; --on-accent:#FFFFFF; --cell:#E9EDF5;
+  --good:#12805C; --good-bg:#D6F2E6; --bad:#B42318; --bad-bg:#FEE4E2; --warn:#8B5A00; --warn-bg:#FFF1CC;
+  --u0:#2F6FEB; --u0-bg:#DCE8FF; --u1:#12805C; --u1-bg:#D6F2E6; --u2:#8B3FD9; --u2-bg:#ECDDFB; --u3:#C2410C; --u3-bg:#FDE3D6; --u4:#0E7490; --u4-bg:#D5F0F6; --u5:#B42318; --u5-bg:#FEE4E2;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ground:#0E1320; --panel:#161C2D; --ink:#E7EAF2; --muted:#98A2BA; --rule:#2A3247; --accent:#8C9BFF; --on-accent:#0E1320; --cell:#232B40;
+    --good:#4FD1A1; --good-bg:#12382C; --bad:#FF7A6E; --bad-bg:#4A1A17; --warn:#FFD166; --warn-bg:#3A2E0A;
+    --u0:#6EA0FF; --u0-bg:#1D3260; --u1:#4FD1A1; --u1-bg:#12382C; --u2:#C79BFF; --u2-bg:#35205A; --u3:#FF8A5C; --u3-bg:#47210F; --u4:#5FD0E6; --u4-bg:#0F3540; --u5:#FF7A6E; --u5-bg:#4A1A17;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:20px 16px 48px}
+.wrap{max-width:1280px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:-.01em}
+h2{font-family:var(--mono);font-weight:600;font-size:13px;margin:0;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sub{margin:4px 0 0;color:var(--muted);max-width:80ch}
+.settings{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px}
+.field>span,.label{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select{font:500 14px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:0 10px;height:40px;max-width:100%}
+button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:40px;padding:0 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+label.chk{display:flex;align-items:center;gap:6px;height:40px;font-size:14px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 6px 6px 0;max-width:110ch;min-height:44px}
+.note b{color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.phases{display:flex;flex-wrap:wrap;gap:6px}
+.phase{font:500 12px var(--mono);border:1px solid var(--rule);border-radius:999px;padding:3px 10px;color:var(--muted);background:var(--panel)}
+.phase.cur{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.phase.done{color:var(--ink)}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media (min-width:900px){.stage{grid-template-columns:minmax(0,1.15fr) 120px minmax(0,1.15fr) minmax(0,.8fr)}}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.col>h2{padding:0 2px}
+.node{padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:72px}
+.node.off{opacity:.45}
+.node.hot{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad) inset}
+.node-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.node-head b{font:600 13px var(--mono)}
+.node-head span{font-size:12px;color:var(--muted)}
+.sec{display:flex;flex-direction:column;gap:3px}
+.sec>span{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;min-height:22px}
+.chip{display:inline-block;font:500 11.5px var(--mono);padding:1px 6px;border-radius:4px;border:1px solid transparent;white-space:nowrap}
+.chip.u0{background:var(--u0-bg);color:var(--u0)} .chip.u1{background:var(--u1-bg);color:var(--u1)} .chip.u2{background:var(--u2-bg);color:var(--u2)}
+.chip.u3{background:var(--u3-bg);color:var(--u3)} .chip.u4{background:var(--u4-bg);color:var(--u4)} .chip.u5{background:var(--u5-bg);color:var(--u5)}
+.chip.U{border-color:currentColor;font-weight:600}
+.chip.out{background:var(--cell);color:var(--ink)}
+.chip.ghost{opacity:.4}
+.grp{display:flex;flex-wrap:wrap;gap:4px;padding:3px 4px;border:1px dashed var(--rule);border-radius:5px}
+.wire{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 6px;text-align:center;min-height:72px}
+.wire b{font:600 20px var(--mono)}
+.wire span{font-size:11.5px;color:var(--muted)}
+.wire .arrow{font-size:22px;line-height:1;color:var(--accent)}
+.wire.idle{opacity:.4}
+.bar{height:8px;border-radius:4px;background:var(--cell);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar.hot i{background:var(--bad)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:12px 14px}
+.metric b{display:block;font:600 22px var(--mono)}
+.metric span{font-size:11.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.metric.bad b{color:var(--bad)} .metric.good b{color:var(--good)}
+.log{padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.log p{margin:0;padding-left:10px;border-left:2px solid var(--rule)}
+.log p.cur{border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);align-items:center}
+.foot{font-size:12.5px;color:var(--muted)}
+.foot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Batch Joins Stepper</h1>
+    <p class="sub">Six users, twenty-four messages, three mappers, three reducers. Step one MapReduce job through map, shuffle, sort and reduce, then compare the three joins and watch what a hot key does to the slowest reducer.</p>
+  </header>
+
+  <div class="settings">
+    <label class="field"><span>Job</span>
+      <select id="mech">
+        <option value="count">Count messages per user</option>
+        <option value="sortmerge">Join: sort-merge</option>
+        <option value="broadcast">Join: broadcast hash</option>
+        <option value="partitioned">Join: partitioned hash</option>
+        <option value="hotkey">Hot key (Taylor sends 14 of 24)</option>
+      </select></label>
+    <label class="field" id="variantField"><span>Variant</span>
+      <select id="variant"></select></label>
+    <label class="chk" id="combField"><input type="checkbox" id="combiner"> Combiner on the mapper</label>
+    <button id="back">◀ Back</button>
+    <button id="step" class="primary">Step ▶</button>
+    <button id="reset">Reset</button>
+  </div>
+
+  <div class="phases" id="phases"></div>
+  <p class="note" id="note"></p>
+
+  <div class="stage">
+    <div class="col" id="mapCol"><h2>Mappers · one per input block</h2></div>
+    <div class="col" id="wireCol"><h2>Network</h2></div>
+    <div class="col" id="redCol"><h2>Reducers · by hash(user) mod 3</h2></div>
+    <div class="col" id="outCol"><h2>Output files</h2></div>
+  </div>
+
+  <div class="panel metrics" id="metrics"></div>
+  <div class="legend" id="legend"></div>
+  <div class="panel log" id="log"></div>
+  <p class="foot">Chapter 11. The hash is fixed so the same user always lands on the same reducer: alice, dave → R0 · bob, erin → R1 · carol, taylor → R2. Every count on this page is records, not bytes. <a href="../../#/ch/11">Back to the chapter</a>.</p>
+</div>
+
+<script>
+(function(){
+  // ---------- data ----------
+  var USERS = [
+    {u:"alice", c:"US", h:0, k:0}, {u:"bob", c:"CA", h:1, k:1}, {u:"carol", c:"US", h:2, k:2},
+    {u:"dave",  c:"UK", h:0, k:3}, {u:"erin", c:"US", h:1, k:4}, {u:"taylor", c:"US", h:2, k:5}
+  ];
+  var BYU = {}; USERS.forEach(function(x){ BYU[x.u] = x; });
+  var R = 3, MAPPERS = 3;
+
+  function messages(hot){
+    // 24 messages in time order. normal: 4 each. hot: taylor 14, others 2.
+    var per = hot ? {alice:2,bob:2,carol:2,dave:2,erin:2,taylor:14} : {alice:4,bob:4,carol:4,dave:4,erin:4,taylor:4};
+    var queues = USERS.map(function(x){ return {u:x.u, n:per[x.u], i:0}; });
+    var out = [], seq = 0;
+    while (out.length < 24){
+      var q = queues[seq % queues.length]; seq++;
+      if (q.i < q.n){ q.i++; out.push({u:q.u, id:q.u.slice(0,2) + q.i}); }
+    }
+    return out;
+  }
+
+  function blocksByTime(msgs){ var b = [[],[],[]]; msgs.forEach(function(m,i){ b[i % MAPPERS].push(m); }); return b; }
+  function blocksByHash(msgs){ var b = [[],[],[]]; msgs.forEach(function(m){ b[BYU[m.u].h].push(m); }); return b; }
+  function usersByMapper(){ return [[USERS[0],USERS[1]],[USERS[2],USERS[3]],[USERS[4],USERS[5]]]; }
+  function usersByHash(){ var b = [[],[],[]]; USERS.forEach(function(x){ b[x.h].push(x); }); return b; }
+  function sortKey(rec){ return rec.key + (rec.tag === "U" ? "0" : "1") + (rec.id || ""); }
+
+  // ---------- scenarios: each returns a list of phases, each phase = {name, note, state} ----------
+  // state: {mappers:[{block:[], mem:[], emit:[]}], wire:{n, label}, reducers:[{recv:[], groups:[[...]], out:[]}], outputs:[{from, rows}], metrics:{net, maxRed, mem, jobs}, hotRed}
+  function blank(nm){ return {mappers:[], wire:{n:0,label:""}, reducers:[], outputs:[], metrics:{net:0,maxRed:0,mem:0,jobs:1}, hotRed:-1, reducersOff:false}; }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  function scenarioCount(opts){
+    var msgs = messages(opts.hot), blocks = blocksByTime(msgs), phases = [];
+    var s = blank(); s.mappers = blocks.map(function(b){ return {block:b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; }), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input.</b> 24 message records in three blocks of 8, split by position in the log (time order), not by user. Each mapper runs on a machine that already holds its block, so reading input costs no network.", state:clone(s)});
+    // map
+    s.mappers.forEach(function(mp){
+      if (opts.combiner){
+        var cnt = {}; mp.block.forEach(function(r){ cnt[r.key] = (cnt[r.key]||0) + 1; });
+        mp.emit = Object.keys(cnt).map(function(k){ return {key:k, tag:"C", id:String(cnt[k])}; });
+      } else mp.emit = mp.block.map(function(r){ return {key:r.key, tag:"C", id:"1"}; });
+    });
+    var emitted = s.mappers.reduce(function(a,m){ return a + m.emit.length; }, 0);
+    phases.push({name:"Map", note: opts.combiner
+      ? "<b>Map + combiner.</b> Each mapper emits (user, 1) per record, then its combiner pre-sums per user before anything leaves the machine. " + emitted + " records will cross the network instead of 24. A combiner is the reducer function applied early; it is only legal because addition is associative."
+      : "<b>Map.</b> Each mapper reads its block one record at a time and emits (user, 1). It does no counting. It only extracts the key and the thing to be aggregated. " + emitted + " records are ready to leave.", state:clone(s)});
+    // shuffle
+    s.mappers.forEach(function(mp){ mp.emit.forEach(function(r){ s.reducers[BYU[r.key].h].recv.push(r); }); mp.emit = mp.emit.map(function(r){ r.sent = true; return r; }); });
+    s.wire = {n:emitted, label:"records partitioned by hash(user) mod 3"}; s.metrics.net = emitted;
+    s.metrics.maxRed = Math.max.apply(null, s.reducers.map(function(r){ return r.recv.length; }));
+    var hotIdx = s.reducers.map(function(r){ return r.recv.length; }).indexOf(s.metrics.maxRed);
+    if (opts.hot) s.hotRed = hotIdx;
+    phases.push({name:"Shuffle", note:"<b>Shuffle, step 1: partition.</b> Every emitted record goes to reducer hash(user) mod 3. This is where the network cost of the job is: " + emitted + " records cross. " + (opts.hot ? "Taylor hashes to R2, and every one of her records lands there. No hash function can split one key." : "The hash spreads <i>different</i> users; it never splits one user."), state:clone(s)});
+    // sort
+    s.reducers.forEach(function(rd){ rd.recv.sort(function(a,b){ return sortKey(a) < sortKey(b) ? -1 : 1; }); var g = {}; rd.recv.forEach(function(r){ (g[r.key] = g[r.key] || []).push(r); }); rd.groups = Object.keys(g).sort().map(function(k){ return g[k]; }); rd.recv = []; });
+    phases.push({name:"Sort", note:"<b>Shuffle, step 2: sort.</b> Each reducer merges the pieces it pulled from every mapper (each already sorted) so all records for one user are adjacent. That adjacency is the whole trick: a single pass with one counter can now finish each user. It is <code>sort | uniq -c</code>, distributed.", state:clone(s)});
+    // reduce
+    s.reducers.forEach(function(rd, i){ rd.out = rd.groups.map(function(g){ return {key:g[0].key, tag:"O", id:String(g.reduce(function(a,r){ return a + parseInt(r.id,10); }, 0))}; }); });
+    s.outputs = s.reducers.map(function(rd,i){ return {from:"R"+i, rows:rd.out}; });
+    var loads = phases[phases.length-1].state.reducers.map(function(r){ return r.groups.reduce(function(a,g){ return a + g.length; }, 0); });
+    s.metrics.maxRed = Math.max.apply(null, loads);
+    phases.push({name:"Reduce", note:"<b>Reduce.</b> Each reducer walks its sorted input once and sums per user, then writes one output file. Three reducers, three files, no merge across them afterward. " + (opts.hot ? "The job is not done until R2 is done: it holds " + s.metrics.maxRed + " records against " + Math.min.apply(null, loads) + " on the lightest reducer, and everyone waits for it." + (opts.combiner ? " The combiner already shrank Taylor to one record per mapper, so the skew is gone." : " Turn the combiner on to see the fix for an aggregation.") : "The output is the final answer: user → count, sorted by user within each hash range."), state:clone(s)});
+    return phases;
+  }
+
+  function scenarioSortMerge(opts){
+    var msgs = messages(opts.hot), blocks = blocksByTime(msgs), ub = usersByMapper(), phases = [];
+    var s = blank();
+    s.mappers = blocks.map(function(b,i){ return {block: ub[i].map(function(x){ return {key:x.u, tag:"U", id:x.c}; }).concat(b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; })), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input: two datasets.</b> Messages (24 records, three blocks by time) and users (6 records, user → country, split across the same mappers). Goal: every message tagged with its sender's country. Neither side is assumed to fit in memory, so both go through the shuffle.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit = mp.block.map(function(r){ return {key:r.key, tag:r.tag, id:r.id}; }); });
+    var emitted = 30;
+    phases.push({name:"Map", note:"<b>Map.</b> Both datasets go through mappers that emit the join key. A user record becomes (user, U:country) and a message becomes (user, M:id). Same key space, tagged by source, so the shuffle can bring them together.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit.forEach(function(r){ s.reducers[BYU[r.key].h].recv.push(r); }); mp.emit.forEach(function(r){ r.sent = true; }); });
+    s.wire = {n:emitted, label:"both datasets cross: 24 M + 6 U"}; s.metrics.net = emitted;
+    var loads = s.reducers.map(function(r){ return r.recv.length; }); s.metrics.maxRed = Math.max.apply(null, loads);
+    if (opts.hot) s.hotRed = loads.indexOf(s.metrics.maxRed);
+    phases.push({name:"Shuffle", note:"<b>Shuffle: partition by hash(user).</b> A user's one U record and all of their M records converge on the same reducer, no matter which input blocks they came from. The cost is that <i>everything</i> crosses the network: " + emitted + " records, the most expensive join in traffic." + (opts.hot ? " And Taylor's 14 messages all land on R2." : ""), state:clone(s)});
+    s.reducers.forEach(function(rd){ rd.recv.sort(function(a,b){ return sortKey(a) < sortKey(b) ? -1 : 1; }); var g = {}; rd.recv.forEach(function(r){ (g[r.key] = g[r.key] || []).push(r); }); rd.groups = Object.keys(g).sort().map(function(k){ return g[k]; }); rd.recv = []; });
+    phases.push({name:"Sort", note:"<b>Sort.</b> Within each reducer, records are sorted by key with the U record ordered ahead of that user's M records. So the reducer meets the country first and then the messages, in one pass.", state:clone(s)});
+    s.reducers.forEach(function(rd){ rd.out = []; rd.groups.forEach(function(g){ var u = g.filter(function(r){ return r.tag === "U"; })[0]; g.filter(function(r){ return r.tag === "M"; }).forEach(function(m){ rd.out.push({key:m.key, tag:"O", id:(u ? u.id : "??") + ":" + m.id}); }); }); });
+    s.outputs = s.reducers.map(function(rd,i){ return {from:"R"+i, rows:rd.out}; });
+    phases.push({name:"Reduce", note:"<b>Reduce: the merge.</b> For each user: read the U record, hold the country in a variable, emit one (country, message) per following M record. " + (opts.hot ? "R2 does " + s.metrics.maxRed + " records of work while R0 and R1 idle after " + Math.min.apply(null, loads) + ". The job runs at the speed of one machine." : "Works at any size; pays for it with the shuffle and the sort, and it is the one join that a hot key can stall."), state:clone(s)});
+    return phases;
+  }
+
+  function scenarioBroadcast(opts){
+    var msgs = messages(false), blocks = blocksByTime(msgs), phases = [];
+    var s = blank(); s.reducersOff = true;
+    s.mappers = blocks.map(function(b){ return {block:b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; }), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input.</b> Messages in three blocks by time, as before. The users table (6 records) sits on the distributed filesystem and is small enough to hold in memory on every mapper. That one fact changes the whole plan.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.mem = USERS.map(function(x){ return {key:x.u, tag:"U", id:x.c}; }); });
+    s.wire = {n:18, label:"users table copied to every mapper: 6 × 3"}; s.metrics.net = 18; s.metrics.mem = 6;
+    phases.push({name:"Broadcast", note:"<b>Broadcast.</b> The entire users table is copied to every mapper, which loads it into a hash table user → country. Network cost is users × mappers = 18 records here, and it would be users × <i>thousands</i> of mappers in a real cluster. Fine while users is small; the cost scales with the cluster, not the data.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit = mp.block.map(function(m){ var u = mp.mem.filter(function(x){ return x.key === m.key; })[0]; return {key:m.key, tag:"O", id:u.id + ":" + m.id}; }); });
+    s.outputs = s.mappers.map(function(mp,i){ return {from:"M"+i, rows:mp.emit}; });
+    s.wire = {n:0, label:"no shuffle; mappers write output directly"};
+    phases.push({name:"Map + join", note:"<b>Map-side join.</b> Each mapper reads its block, looks up each message's sender in its in-memory table, and emits the joined row straight to an output file. No shuffle, no sort, no reducers. Messages never cross the network at all. A mapper's work is capped by its block size, so a hot key cannot stall anything here.", state:clone(s)});
+    phases.push({name:"Done", note:"<b>Where it breaks.</b> The small side stops fitting in memory, usually by growing slowly over two years until one night the job dies with no code change. Or the cluster grows and the copy cost (users × mappers) becomes the bottleneck. Any broadcast join needs a size check and a fallback to sort-merge.", state:clone(s)});
+    return phases;
+  }
+
+  function scenarioPartitioned(opts){
+    var msgs = messages(false), blocks = blocksByHash(msgs), ub = usersByHash(), phases = [];
+    var s = blank(); s.reducersOff = true;
+    s.mappers = blocks.map(function(b){ return {block:b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; }), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input: both sides already co-partitioned.</b> An earlier job wrote messages as three files by hash(user) mod 3, and users as three files by the same hash with the same count. Look at the blocks: block 0 holds only alice and dave, block 1 only bob and erin, block 2 only carol and taylor. The shuffle already happened, in that earlier job.", state:clone(s)});
+    s.mappers.forEach(function(mp,i){ mp.mem = ub[i].map(function(x){ return {key:x.u, tag:"U", id:x.c}; }); });
+    s.wire = {n:0, label:"mapper k reads users file k locally"}; s.metrics.mem = 2;
+    phases.push({name:"Load partition", note:"<b>Load one partition.</b> Mapper k loads only users file k into memory: 2 records, not 6. A user in partition k can only have messages in partition k, so that is all it will ever need. This is the broadcast join done one partition at a time, and the small side no longer has to fit in memory whole.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit = mp.block.map(function(m){ var u = mp.mem.filter(function(x){ return x.key === m.key; })[0]; return {key:m.key, tag:"O", id:u.id + ":" + m.id}; }); });
+    s.outputs = s.mappers.map(function(mp,i){ return {from:"M"+i, rows:mp.emit}; });
+    phases.push({name:"Map + join", note:"<b>Map-side join per partition.</b> Three independent small joins, no shuffle, output written by the mappers. If the files were also sorted by key, you would not even need the hash table: merge the two files in one pass.", state:clone(s)});
+    phases.push({name:"Done", note:"<b>Where it breaks.</b> The partitioning must be identical: same key, same hash, same count. Two datasets produced independently almost never match, and two different systems (Cassandra and Postgres) never do. Done just for one join it saves nothing, because producing the co-partitioned inputs <i>is</i> a shuffle. It pays when the layout was written once at ingest and read by many jobs.", state:clone(s)});
+    return phases;
+  }
+
+  function scenarioHot(opts){
+    var v = opts.variant;
+    if (v === "none") return scenarioSortMerge({hot:true});
+    if (v === "salt") return scenarioSalt();
+    return scenarioHybrid();
+  }
+
+  function scenarioSalt(){
+    var msgs = messages(true), blocks = blocksByTime(msgs), ub = usersByMapper(), phases = [], N = 3;
+    var s = blank();
+    s.mappers = blocks.map(function(b,i){ return {block: ub[i].map(function(x){ return {key:x.u, tag:"U", id:x.c}; }).concat(b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; })), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input, with a known hot key.</b> Same join as sort-merge, but a sampling job (or table metadata) has already flagged <b>taylor</b> as hot: 14 of 24 messages. The plan: salt her key so her records spread over " + N + " reducers.", state:clone(s)});
+    var salt = 0;
+    s.mappers.forEach(function(mp){ mp.emit = []; mp.block.forEach(function(r){
+      if (r.key !== "taylor") { mp.emit.push({key:r.key, tag:r.tag, id:r.id}); return; }
+      if (r.tag === "M"){ var k = "taylor#" + (hashId(r.id) % N); mp.emit.push({key:k, tag:"M", id:r.id, base:"taylor"}); }
+      else { for (var j = 0; j < N; j++) mp.emit.push({key:"taylor#" + j, tag:"U", id:r.id, base:"taylor"}); }
+    }); });
+    var emitted = s.mappers.reduce(function(a,m){ return a + m.emit.length; }, 0);
+    phases.push({name:"Map + salt", note:"<b>Map with a salt.</b> Each of Taylor's messages gets a suffix derived from the message ID (never a random draw, or a retried mapper would salt differently and records would be counted twice or lost): taylor#0, taylor#1, taylor#2. Her single U record is emitted " + N + " times, once per salted key, or two of the three reducers would have nothing to join against. Everyone else is untouched.", state:clone(s)});
+    var saltDest = {"taylor#0":0, "taylor#1":1, "taylor#2":2};
+    s.mappers.forEach(function(mp){ mp.emit.forEach(function(r){ var d = r.base ? saltDest[r.key] : BYU[r.key].h; s.reducers[d].recv.push(r); r.sent = true; }); });
+    s.wire = {n:emitted, label:"30 + 2 extra copies of Taylor's U record"}; s.metrics.net = emitted;
+    var loads = s.reducers.map(function(r){ return r.recv.length; }); s.metrics.maxRed = Math.max.apply(null, loads);
+    phases.push({name:"Shuffle", note:"<b>Shuffle.</b> The three salted keys hash to three different reducers, so Taylor's 14 messages are spread. Busiest reducer now holds " + s.metrics.maxRed + " records instead of 18. Two extra records crossed the network, which is nothing.", state:clone(s)});
+    s.reducers.forEach(function(rd){ rd.recv.sort(function(a,b){ return sortKey(a) < sortKey(b) ? -1 : 1; }); var g = {}; rd.recv.forEach(function(r){ (g[r.key] = g[r.key] || []).push(r); }); rd.groups = Object.keys(g).sort().map(function(k){ return g[k]; }); rd.recv = []; });
+    s.reducers.forEach(function(rd){ rd.out = []; rd.groups.forEach(function(g){ var u = g.filter(function(r){ return r.tag === "U"; })[0]; g.filter(function(r){ return r.tag === "M"; }).forEach(function(m){ rd.out.push({key:m.base || m.key, tag:"O", id:(u ? u.id : "??") + ":" + m.id}); }); }); });
+    s.outputs = s.reducers.map(function(rd,i){ return {from:"R"+i, rows:rd.out}; });
+    phases.push({name:"Reduce", note:"<b>Reduce.</b> Each reducer joins its slice as before. For a <i>join</i> the output rows are already correct and no second stage is needed: a joined row is a joined row whichever reducer made it. For an <i>aggregation</i> (count per user) you would get three partial counts for Taylor and a tiny second job sums them under the real key. Cost of the trick: a hot-key list you must maintain, and the replicated U record.", state:clone(s)});
+    return phases;
+  }
+
+  function scenarioHybrid(){
+    var msgs = messages(true), blocks = blocksByTime(msgs), ub = usersByMapper(), phases = [];
+    var s = blank();
+    s.mappers = blocks.map(function(b,i){ return {block: ub[i].map(function(x){ return {key:x.u, tag:"U", id:x.c}; }).concat(b.map(function(m){ return {key:m.u, tag:"M", id:m.id}; })), mem:[], emit:[]}; });
+    s.reducers = [0,1,2].map(function(){ return {recv:[], groups:[], out:[]}; });
+    phases.push({name:"Input", note:"<b>Input, with a known hot key.</b> Same inputs. This time the plan is a hybrid: the hot keys get a map-side join, everything else gets the normal sort-merge join, and the two outputs are unioned.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.mem = [{key:"taylor", tag:"U", id:"US"}]; });
+    s.wire = {n:3, label:"only the hot keys' U records are broadcast: 1 × 3"}; s.metrics.net = 3; s.metrics.mem = 1;
+    phases.push({name:"Broadcast hot", note:"<b>Broadcast just the hot keys' other side.</b> Taylor's one user record is copied to every mapper. That is the whole broadcast: one record, not the users table. Mapper memory holds one entry.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit = []; mp.hotOut = []; mp.block.forEach(function(r){
+      if (r.key === "taylor"){ if (r.tag === "M") mp.hotOut.push({key:"taylor", tag:"O", id:"US:" + r.id}); return; }
+      mp.emit.push({key:r.key, tag:r.tag, id:r.id});
+    }); });
+    var emitted = s.mappers.reduce(function(a,m){ return a + m.emit.length; }, 0);
+    phases.push({name:"Map: split", note:"<b>Map takes two paths.</b> A Taylor message is joined right here against the in-memory record and written straight to an output file (map-side path). Her U record from the users input is dropped; the broadcast copy replaced it. Everyone else's records are emitted for the shuffle as usual. " + emitted + " records will cross instead of 30.", state:clone(s)});
+    s.mappers.forEach(function(mp){ mp.emit.forEach(function(r){ s.reducers[BYU[r.key].h].recv.push(r); r.sent = true; }); });
+    s.wire = {n:emitted, label:"cold keys only"}; s.metrics.net = 3 + emitted;
+    var loads = s.reducers.map(function(r){ return r.recv.length; }); s.metrics.maxRed = Math.max.apply(null, loads);
+    s.reducers.forEach(function(rd){ rd.recv.sort(function(a,b){ return sortKey(a) < sortKey(b) ? -1 : 1; }); var g = {}; rd.recv.forEach(function(r){ (g[r.key] = g[r.key] || []).push(r); }); rd.groups = Object.keys(g).sort().map(function(k){ return g[k]; }); rd.recv = []; });
+    phases.push({name:"Shuffle + sort", note:"<b>Shuffle the cold keys.</b> Only " + emitted + " records cross, and the busiest reducer holds " + s.metrics.maxRed + ". Taylor never enters the shuffle, so there is nothing to skew. Her work is spread across the mappers because mappers are assigned by input block, and her messages are scattered through the log by time.", state:clone(s)});
+    s.reducers.forEach(function(rd){ rd.out = []; rd.groups.forEach(function(g){ var u = g.filter(function(r){ return r.tag === "U"; })[0]; g.filter(function(r){ return r.tag === "M"; }).forEach(function(m){ rd.out.push({key:m.key, tag:"O", id:(u ? u.id : "??") + ":" + m.id}); }); }); });
+    s.outputs = s.mappers.map(function(mp,i){ return {from:"M"+i+" (hot)", rows:mp.hotOut}; }).concat(s.reducers.map(function(rd,i){ return {from:"R"+i, rows:rd.out}; }));
+    phases.push({name:"Reduce + union", note:"<b>Reduce, then union.</b> Reducers join the cold keys; the mappers already wrote the hot rows. The final output is the union of both sets of files. Cost of the trick: two code paths in one job, and the hot-key list has to be found first (a sampling pass) or declared in table metadata.", state:clone(s)});
+    return phases;
+  }
+
+  function hashId(id){ var h = 0; for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return h; }
+
+  // ---------- state & render ----------
+  var VARIANTS = {hotkey: [["none","No fix: plain sort-merge"],["salt","Salt the hot key"],["hybrid","Map-side join for hot keys"]]};
+  var phases = [], cur = 0;
+  var $ = function(id){ return document.getElementById(id); };
+
+  function build(){
+    var mech = $("mech").value, variant = $("variant").value, comb = $("combiner").checked;
+    if (mech === "count") phases = scenarioCount({hot:false, combiner:comb});
+    else if (mech === "sortmerge") phases = scenarioSortMerge({hot:false});
+    else if (mech === "broadcast") phases = scenarioBroadcast({});
+    else if (mech === "partitioned") phases = scenarioPartitioned({});
+    else phases = scenarioHot({variant: variant || "none"});
+    cur = 0; render();
+  }
+
+  function chip(r, extra){
+    var cls = "chip u" + (BYU[r.base || r.key] ? BYU[r.base || r.key].k : 0) + (r.tag === "U" ? " U" : "") + (r.tag === "O" ? " out" : "") + (r.sent ? " ghost" : "") + (extra ? " " + extra : "");
+    var txt = r.tag === "U" ? r.key + "→" + r.id : r.tag === "M" ? r.key + "·" + r.id : r.tag === "C" ? r.key + "," + r.id : r.tag === "O" ? (r.id.indexOf(":") > -1 ? r.id : r.key + "=" + r.id) : r.key;
+    return '<span class="' + cls + '" title="' + esc(r.key) + '">' + esc(txt) + '</span>';
+  }
+  function chips(arr){ return '<div class="chips">' + arr.map(function(r){ return chip(r); }).join("") + '</div>'; }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function render(){
+    var ph = phases[cur], s = ph.state;
+    $("phases").innerHTML = phases.map(function(p,i){ return '<span class="phase' + (i === cur ? " cur" : i < cur ? " done" : "") + '">' + (i+1) + " · " + esc(p.name) + '</span>'; }).join("");
+    $("note").innerHTML = ph.note;
+    var mh = '<h2>Mappers · one per input block</h2>';
+    s.mappers.forEach(function(mp,i){
+      mh += '<div class="panel node"><div class="node-head"><b>M' + i + '</b><span>block ' + i + ' · ' + mp.block.length + ' records</span></div>';
+      mh += '<div class="sec"><span>Input block</span>' + chips(mp.block) + '</div>';
+      if (mp.mem && mp.mem.length) mh += '<div class="sec"><span>In memory (hash table)</span>' + chips(mp.mem) + '</div>';
+      if (mp.emit && mp.emit.length) mh += '<div class="sec"><span>' + (mp.emit[0].tag === "O" ? "Joined, written locally" : "Emitted") + '</span>' + chips(mp.emit) + '</div>';
+      if (mp.hotOut && mp.hotOut.length) mh += '<div class="sec"><span>Hot rows joined map-side</span>' + chips(mp.hotOut) + '</div>';
+      mh += '</div>';
+    });
+    $("mapCol").innerHTML = mh;
+    $("wireCol").innerHTML = '<h2>Network</h2><div class="panel wire' + (s.wire.n ? "" : " idle") + '"><span class="arrow">' + (s.wire.n ? "⟶" : "·") + '</span><b>' + s.wire.n + '</b><span>' + esc(s.wire.label || "nothing crossing") + '</span></div>';
+    var rh = '<h2>Reducers · by hash(user) mod 3</h2>';
+    var loads = s.reducers.map(function(rd){ return rd.recv.length + rd.groups.reduce(function(a,g){ return a + g.length; }, 0); });
+    var maxLoad = Math.max.apply(null, loads.concat([1]));
+    s.reducers.forEach(function(rd,i){
+      var load = loads[i], hot = s.hotRed === i;
+      rh += '<div class="panel node' + (s.reducersOff ? " off" : "") + (hot ? " hot" : "") + '"><div class="node-head"><b>R' + i + '</b><span>' + (s.reducersOff ? "unused" : load + " records") + '</span></div>';
+      if (!s.reducersOff) rh += '<div class="bar' + (hot ? " hot" : "") + '"><i style="width:' + Math.round(100 * load / maxLoad) + '%"></i></div>';
+      if (rd.recv.length) rh += '<div class="sec"><span>Received (arrival order)</span>' + chips(rd.recv) + '</div>';
+      if (rd.groups.length) rh += '<div class="sec"><span>Sorted, grouped by key</span><div class="chips">' + rd.groups.map(function(g){ return '<span class="grp">' + g.map(function(r){ return chip(r); }).join("") + '</span>'; }).join("") + '</div></div>';
+      rh += '</div>';
+    });
+    $("redCol").innerHTML = rh;
+    var oh = '<h2>Output files</h2>';
+    if (!s.outputs.length) oh += '<div class="panel node off"><span class="label">none yet</span></div>';
+    s.outputs.forEach(function(o){ oh += '<div class="panel node"><div class="node-head"><b>' + esc(o.from) + '</b><span>' + o.rows.length + ' rows</span></div>' + chips(o.rows) + '</div>'; });
+    $("outCol").innerHTML = oh;
+    var m = s.metrics, maxRed = s.reducersOff ? 0 : Math.max.apply(null, loads.concat([0]));
+    $("metrics").innerHTML =
+      '<div class="metric"><b>' + m.net + '</b><span>records over the network</span></div>' +
+      '<div class="metric' + (s.hotRed > -1 ? " bad" : "") + '"><b>' + (s.reducersOff ? "—" : maxRed) + '</b><span>busiest reducer (≈ runtime)</span></div>' +
+      '<div class="metric"><b>' + (m.mem || 0) + '</b><span>records in mapper memory</span></div>' +
+      '<div class="metric"><b>' + s.mappers.reduce(function(a,mp){ return Math.max(a, mp.block.length); }, 0) + '</b><span>biggest mapper block</span></div>';
+    $("legend").innerHTML = '<span><b>Legend</b></span>' + USERS.map(function(x){ return '<span class="chip u' + x.k + '">' + x.u + '</span>'; }).join("") + '<span class="chip u0 U">user→country record</span><span class="chip u0">message</span><span class="chip out">output row</span><span class="chip u0 ghost">already sent</span>';
+    $("log").innerHTML = phases.slice(0, cur + 1).map(function(p,i){ return '<p class="' + (i === cur ? "cur" : "") + '">' + p.note + '</p>'; }).join("");
+    $("back").disabled = cur === 0; $("step").disabled = cur === phases.length - 1;
+  }
+
+  function syncControls(){
+    var mech = $("mech").value;
+    var vf = $("variantField"), vs = $("variant");
+    if (VARIANTS[mech]){ vf.hidden = false; vs.innerHTML = VARIANTS[mech].map(function(v){ return '<option value="' + v[0] + '">' + v[1] + '</option>'; }).join(""); }
+    else { vf.hidden = true; vs.innerHTML = ""; }
+    $("combField").hidden = mech !== "count";
+  }
+
+  $("mech").addEventListener("change", function(){ syncControls(); build(); });
+  $("variant").addEventListener("change", build);
+  $("combiner").addEventListener("change", build);
+  $("step").addEventListener("click", function(){ if (cur < phases.length - 1){ cur++; render(); } });
+  $("back").addEventListener("click", function(){ if (cur > 0){ cur--; render(); } });
+  $("reset").addEventListener("click", function(){ cur = 0; render(); });
+  document.addEventListener("keydown", function(e){ if (e.key === "ArrowRight") $("step").click(); if (e.key === "ArrowLeft") $("back").click(); });
+
+  var q = (location.hash || "").replace(/^#/, "");
+  if (q && $("mech").querySelector('option[value="' + q + '"]')) $("mech").value = q;
+  syncControls(); build();
+
+  window.__joins = {build:build, phases:function(){ return phases; }, set:function(mech, variant, comb){ $("mech").value = mech; syncControls(); if (variant) $("variant").value = variant; $("combiner").checked = !!comb; build(); }, step:function(){ $("step").click(); }, cur:function(){ return cur; }};
+})();
+</script>
+</body>
+</html>
