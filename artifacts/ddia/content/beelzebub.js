@@ -1,6 +1,10 @@
 window.DDIA = window.DDIA || {chapters:[], viz:[], system:null};
 
 window.DDIA.viz.push({
+  slug: "change-stream", chapter: 12, title: "Change Stream Map", path: "viz/change-stream/index.html",
+  blurb: "The messaging system's change stream end to end: owners serialize each conversation and assign seq, the Cassandra quorum write and an outbox row land together, a relay publishes to a log keyed by conv_id, and five consumer groups (inbox copy, search, notifications, cross-region copy, analytics) follow at their own offsets. Send messages and step the system; crash a consumer mid-batch and watch it replay from its committed offset with duplicates skipped by (conv_id, seq); crash an owner between the Cassandra write and the publish and see the outbox save the event; slow one consumer and watch head-of-line blocking."
+});
+window.DDIA.viz.push({
   slug: "etl-vs-elt", chapter: 11, title: "ETL vs ELT", path: "viz/etl-vs-elt/index.html",
   blurb: "The same source and the same final table, built two ways: transform before loading, or load raw and transform in SQL. Drag the slider for how much of the source survives the transform and watch the bytes moved; then throw a transform bug, a new question that needs a dropped field, personal data, a non-SQL transform, or a source with 7-day retention at both lanes and see which one copes."
 });
