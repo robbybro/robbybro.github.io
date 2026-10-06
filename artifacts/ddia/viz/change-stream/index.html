@@ -25,101 +25,110 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:20px 16px 48px}
-.wrap{max-width:1320px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
-h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:-.01em}
-h2{font-family:var(--mono);font-weight:600;font-size:12.5px;margin:0;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.sub{margin:4px 0 0;color:var(--muted);max-width:84ch}
-.settings{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end}
-.field{display:flex;flex-direction:column;gap:3px}
-.field>span{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-select,button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:38px;padding:0 12px;cursor:pointer}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding:16px 16px 48px}
+.wrap{max-width:1400px;margin-inline:auto;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(20px,4vw,26px);margin:0;letter-spacing:-.01em}
+.sub{margin:4px 0 0;color:var(--muted);max-width:90ch;font-size:14px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+@media (min-width:960px){.layout{grid-template-columns:270px minmax(0,1fr)}}
+.side{display:flex;flex-direction:column;gap:10px}
+@media (min-width:960px){.side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
+.controls{padding:12px;display:flex;flex-direction:column;gap:8px}
+.controls h2{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 0}
+select,button{font:500 13.5px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;height:36px;padding:0 10px;cursor:pointer;width:100%}
 select{font-family:var(--mono)}
 button:hover{border-color:var(--accent)}
 button:disabled{opacity:.4;cursor:default}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 button.danger{border-color:var(--bad);color:var(--bad)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.note{margin:0;padding:10px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 6px 6px 0;max-width:120ch;min-height:44px}
+.note{margin:0;padding:10px 12px;border-left:3px solid var(--accent);font-size:13.5px;min-height:44px}
 .note b{color:var(--accent)}
-.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px}
-.map{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
-@media (min-width:1000px){.map{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.5fr)}}
-.col{display:flex;flex-direction:column;gap:10px;min-width:0}
-.node{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-.node.down{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad) inset;opacity:.85}
+.note.bad{border-left-color:var(--bad)} .note.good{border-left-color:var(--good)} .note.warn{border-left-color:var(--warn)}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px}
+.metric b{display:block;font:600 20px var(--mono)}
+.metric span{font-size:10.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.metric.bad b{color:var(--bad)} .metric.good b{color:var(--good)} .metric.warn b{color:var(--warn)}
+.main{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* diagram */
+.stage{position:relative;width:100%;overflow:hidden}
+.canvas{position:absolute;left:0;top:0;transform-origin:0 0}
+.canvas svg{position:absolute;left:0;top:0;pointer-events:none}
+.edge{fill:none;stroke:var(--rule);stroke-width:2}
+.edge.on{stroke:var(--accent);stroke-width:3}
+.edge.dead{stroke:var(--bad);stroke-dasharray:6 5}
+.edge.dim{stroke-dasharray:3 5}
+.elabel{font:500 10.5px var(--mono);fill:var(--muted)}
+.elabel.on{fill:var(--accent)}
+.arrow{fill:var(--rule)} .arrow.on{fill:var(--accent)} .arrow.dead{fill:var(--bad)}
+.node{position:absolute;background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-size:12px}
+.node.down{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad) inset}
 .node.slow{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset}
-.nh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
-.nh b{font:600 13px var(--mono)}
-.nh span{font-size:12px;color:var(--muted)}
-.tag{font:600 10.5px var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;border:1px solid var(--rule)}
+.node.hot{box-shadow:0 0 0 2px var(--accent) inset}
+.node.ext{border-style:dashed}
+.nt{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.nt b{font:600 12.5px var(--mono)}
+.tag{font:600 9.5px var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:0 6px;border-radius:999px;border:1px solid var(--rule);white-space:nowrap}
 .tag.bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg)} .tag.good{color:var(--good);border-color:var(--good);background:var(--good-bg)} .tag.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
-.sec{display:flex;flex-direction:column;gap:3px}
-.sec>span{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.chips{display:flex;flex-wrap:wrap;gap:4px;min-height:20px}
-.chip{display:inline-block;font:500 11.5px var(--mono);padding:1px 6px;border-radius:4px;white-space:nowrap;border:1px solid transparent}
+.kv{font:500 11.5px var(--mono);display:grid;grid-template-columns:auto 1fr;gap:1px 8px;align-items:center}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv .lag{color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:3px;min-height:18px;align-items:center}
+.chip{display:inline-block;font:500 10.5px var(--mono);padding:0 5px;border-radius:4px;white-space:nowrap;border:1px solid transparent;line-height:17px}
 .chip.c0{background:var(--c0-bg);color:var(--c0)} .chip.c1{background:var(--c1-bg);color:var(--c1)} .chip.c2{background:var(--c2-bg);color:var(--c2)}
 .chip.pending{border-style:dashed;border-color:currentColor;background:transparent}
-.chip.dup{text-decoration:line-through;opacity:.6}
-.chip.out{background:var(--cell);color:var(--ink)}
-.part{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.part>b{font:600 11.5px var(--mono);min-width:36px;color:var(--muted)}
-.offs{display:flex;gap:6px;flex-wrap:wrap;font:500 11.5px var(--mono)}
-.offs span{padding:1px 6px;border-radius:4px;background:var(--cell)}
-.offs span.lag{background:var(--warn-bg);color:var(--warn)}
-.bar{height:6px;border-radius:3px;background:var(--cell);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent)}
-.store{font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
-.store b{font:600 11.5px var(--mono);color:var(--muted)}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:12px 14px}
-.metric b{display:block;font:600 22px var(--mono)}
-.metric span{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
-.metric.bad b{color:var(--bad)} .metric.good b{color:var(--good)} .metric.warn b{color:var(--warn)}
-.log{padding:12px 14px;display:flex;flex-direction:column;gap:5px;font-size:13px;max-height:260px;overflow:auto}
+.chip.out{background:var(--cell);color:var(--muted)}
+.lane{display:flex;align-items:center;gap:6px}
+.lane>b{font:600 10.5px var(--mono);color:var(--muted);min-width:20px}
+.log{padding:12px 14px;display:flex;flex-direction:column;gap:5px;font-size:13px}
 .log p{margin:0;padding-left:10px;border-left:2px solid var(--rule)}
 .log p.cur{border-color:var(--accent)}
 .log p.bad{border-color:var(--bad)} .log p.good{border-color:var(--good)} .log p.warn{border-color:var(--warn)}
-.foot{font-size:12.5px;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--muted);margin:0}
 .foot a{color:var(--accent)}
-.row{display:flex;gap:6px;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted);align-items:center;padding:0 2px}
+.legend i{display:inline-block;width:22px;height:0;border-top:3px solid var(--accent);vertical-align:middle}
+.legend i.r{border-top:2px solid var(--rule)} .legend i.d{border-top:2px dashed var(--bad)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Change Stream Map</h1>
-    <p class="sub">The messaging system's change stream from the owner tier to every derived store. Owners serialize each conversation and assign <code>seq</code>; a Cassandra quorum write and an outbox row land together; a relay publishes to a log keyed by <code>conv_id</code>; five consumer groups follow at their own offsets. Send messages, step the system, and crash things.</p>
+    <p class="sub">The messaging system's change stream from the owner tier to every derived store. Owners serialize each conversation and assign <code>seq</code>; the Cassandra quorum write and an outbox row land together; a relay publishes to a log keyed by <code>conv_id</code>; five consumer groups follow at their own offsets. Lines light up when something crossed them on the last action.</p>
   </header>
 
-  <div class="settings">
-    <label class="field"><span>Send a message in</span>
-      <select id="conv"><option value="0">conversation A (owner O1)</option><option value="1">conversation B (owner O2)</option><option value="2">conversation C (owner O1)</option></select></label>
-    <button id="send" class="primary">Send ▶</button>
-    <button id="step">Step the system ▶</button>
-    <label class="field"><span>Fault</span>
-      <select id="fault">
-        <option value="">none</option>
-        <option value="crash-inbox">crash the inbox consumer (mid-batch)</option>
-        <option value="crash-search">crash the search consumer (mid-batch)</option>
-        <option value="crash-owner">crash owner O1 after the Cassandra write, before publish</option>
-        <option value="slow-search">slow the search consumer (head-of-line)</option>
-      </select></label>
-    <button id="inject" class="danger">Inject</button>
-    <button id="heal">Restart what's down</button>
-    <button id="reset">Reset</button>
+  <div class="layout">
+    <aside class="side">
+      <div class="panel controls">
+        <h2>Send</h2>
+        <select id="conv"><option value="0">conversation A → owner O1</option><option value="1">conversation B → owner O2</option><option value="2">conversation C → owner O1</option></select>
+        <div class="row2"><button id="send" class="primary">Send ⏎</button><button id="step">Step →</button></div>
+        <h2>Fault</h2>
+        <select id="fault">
+          <option value="">choose a fault</option>
+          <option value="crash-inbox">crash inbox consumer mid-batch</option>
+          <option value="crash-search">crash search consumer mid-batch</option>
+          <option value="crash-owner">crash O1 after write, before publish</option>
+          <option value="slow-search">slow the search consumer</option>
+        </select>
+        <div class="row2"><button id="inject" class="danger">Inject</button><button id="heal">Restart</button></div>
+        <button id="reset">Reset</button>
+      </div>
+      <p class="panel note" id="note"></p>
+      <div class="panel metrics" id="metrics"></div>
+    </aside>
+
+    <div class="main">
+      <div class="legend"><span><i></i> crossed on the last action</span><span><i class="r"></i> idle</span><span><i class="d"></i> blocked by a fault</span><span>dashed chip = in Cassandra, not yet on the log</span></div>
+      <div class="stage" id="stage"><div class="canvas" id="canvas"><svg id="edges"></svg><div id="nodes"></div></div></div>
+      <div class="panel log" id="log"></div>
+      <p class="foot">Chapter 12. Partition = hash(conv_id) mod 3, so A→P0, B→P1, C→P2 and every conversation's events stay in <code>seq</code> order. Consumers commit offsets every two events, which is why a crash mid-batch replays up to two and the idempotency key <code>(conv_id, seq)</code> turns the replay into skipped duplicates. Postgres participants and conversations feed a second topic by CDC; the inbox and search consumers keep a local copy of participants from it. <a href="../../#/ch/12">Back to the chapter</a>.</p>
+    </div>
   </div>
-
-  <p class="note" id="note"></p>
-
-  <div class="map">
-    <div class="col" id="ownerCol"><h2>1 · Owner tier and the write</h2></div>
-    <div class="col" id="logCol"><h2>2 · The log, keyed by conv_id</h2></div>
-    <div class="col" id="consCol"><h2>3 · Consumer groups and derived stores</h2></div>
-  </div>
-
-  <div class="panel metrics" id="metrics"></div>
-  <div class="panel log" id="log"></div>
-  <p class="foot">Chapter 12. Partition = hash(conv_id) mod 3, so A→P0, B→P1, C→P2 and every conversation's events stay in <code>seq</code> order. Consumers commit offsets every two events, which is why a crash mid-batch replays up to two and the idempotency key <code>(conv_id, seq)</code> turns the replay into skipped duplicates. <a href="../../#/ch/12">Back to the chapter</a>.</p>
 </div>
 
 <script>
@@ -127,36 +136,90 @@ button.danger{border-color:var(--bad);color:var(--bad)}
   var $ = function(id){ return document.getElementById(id); };
   var CONVS = [{id:"A", owner:0, part:0, members:["alice","bob"]}, {id:"B", owner:1, part:1, members:["bob","carol","dave"]}, {id:"C", owner:0, part:2, members:["alice","carol"]}];
   var GROUPS = [
-    {id:"inbox", title:"inbox-copy", store:"inbox copy (Cassandra, by user_id)", rekey:true, blurb:"re-keys by user_id; one message → one row per participant"},
-    {id:"search", title:"search-index", store:"search segments (by user_id)", rekey:true, blurb:"tokenizes; new small segments, merged later"},
-    {id:"notify", title:"notify", store:"push sends (side effect)", rekey:false, blurb:"dedupe record written before the send"},
-    {id:"region", title:"region-copy", store:"Cassandra, other region", rekey:false, blurb:"async cross-region replica of the log"},
-    {id:"analytics", title:"analytics", store:"event lake (date-partitioned Parquet)", rekey:false, blurb:"append to today's directory; batch reads it"}
+    {id:"inbox", title:"inbox-copy", store:"inbox copy", keyed:"user_id (Cassandra)", rekey:true, join:"stream–table: × participants"},
+    {id:"search", title:"search-index", store:"search segments", keyed:"(user_id, term)", rekey:true, join:"stream–table: × participants"},
+    {id:"notify", title:"notify", store:"push sends", keyed:"side effect; dedupe row first", rekey:false, join:"none"},
+    {id:"region", title:"region-copy", store:"Cassandra, region 2", keyed:"(conv_id, seq)", rekey:false, join:"none"},
+    {id:"analytics", title:"analytics", store:"event lake", keyed:"date-partitioned Parquet", rekey:false, join:"none"}
   ];
   var COMMIT_EVERY = 2;
   var S;
+
+  // ---------- layout (fixed coordinate space) ----------
+  var W = 1180, H = 650;
+  var L = {
+    clients:  {x:16,  y:150, w:118, h:72},
+    o0:       {x:172, y:16,  w:206, h:132},
+    o1:       {x:172, y:168, w:206, h:118},
+    cass:     {x:172, y:330, w:206, h:120},
+    pg:       {x:172, y:490, w:206, h:92},
+    topic:    {x:428, y:16,  w:236, h:196},
+    cdc:      {x:428, y:490, w:236, h:92},
+    g0:       {x:714, y:16,  w:214, h:108},
+    g1:       {x:714, y:140, w:214, h:108},
+    g2:       {x:714, y:264, w:214, h:96},
+    g3:       {x:714, y:376, w:214, h:96},
+    g4:       {x:714, y:488, w:214, h:96},
+    s0:       {x:976, y:16,  w:188, h:108},
+    s1:       {x:976, y:140, w:188, h:108},
+    s2:       {x:976, y:264, w:188, h:96},
+    s3:       {x:976, y:376, w:188, h:96},
+    s4:       {x:976, y:488, w:188, h:96}
+  };
+  function R(k){ return L[k]; }
+  function right(k){ var r = R(k); return [r.x + r.w, r.y + r.h/2]; }
+  function left(k){ var r = R(k); return [r.x, r.y + r.h/2]; }
+  function bottom(k){ var r = R(k); return [r.x + r.w/2, r.y + r.h]; }
+  function top(k){ var r = R(k); return [r.x + r.w/2, r.y]; }
+  // edges: id, from point, to point, label
+  function EDGES(){
+    return [
+      {id:"cl-o0", a:right("clients"), b:left("o0"), label:"send (random id)"},
+      {id:"cl-o1", a:right("clients"), b:left("o1"), label:""},
+      {id:"o0-cass", a:[R("o0").x+40, R("o0").y+R("o0").h], b:[R("cass").x+40, R("cass").y], label:"write + outbox row"},
+      {id:"o1-cass", a:[R("o1").x+60, R("o1").y+R("o1").h], b:[R("cass").x+60, R("cass").y], label:""},
+      {id:"o0-topic", a:right("o0"), b:[R("topic").x, R("topic").y+40], label:"relay publishes"},
+      {id:"o1-topic", a:right("o1"), b:[R("topic").x, R("topic").y+120], label:""},
+      {id:"pg-cdc", a:right("pg"), b:left("cdc"), label:"CDC (one slot)"},
+      {id:"topic-g0", a:right("topic"), b:left("g0"), label:""},
+      {id:"topic-g1", a:right("topic"), b:left("g1"), label:""},
+      {id:"topic-g2", a:right("topic"), b:left("g2"), label:""},
+      {id:"topic-g3", a:right("topic"), b:left("g3"), label:""},
+      {id:"topic-g4", a:right("topic"), b:left("g4"), label:""},
+      {id:"cdc-g0", a:[R("cdc").x+R("cdc").w, R("cdc").y+20], b:[R("g0").x, R("g0").y+R("g0").h-12], label:"participants copy"},
+      {id:"cdc-g1", a:[R("cdc").x+R("cdc").w, R("cdc").y+50], b:[R("g1").x, R("g1").y+R("g1").h-12], label:""},
+      {id:"g0-s0", a:right("g0"), b:left("s0"), label:"apply-if-newer"},
+      {id:"g1-s1", a:right("g1"), b:left("s1"), label:""},
+      {id:"g2-s2", a:right("g2"), b:left("s2"), label:"dedupe → send"},
+      {id:"g3-s3", a:right("g3"), b:left("s3"), label:""},
+      {id:"g4-s4", a:right("g4"), b:left("s4"), label:"append"}
+    ];
+  }
 
   function fresh(){
     return {
       seq:[0,0,0], owners:[{up:true, outbox:[]},{up:true, outbox:[]}], cassandra:[], parts:[[],[],[]],
       groups: GROUPS.map(function(g){ return {id:g.id, up:true, slow:false, committed:[0,0,0], processed:[0,0,0], applied:{}, rows:0, dups:0, tick:0}; }),
-      log:[], step:0, lastFault:""
+      log:[], step:0, active:{}, lastCls:""
     };
   }
-  function say(msg, cls){ S.log.unshift({msg:msg, cls:cls || ""}); if (S.log.length > 40) S.log.pop(); }
+  function say(msg, cls){ S.log.unshift({msg:msg, cls:cls || ""}); if (S.log.length > 40) S.log.pop(); S.lastCls = cls || ""; }
+  function on(id){ S.active[id] = true; }
 
   function send(ci){
+    S.active = {};
     var c = CONVS[ci], o = S.owners[c.owner];
-    if (!o.up){ say("<b>Send to " + c.id + " refused.</b> Owner O" + (c.owner+1) + " is down; the client retries with the same random ID until a new owner holds the lease (chapter 9). Nothing is lost and nothing is duplicated.", "bad"); return; }
+    on("cl-o" + c.owner);
+    if (!o.up){ say("<b>Send to " + c.id + " refused.</b> Owner O" + (c.owner+1) + " is down; the client retries with the same random ID until a new owner holds the lease (chapter 9). Nothing lost, nothing duplicated.", "bad"); return; }
     S.seq[ci]++; var ev = {conv:c.id, ci:ci, seq:S.seq[ci], part:c.part, published:false};
-    S.cassandra.push(ev); o.outbox.push(ev);
-    say("<b>Owner O" + (c.owner+1) + " took " + c.id + "#" + ev.seq + ".</b> Assigned seq " + ev.seq + ", wrote it to Cassandra at quorum and an outbox row in the same write. Not yet on the log.", "good");
+    S.cassandra.push(ev); o.outbox.push(ev); on("o" + c.owner + "-cass");
+    say("<b>O" + (c.owner+1) + " took " + c.id + "#" + ev.seq + ".</b> Assigned seq " + ev.seq + ", wrote it to Cassandra at quorum and an outbox row in the same write. Not yet on the log; step to let the relay publish.", "good");
   }
 
   function relay(){
     S.owners.forEach(function(o, i){
       if (!o.up) return;
-      while (o.outbox.length){ var ev = o.outbox.shift(); ev.published = true; ev.offset = S.parts[ev.part].length; S.parts[ev.part].push(ev); say("Relay on O" + (i+1) + " published " + ev.conv + "#" + ev.seq + " → P" + ev.part + " @ offset " + ev.offset + ".", ""); }
+      while (o.outbox.length){ var ev = o.outbox.shift(); ev.published = true; ev.offset = S.parts[ev.part].length; S.parts[ev.part].push(ev); on("o" + i + "-topic"); say("Relay on O" + (i+1) + " published " + ev.conv + "#" + ev.seq + " → P" + ev.part + " @ offset " + ev.offset + ".", ""); }
     });
   }
 
@@ -165,85 +228,107 @@ button.danger{border-color:var(--bad);color:var(--bad)}
       var G = GROUPS[gi];
       if (!g.up) return;
       g.tick++;
-      if (g.slow && g.tick % 3 !== 0){ return; }
+      if (g.slow && g.tick % 3 !== 0) return;
       for (var p = 0; p < 3; p++){
         if (g.processed[p] < S.parts[p].length){
           var ev = S.parts[p][g.processed[p]]; var key = ev.conv + "#" + ev.seq;
+          on("topic-g" + gi); on("g" + gi + "-s" + gi); if (G.rekey) on("cdc-g" + gi);
           if (g.applied[key]){ g.dups++; say(G.title + " got " + key + " again (replay from committed offset); <b>skipped as duplicate</b> by the (conv_id, seq) check.", "warn"); }
           else { g.applied[key] = true; g.rows += G.rekey ? CONVS[ev.ci].members.length : 1; }
           g.processed[p]++;
-          if ((g.processed[p] - g.committed[p]) >= COMMIT_EVERY){ g.committed[p] = g.processed[p]; }
+          if ((g.processed[p] - g.committed[p]) >= COMMIT_EVERY) g.committed[p] = g.processed[p];
         }
       }
     });
   }
 
-  function stepSystem(){
-    S.step++; relay(); consume();
-  }
+  function stepSystem(){ S.active = {}; S.step++; relay(); consume(); if (!S.log.length || S.lastCls === undefined) {} }
 
   function inject(kind){
-    S.lastFault = kind;
+    S.active = {};
     if (kind === "crash-inbox" || kind === "crash-search"){
       var id = kind.split("-")[1]; var g = S.groups.filter(function(x){ return x.id === id; })[0];
       g.up = false; var unc = g.processed.map(function(v,i){ return v - g.committed[i]; }).reduce(function(a,b){ return a+b; }, 0);
       say("<b>" + id + " consumer crashed</b> with " + unc + " processed-but-uncommitted event(s). Its partitions pile up; lag grows every step. On restart it resumes from its committed offsets and re-reads those " + unc + ".", "bad");
     } else if (kind === "crash-owner"){
-      S.owners[0].up = false;
-      var pend = S.owners[0].outbox.length;
-      say("<b>Owner O1 crashed</b> " + (pend ? "with " + pend + " outbox row(s) written to Cassandra but not yet published" : "with an empty outbox") + ". Sends to A and C are refused until the lease moves. The outbox rows are durable: whoever takes over publishes them. Without an outbox, those messages would be in Cassandra and missing from every derived store, forever.", "bad");
+      S.owners[0].up = false; var pend = S.owners[0].outbox.length;
+      say("<b>Owner O1 crashed</b> " + (pend ? "with " + pend + " outbox row(s) in Cassandra but not yet published" : "with an empty outbox") + ". Sends to A and C are refused until the lease moves. The outbox rows are durable: whoever takes over publishes them. Without an outbox those messages would be in Cassandra and missing from every derived store, forever.", "bad");
     } else if (kind === "slow-search"){
       var s = S.groups.filter(function(x){ return x.id === "search"; })[0]; s.slow = true;
-      say("<b>search consumer is slow</b> (one event every third step). Everything behind it in each partition waits: head-of-line blocking. The other groups are unaffected; the log is read independently by each.", "warn");
+      say("<b>search consumer is slow</b> (one event every third step). Everything behind it in each of its partitions waits: head-of-line blocking. The other groups are unaffected; each reads the log independently.", "warn");
     }
   }
   function heal(){
-    S.groups.forEach(function(g){ if (!g.up){ g.up = true; g.processed = g.committed.slice(); say("<b>" + g.id + " restarted</b> from committed offsets " + g.committed.join("/") + ". It will replay anything processed after the last commit.", "good"); } if (g.slow){ g.slow = false; say(g.id + " back to normal speed.", "good"); } });
-    S.owners.forEach(function(o, i){ if (!o.up){ o.up = true; say("<b>O" + (i+1) + " back</b> (or a successor took the lease, same thing: it reads the outbox). Outbox rows publish on the next step.", "good"); } });
+    S.active = {};
+    S.groups.forEach(function(g){ if (!g.up){ g.up = true; g.processed = g.committed.slice(); say("<b>" + g.id + " restarted</b> from committed offsets " + g.committed.join("/") + ". It replays anything processed after the last commit.", "good"); } if (g.slow){ g.slow = false; say(g.id + " back to normal speed.", "good"); } });
+    S.owners.forEach(function(o, i){ if (!o.up){ o.up = true; say("<b>O" + (i+1) + " back</b> (or a successor took the lease; same thing, it reads the outbox). Outbox rows publish on the next step.", "good"); } });
   }
 
+  // ---------- render ----------
   function chip(ev, cls){ return '<span class="chip c' + ev.ci + (cls ? " " + cls : "") + '">' + ev.conv + '#' + ev.seq + '</span>'; }
+  function node(k, cls, title, tag, body){ var r = R(k); return '<div class="node ' + cls + '" style="left:' + r.x + 'px;top:' + r.y + 'px;width:' + r.w + 'px;height:' + r.h + 'px"><div class="nt"><b>' + title + '</b>' + (tag || "") + '</div>' + body + '</div>'; }
+  function kv(pairs){ return '<div class="kv">' + pairs.map(function(p){ return '<span>' + p[0] + '</span><span class="' + (p[2] || "") + '">' + p[1] + '</span>'; }).join("") + '</div>'; }
 
   function render(){
-    var oh = '<h2>1 · Owner tier and the write</h2>';
+    var html = "";
+    html += node("clients", "ext", "clients", "", kv([["send", "random id"], ["retry", "same id"]]));
     S.owners.forEach(function(o, i){
       var owns = CONVS.filter(function(c){ return c.owner === i; }).map(function(c){ return c.id; }).join(", ");
-      oh += '<div class="panel node' + (o.up ? "" : " down") + '"><div class="nh"><b>Owner O' + (i+1) + '</b><span>conversations ' + owns + '</span>' + (o.up ? '<span class="tag good">lease held</span>' : '<span class="tag bad">down</span>') + '</div>';
-      oh += '<div class="sec"><span>Outbox (written with the Cassandra row)</span><div class="chips">' + (o.outbox.length ? o.outbox.map(function(e){ return chip(e, "pending"); }).join("") : '<span class="chip out">empty</span>') + '</div></div></div>';
+      html += node("o" + i, o.up ? "" : "down", "owner O" + (i+1), o.up ? '<span class="tag good">lease</span>' : '<span class="tag bad">down</span>',
+        kv([["convs", owns], ["assigns", "seq, epoch"]]) + '<div class="lane"><b>outbox</b><div class="chips">' + (o.outbox.length ? o.outbox.map(function(e){ return chip(e, "pending"); }).join("") : '<span class="chip out">empty</span>') + '</div></div>');
     });
-    oh += '<div class="panel node"><div class="nh"><b>Cassandra · messages</b><span>(conv_id, seq) · quorum 2 of 3</span></div><div class="chips">' + (S.cassandra.length ? S.cassandra.map(function(e){ return chip(e, e.published ? "" : "pending"); }).join("") : '<span class="chip out">no messages yet</span>') + '</div><span style="font-size:12px;color:var(--muted)">dashed = in Cassandra, not yet on the log</span></div>';
-    oh += '<div class="panel node"><div class="nh"><b>Postgres · participants, conversations</b><span>CDC via logical decoding</span></div><span style="font-size:12.5px;color:var(--muted)">One connector, one replication slot, publishes row changes to a second topic keyed by conv_id. Not animated here; same shape as the owner path minus the outbox.</span></div>';
-    $("ownerCol").innerHTML = oh;
-
-    var lh = '<h2>2 · The log, keyed by conv_id</h2><div class="panel node"><div class="nh"><b>topic: conversation-events</b><span>3 partitions · retention by time</span></div>';
-    S.parts.forEach(function(p, i){ lh += '<div class="part"><b>P' + i + '</b><div class="chips">' + (p.length ? p.map(function(e){ return chip(e); }).join("") : '<span class="chip out">empty</span>') + '</div></div>'; });
-    lh += '<span style="font-size:12px;color:var(--muted)">Each partition is append-only and totally ordered. Order across partitions is undefined, and nobody needs it: a conversation lives in one partition.</span></div>';
-    $("logCol").innerHTML = lh;
-
-    var ch = '<h2>3 · Consumer groups and derived stores</h2>';
+    html += node("cass", "", "cassandra · messages", "", kv([["key", "(conv_id, seq)"], ["write", "quorum 2/3"]]) + '<div class="chips">' + (S.cassandra.length ? S.cassandra.map(function(e){ return chip(e, e.published ? "" : "pending"); }).join("") : '<span class="chip out">no messages yet</span>') + '</div>');
+    html += node("pg", "", "postgres", "", kv([["tables", "participants, conversations"], ["leader", "+ semi-sync follower"], ["log", "logical decoding on"]]));
+    var topicBody = S.parts.map(function(p, i){ return '<div class="lane"><b>P' + i + '</b><div class="chips">' + (p.length ? p.map(function(e){ return chip(e); }).join("") : '<span class="chip out">empty</span>') + '</div></div>'; }).join("");
+    html += node("topic", "", "topic · conversation-events", "", kv([["key", "conv_id → partition"], ["order", "per partition = seq"]]) + topicBody);
+    html += node("cdc", "", "topic · participant-changes", "", kv([["source", "postgres WAL"], ["key", "conv_id"], ["compacted", "yes (current members)"]]));
     var totalLag = 0;
     S.groups.forEach(function(g, gi){
       var G = GROUPS[gi];
-      var lag = S.parts.map(function(p, i){ return p.length - g.processed[i]; });
-      var lagSum = lag.reduce(function(a,b){ return a+b; }, 0); totalLag += lagSum;
-      ch += '<div class="panel node' + (g.up ? "" : " down") + (g.slow ? " slow" : "") + '"><div class="nh"><b>' + G.title + '</b><span>' + G.blurb + '</span>' + (g.up ? (g.slow ? '<span class="tag warn">slow</span>' : '<span class="tag good">up</span>') : '<span class="tag bad">down</span>') + '</div>';
-      ch += '<div class="sec"><span>processed / committed offset per partition</span><div class="offs">' + [0,1,2].map(function(i){ return '<span class="' + (lag[i] ? "lag" : "") + '">P' + i + ' ' + g.processed[i] + '/' + g.committed[i] + (lag[i] ? ' · lag ' + lag[i] : '') + '</span>'; }).join("") + '</div></div>';
-      ch += '<div class="store"><b>store</b><span>' + G.store + '</span><b>rows</b><span>' + g.rows + (G.rekey ? ' (fan-out: one per participant)' : '') + '</span><b>dups skipped</b><span>' + g.dups + '</span></div></div>';
+      var lag = S.parts.map(function(p, i){ return p.length - g.processed[i]; }); var lagSum = lag.reduce(function(a,b){ return a+b; }, 0); totalLag += lagSum;
+      var offs = [0,1,2].map(function(i){ return 'P' + i + ' ' + g.processed[i] + '/' + g.committed[i]; }).join("  ");
+      html += node("g" + gi, (g.up ? "" : "down") + (g.slow ? " slow" : ""), G.title, g.up ? (g.slow ? '<span class="tag warn">slow</span>' : '<span class="tag good">up</span>') : '<span class="tag bad">down</span>',
+        kv([["join", G.join], ["proc/commit", offs], ["lag", String(lagSum), lagSum ? "lag" : ""], ["dups skipped", String(g.dups)]]));
+      html += node("s" + gi, "ext", G.store, "", kv([["keyed", G.keyed], ["rows", String(g.rows) + (G.rekey ? " (fan-out)" : "")], ["version", "(conv_id, seq)"]]));
     });
-    $("consCol").innerHTML = ch;
+    $("nodes").innerHTML = html;
+
+    // edges
+    var sv = '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrow"/></marker><marker id="ahon" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrow on"/></marker><marker id="ahdead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="arrow dead"/></marker></defs>';
+    EDGES().forEach(function(e){
+      var dead = false;
+      if (e.id === "o0-topic" && !S.owners[0].up) dead = true;
+      if (e.id === "o1-topic" && !S.owners[1].up) dead = true;
+      if (e.id === "cl-o0" && !S.owners[0].up) dead = true;
+      var m = /^topic-g(\d)$/.exec(e.id) || /^g(\d)-s\d$/.exec(e.id) || /^cdc-g(\d)$/.exec(e.id); if (m && !S.groups[parseInt(m[1],10)].up) dead = true;
+      var cls = dead ? "edge dead" : S.active[e.id] ? "edge on" : "edge";
+      var a = e.a, b = e.b, dx = b[0] - a[0], dy = b[1] - a[1];
+      var d = Math.abs(dx) >= Math.abs(dy) ? "M" + a[0] + "," + a[1] + " C" + (a[0]+dx*0.5) + "," + a[1] + " " + (a[0]+dx*0.5) + "," + b[1] + " " + b[0] + "," + b[1]
+                                           : "M" + a[0] + "," + a[1] + " C" + a[0] + "," + (a[1]+dy*0.5) + " " + b[0] + "," + (a[1]+dy*0.5) + " " + b[0] + "," + b[1];
+      sv += '<path class="' + cls + '" d="' + d + '" marker-end="url(#' + (dead ? "ahdead" : S.active[e.id] ? "ahon" : "ah") + ')"/>';
+      if (e.label){ var lx = a[0] + dx*0.5, ly = a[1] + dy*0.5 - 5; sv += '<text class="elabel' + (S.active[e.id] ? " on" : "") + '" x="' + lx + '" y="' + ly + '" text-anchor="middle">' + e.label + '</text>'; }
+    });
+    $("edges").setAttribute("viewBox", "0 0 " + W + " " + H); $("edges").setAttribute("width", W); $("edges").setAttribute("height", H); $("edges").innerHTML = sv;
 
     var dups = S.groups.reduce(function(a,g){ return a + g.dups; }, 0);
     var onLog = S.parts.reduce(function(a,p){ return a + p.length; }, 0);
     var unpub = S.cassandra.length - onLog;
     $("metrics").innerHTML =
-      '<div class="metric"><b>' + S.cassandra.length + '</b><span>messages in Cassandra</span></div>' +
-      '<div class="metric' + (unpub ? " warn" : "") + '"><b>' + unpub + '</b><span>in outbox, not yet published</span></div>' +
-      '<div class="metric"><b>' + onLog + '</b><span>events on the log</span></div>' +
-      '<div class="metric' + (totalLag ? " warn" : " good") + '"><b>' + totalLag + '</b><span>total consumer lag</span></div>' +
-      '<div class="metric' + (dups ? " good" : "") + '"><b>' + dups + '</b><span>duplicates skipped</span></div>';
+      '<div class="metric"><b>' + S.cassandra.length + '</b><span>in Cassandra</span></div>' +
+      '<div class="metric' + (unpub ? " warn" : "") + '"><b>' + unpub + '</b><span>outbox, unpublished</span></div>' +
+      '<div class="metric"><b>' + onLog + '</b><span>on the log</span></div>' +
+      '<div class="metric' + (totalLag ? " warn" : " good") + '"><b>' + totalLag + '</b><span>total lag</span></div>' +
+      '<div class="metric' + (dups ? " good" : "") + '"><b>' + dups + '</b><span>dups skipped</span></div>' +
+      '<div class="metric"><b>' + S.step + '</b><span>steps</span></div>';
     $("log").innerHTML = S.log.map(function(l, i){ return '<p class="' + l.cls + (i === 0 ? " cur" : "") + '">' + l.msg + '</p>'; }).join("") || '<p>Nothing yet. Send a message, then step the system.</p>';
-    $("note").innerHTML = S.log.length ? S.log[0].msg : "<b>Start:</b> pick a conversation and send. Then <b>Step the system</b>: the relay publishes outbox rows to the log, and every consumer group reads its partitions forward and commits offsets every two events.";
+    var n = $("note"); n.className = "panel note " + (S.log.length ? S.log[0].cls : ""); n.innerHTML = S.log.length ? S.log[0].msg : "<b>Start:</b> send a message, then <b>Step</b>: the relay publishes outbox rows to the log and every consumer group reads its partitions forward, committing offsets every two events.";
     $("heal").disabled = S.groups.every(function(g){ return g.up && !g.slow; }) && S.owners.every(function(o){ return o.up; });
+    fit();
+  }
+
+  function fit(){
+    var st = $("stage"); var w = st.clientWidth || W; var sc = Math.min(1, w / W);
+    $("canvas").style.transform = "scale(" + sc + ")"; $("canvas").style.width = W + "px"; $("canvas").style.height = H + "px"; st.style.height = Math.round(H * sc) + "px";
   }
 
   $("send").addEventListener("click", function(){ send(parseInt($("conv").value, 10)); render(); });
@@ -251,10 +336,11 @@ button.danger{border-color:var(--bad);color:var(--bad)}
   $("inject").addEventListener("click", function(){ var k = $("fault").value; if (k){ inject(k); render(); } });
   $("heal").addEventListener("click", function(){ heal(); render(); });
   $("reset").addEventListener("click", function(){ S = fresh(); render(); });
-  document.addEventListener("keydown", function(e){ if (e.key === "ArrowRight") $("step").click(); if (e.key === "Enter") $("send").click(); });
+  document.addEventListener("keydown", function(e){ if (e.target && e.target.tagName === "SELECT") return; if (e.key === "ArrowRight") $("step").click(); if (e.key === "Enter") $("send").click(); });
+  if (typeof window.addEventListener === "function") window.addEventListener("resize", fit);
 
   S = fresh(); render();
-  window.__stream = {state:function(){ return S; }, send:send, step:stepSystem, inject:inject, heal:heal, reset:function(){ S = fresh(); render(); }, render:render};
+  window.__stream = {state:function(){ return S; }, send:send, step:stepSystem, inject:inject, heal:heal, reset:function(){ S = fresh(); render(); }, render:render, edges:EDGES, layout:L};
 })();
 </script>
 </body>
