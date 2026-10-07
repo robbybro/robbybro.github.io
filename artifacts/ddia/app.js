@@ -14,6 +14,7 @@
     if (!p.length) return {page:"home"};
     if (p[0] === "ch" && p[1]) return {page:"ch", n:p[1], sec:p[2] || null, item:p[3] || null};
     if (p[0] === "viz") return {page:"viz", slug:p[1] || null};
+    if (p[0] === "onepager") return {page:"onepager", sec:p[1] || null};
     return {page:"home"};
   }
 
@@ -22,6 +23,7 @@
     var items = [["#/", "Overview", r.page === "home"]];
     D.chapters.forEach(function(c){ items.push(["#/ch/" + c.n, "Ch. " + c.n, r.page === "ch" && String(r.n) === String(c.n)]); });
     items.push(["#/viz", "Visualizations", r.page === "viz"]);
+    if (D.onepager) items.push(["#/onepager", "One-pager", r.page === "onepager"]);
     $("topnav").innerHTML = items.map(function(i){ return '<a href="' + i[0] + '"' + (i[2] ? ' class="on"' : "") + '>' + esc(i[1]) + '</a>'; }).join("");
   }
   function renderSide(r){
@@ -39,6 +41,11 @@
     h += '<div class="grp"><span>Visualizations</span>';
     D.viz.forEach(function(v){ h += '<a href="#/viz/' + v.slug + '"' + (r.page === "viz" && r.slug === v.slug ? ' class="on"' : "") + '>' + esc(v.title) + '</a>'; });
     h += '</div>';
+    if (D.onepager){
+      h += '<div class="grp"><span>One-pager</span><a href="#/onepager"' + (r.page === "onepager" && !r.sec ? ' class="on"' : "") + '>System design</a>';
+      D.onepager.sections.forEach(function(sx){ h += '<a class="sub' + (r.page === "onepager" && r.sec === sx.id ? " on" : "") + '" href="#/onepager/' + sx.id + '">' + esc(sx.title.split(/ — |: /)[0]) + '</a>'; });
+      h += '</div>';
+    }
     $("side").innerHTML = h;
   }
 
@@ -119,11 +126,21 @@
       D.viz.map(function(v){ return '<a class="card" href="#/viz/' + v.slug + '"><h3>' + esc(v.title) + '</h3><p class="muted" style="margin:0">' + v.blurb + '</p><p class="prog" style="margin:6px 0 0">Chapter ' + v.chapter + '</p></a>'; }).join("") + '</div>';
   }
 
+  function pageOnepager(){
+    var o = D.onepager;
+    var toc = o.sections.map(function(sx){ return '<a class="chip" href="#/onepager/' + sx.id + '">' + esc(sx.title.split(/ — |: /)[0]) + '</a>'; }).join("");
+    var h = '<div class="hero"><span class="kicker">One-pager · after the book</span><h1>System design, on one sheet</h1><p>' + o.intro + '</p><div class="chips" style="margin-top:12px">' + toc + '</div></div>';
+    h += '<div class="sheet">';
+    o.sections.forEach(function(sx){ h += '<section class="blk" id="sec-' + sx.id + '"><h2>' + esc(sx.title) + '</h2>' + sx.html + '</section>'; });
+    h += '</div>';
+    return h;
+  }
+
   /* ---------- render ---------- */
   function render(){
     var r = route(), main = $("main");
     renderNav(r); renderSide(r);
-    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : pageHome();
+    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : pageHome();
     bindCards(main); updateProg();
     main.querySelectorAll("[data-show],[data-hide]").forEach(function(b){
       b.addEventListener("click", function(){
@@ -131,8 +148,9 @@
         sec.querySelectorAll(".card").forEach(function(el){ if (el._toggle) el._toggle(open); });
       });
     });
-    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : "DDIA") + " · DDIA study site";
+    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : "DDIA") + " · DDIA study site";
     $("side").classList.remove("open");
+    if (r.page === "onepager" && r.sec){ var t2 = $("sec-" + r.sec); if (t2) setTimeout(function(){ t2.scrollIntoView({block:"start"}); }, 30); }
     if (r.page === "ch" && r.sec){
       var target = r.item ? $("ch" + r.n + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
       if (target){
