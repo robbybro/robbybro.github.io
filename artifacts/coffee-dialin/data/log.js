@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T15:33-07:00",
+ "generated_at": "2026-10-10T16:51-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -337,6 +337,7 @@ window.DIALIN = {
    "offering_id": null,
    "data": {
     "decaf": true,
+    "house": true,
     "roast": "unknown (espresso-blend roaster, likely medium)",
     "dialin": {
      "burrs": "Core",
@@ -369,6 +370,45 @@ window.DIALIN = {
     "verdict": "in window, first shot",
     "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
     "by_whom": "Robby"
+   },
+   "queued": null
+  },
+  {
+   "id": 7,
+   "short_name": "Ghost Rider",
+   "label": "Proud Mary — Ghost Rider (Brazil + Ethiopia, natural)",
+   "verdict": null,
+   "noted_at": "2026-08-31 12:00:00-07:00",
+   "offering_id": 2296,
+   "data": {
+    "house": true,
+    "roast": "Espresso (medium)",
+    "dialin": {
+     "rpm": 1200,
+     "burrs": "Core",
+     "recipe": "18g → 37g, ~35s total, 1200 RPM, no distributor (Core) — SETTLED 9/10; cut 34 fast/33.5 slow",
+     "microns": 180,
+     "settled": true
+    },
+    "opened": "2026-08-31",
+    "process": "Brazil + Ethiopia, natural",
+    "roaster": "Proud Mary"
+   },
+   "shots": 14,
+   "last_shot": {
+    "id": 18,
+    "shot_at": "2026-09-10T12:17:00-07:00",
+    "burrs": "Core",
+    "microns": 180,
+    "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 37,
+    "time_s": 35.4,
+    "ratio": 2.06,
+    "taste": "a lot more balance, real depth",
+    "verdict": "1200 RPM SETTLED for GR",
+    "next_change": "cut 33.5 on slow shots (longer drip)",
+    "by_whom": null
    },
    "queued": null
   },
@@ -553,44 +593,6 @@ window.DIALIN = {
     "taste": "way better than 1000 RPM",
     "verdict": "SETTLED — decaf lives at 400 RPM",
     "next_change": "per-bean RPM confirmed",
-    "by_whom": null
-   },
-   "queued": null
-  },
-  {
-   "id": 7,
-   "short_name": "Ghost Rider",
-   "label": "Proud Mary — Ghost Rider (Brazil + Ethiopia, natural)",
-   "verdict": null,
-   "noted_at": "2026-08-31 12:00:00-07:00",
-   "offering_id": 2296,
-   "data": {
-    "roast": "Espresso (medium)",
-    "dialin": {
-     "rpm": 1200,
-     "burrs": "Core",
-     "recipe": "18g → 37g, ~35s total, 1200 RPM, no distributor (Core) — SETTLED 9/10; cut 34 fast/33.5 slow",
-     "microns": 180,
-     "settled": true
-    },
-    "opened": "2026-08-31",
-    "process": "Brazil + Ethiopia, natural",
-    "roaster": "Proud Mary"
-   },
-   "shots": 14,
-   "last_shot": {
-    "id": 18,
-    "shot_at": "2026-09-10T12:17:00-07:00",
-    "burrs": "Core",
-    "microns": 180,
-    "rpm": 1200,
-    "dose_g": 18,
-    "yield_g": 37,
-    "time_s": 35.4,
-    "ratio": 2.06,
-    "taste": "a lot more balance, real depth",
-    "verdict": "1200 RPM SETTLED for GR",
-    "next_change": "cut 33.5 on slow shots (longer drip)",
     "by_whom": null
    },
    "queued": null
@@ -1236,27 +1238,6 @@ window.DIALIN = {
     }
    },
    {
-    "bag": "Ghost Rider",
-    "offering_id": 2296,
-    "title": "Ghost Rider Blend",
-    "url": "https://proudmarycoffee.com/products/ghost-rider",
-    "roaster": "Proud Mary Coffee",
-    "roaster_city": "Portland, OR (ex-Melbourne)",
-    "roaster_country": "USA",
-    "lat": 45.5202,
-    "lng": -122.6742,
-    "website": "https://proudmarycoffee.com",
-    "producer_id": null,
-    "producer": null,
-    "producer_country": null,
-    "producer_region": null,
-    "also_roasted_by": null,
-    "origin": {
-     "country": "Brazil",
-     "process": "Natural"
-    }
-   },
-   {
     "bag": "VdC Decaf",
     "offering_id": 943,
     "title": "DECAF! COLOMBIA VALLE DE CAUCA EA DECAF",
@@ -1280,6 +1261,27 @@ window.DIALIN = {
      "variety": "Caturra, castillo",
      "elevation": "1750 MASL",
      "importer": "Genuine Origin"
+    }
+   },
+   {
+    "bag": "Ghost Rider",
+    "offering_id": 2296,
+    "title": "Ghost Rider Blend",
+    "url": "https://proudmarycoffee.com/products/ghost-rider",
+    "roaster": "Proud Mary Coffee",
+    "roaster_city": "Portland, OR (ex-Melbourne)",
+    "roaster_country": "USA",
+    "lat": 45.5202,
+    "lng": -122.6742,
+    "website": "https://proudmarycoffee.com",
+    "producer_id": null,
+    "producer": null,
+    "producer_country": null,
+    "producer_region": null,
+    "also_roasted_by": null,
+    "origin": {
+     "country": "Brazil",
+     "process": "Natural"
     }
    }
   ],
