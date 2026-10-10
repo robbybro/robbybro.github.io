@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-10T15:28-07:00",
+ "generated_at": "2026-10-10T15:33-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -367,7 +367,7 @@
     "ratio": 1.96,
     "taste": "good crema; a little bitter straight, should be great with milk",
     "verdict": "in window, first shot",
-    "next_change": "straight: 160 or 400 rpm; for milk: hold 155 @ 500",
+    "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
     "by_whom": "Robby"
    },
    "queued": null
@@ -445,10 +445,11 @@
      "settled": false
     },
     "opened": "2026-09-11",
-    "region": "Oaxaca, Mexico",
+    "region": "Oaxaca",
     "country": "Mexico",
-    "process": "Oaxaca, Mexico — producer Dionisio García; harvested Feb 2026",
+    "harvest": "harvested Feb 2026",
     "roaster": "Drumroaster Coffee Co.",
+    "producer": "Dionisio García",
     "roast_date": "8/16/2026",
     "harvest_year": "2026 (Feb harvest)"
    },
@@ -611,7 +612,7 @@
    "ratio": "1.96",
    "taste": "good crema; a little bitter straight, should be great with milk",
    "verdict": "in window, first shot",
-   "next_change": "straight: 160 or 400 rpm; for milk: hold 155 @ 500",
+   "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
    "by_whom": "Robby"
   },
   {
