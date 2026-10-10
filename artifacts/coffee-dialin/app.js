@@ -288,10 +288,10 @@
 
   function renderShared() {
     var cols = [
-      { key: 'name', label: 'Producer', wrap: true, render: function (td, r) { td.textContent = (r.in_my_bags ? '● ' : '') + r.name; if (r.in_my_bags) td.style.fontWeight = '600'; } },
-      { key: 'country', label: 'Country' },
+      { key: 'name', label: 'Producer', render: function (td, r) { td.style.whiteSpace = 'nowrap'; td.textContent = (r.in_my_bags ? '● ' : '') + r.name; if (r.in_my_bags) td.style.fontWeight = '600'; } },
+      { key: 'country', label: 'Country', render: function (td, r) { td.style.whiteSpace = 'nowrap'; td.textContent = r.country; } },
       { key: 'roasters', label: 'Roasters', num: true },
-      { key: 'roasted_by', label: 'Roasted by', wrap: true, render: function (td, r) { td.textContent = (r.roasted_by || []).join(', '); } }
+      { key: 'roasted_by', label: 'Roasted by', render: function (td, r) { td.style.cssText = 'min-width:44ch;overflow-wrap:anywhere'; td.textContent = (r.roasted_by || []).join(', '); } }
     ];
     renderTable($('#shared'), D.origin.shared_producers || [], cols);
   }
@@ -299,9 +299,9 @@
   function renderRoasters() {
     var rows = (D.origin.roasters || []).slice(), max = Math.max.apply(null, rows.map(function (r) { return +r.offerings || 0; }).concat([1]));
     var cols = [
-      { key: 'name', label: 'Roaster', wrap: true, render: function (td, r) { if (r.website) { var a = el('a', null, r.name); a.href = r.website; a.target = '_blank'; a.rel = 'noopener'; td.appendChild(a); } else td.textContent = r.name; if (r.in_my_bags) { td.appendChild(document.createTextNode(' ')); td.appendChild(el('span', 'chip me', 'on the counter')); } } },
-      { key: 'city', label: 'City', wrap: true, render: function (td, r) { td.textContent = [r.city, r.country].filter(Boolean).join(', '); } },
-      { key: 'offerings', label: 'Live offerings', num: true, render: function (td, r) { var w = el('div'); w.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:flex-end'; var bar = el('div'); bar.style.cssText = 'height:8px;width:' + Math.round(80 * (+r.offerings || 0) / max) + 'px;background:' + (r.in_my_bags ? 'var(--s2)' : 'var(--deemph)') + ';border-radius:0 3px 3px 0'; w.appendChild(bar); w.appendChild(el('span', null, fmtInt(r.offerings))); td.appendChild(w); } },
+      { key: 'name', label: 'Roaster', render: function (td, r) { td.style.whiteSpace = 'nowrap'; if (r.in_my_bags) { td.appendChild(document.createTextNode('● ')); td.style.fontWeight = '600'; } if (r.website) { var a = el('a', null, r.name); a.href = r.website; a.target = '_blank'; a.rel = 'noopener'; td.appendChild(a); } else td.appendChild(document.createTextNode(r.name)); } },
+      { key: 'city', label: 'City', render: function (td, r) { td.style.whiteSpace = 'nowrap'; td.textContent = [r.city, r.country].filter(Boolean).join(', '); } },
+      { key: 'offerings', label: 'Live offerings', num: true, render: function (td, r) { var w = el('div'); w.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:flex-end'; var bar = el('div'); bar.style.cssText = 'height:8px;width:' + Math.round(80 * (+r.offerings || 0) / max) + 'px;background:' + (r.in_my_bags ? 'var(--s1)' : 'var(--deemph)') + ';border-radius:0 3px 3px 0'; w.appendChild(bar); w.appendChild(el('span', null, fmtInt(r.offerings))); td.appendChild(w); } },
       { key: 'producers', label: 'Producers', num: true, int: true }
     ];
     renderTable($('#roasters'), rows, cols);

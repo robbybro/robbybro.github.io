@@ -99,7 +99,7 @@ td.wrap{min-width:16ch;overflow-wrap:anywhere}
 .v-bad{color:var(--critical)}
 .v-open{color:var(--ink2)}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-#shared{min-width:620px}#roasters{min-width:560px}#shots{min-width:900px}#exp{min-width:900px}
+#shared{min-width:760px}#roasters{min-width:620px}#shots{min-width:900px}#exp{min-width:900px}
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 select,button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--ring);border-radius:6px;padding:6px 10px}
 button[aria-pressed="true"]{border-color:var(--s1);color:var(--s1)}
@@ -173,7 +173,7 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
       <div class="panel"><h3>Producers per origin country</h3><p class="small muted" style="margin:2px 0 10px" id="country-sub"></p><div class="bars" id="country-bars"></div></div>
       <div class="panel"><h3>Producers roasted by three or more roasters</h3><p class="small muted" style="margin:2px 0 10px">The shared-supply backbone. ● marks a producer in one of Robby's bags.</p><div class="scroll"><table id="shared"><thead></thead><tbody></tbody></table></div></div>
     </div>
-    <div class="panel pad0 scroll"><table id="roasters"><thead></thead><tbody></tbody></table></div>
+    <div class="panel pad0 scroll"><p class="small muted" style="padding:10px 10px 0">All 25 roasters in the origin graph. ● and blue = a roaster with a bag on the counter. Tables scroll sideways on a phone.</p><table id="roasters"><thead></thead><tbody></tbody></table></div>
   </section>
 
   <section id="log">
