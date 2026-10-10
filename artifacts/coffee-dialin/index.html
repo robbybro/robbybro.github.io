@@ -5,119 +5,204 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta name="description" content="Running espresso dial-in log for the La Marzocco Linea Mini R and Zerno Z2 in Robby's kitchen: the settled recipe for every bag on the counter, the house rules for pulling a shot, and every shot ever logged. Regenerated hourly from the dial-in sheet.">
+<meta name="description" content="Espresso operations board for Robby's kitchen: the settled recipe for every bag on the counter, machine and log health, where each coffee came from (roaster → producer → farm, from the untamped origin graph), the house water chemistry, and every shot ever pulled. Read-only, regenerated hourly from Postgres.">
 <title>Coffee Dial-In — Balthamos + Zerno Z2</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600&display=swap">
 <style>
 :root{
   color-scheme:light dark;
-  --ground:#EDE8E1; --surface:#F8F5F0; --ink:#231F1C; --muted:#6B625B; --rule:#CFC6BB; --rule-soft:#E2DBD1;
-  --accent:#8A4B2A; --good:#2F6B3A; --warn:#A6711A; --bad:#9A3B2E; --chip:#E8DFD3;
-  --display:"Alfa Slab One","Rockwell","Georgia",serif;
-  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
-  --label:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  /* dataviz reference palette — light */
+  --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --deemph:#c3c2b7;
+  --seq-250:#86b6ef; --seq-400:#3987e5; --seq-550:#1c5cab;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --critical:#d03b3b; --good-text:#006300;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --ground:#171412; --surface:#211D1A; --ink:#EDE7E0; --muted:#A3988E; --rule:#3E3630; --rule-soft:#2E2824;
-    --accent:#D99A6C; --good:#8BCB95; --warn:#E0B35A; --bad:#E08A7A; --chip:#2F2823;
+    --plane:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --deemph:#4a4a47;
+    --seq-250:#184f95; --seq-400:#3987e5; --seq-550:#6da7ec;
+    --good-text:#0ca30c;
   }
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-inline:16px;padding-block:28px 64px}
-.wrap{max-width:960px;margin-inline:auto;display:flex;flex-direction:column;gap:36px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,7vw,46px);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
-h2{font-family:var(--label);font-weight:600;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
-h3{font-family:var(--body);font-weight:700;font-size:17px;margin:0}
+html{background:var(--plane)}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.4;padding:16px 12px 56px}
+.wrap{max-width:1120px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+a{color:var(--s1)}
+h1{font-size:clamp(22px,4.5vw,30px);font-weight:650;letter-spacing:-.01em;margin:0;line-height:1.1}
+h2{font-size:12px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--muted);margin:0}
+h3{font-size:15px;font-weight:650;margin:0}
 p{margin:0}
-a{color:var(--accent)}
-.sub{color:var(--muted);margin-top:8px;max-width:64ch}
-section{display:flex;flex-direction:column;gap:14px}
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
-.card.pad0{padding:0;overflow:hidden}
 .muted{color:var(--muted)}
-.small{font-size:14px}
+.ink2{color:var(--ink2)}
+.small{font-size:13px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.back{font-family:var(--label);font-size:14px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--muted)}
-.back:hover{color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.topbar{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.crumbs{display:flex;gap:14px;align-items:center;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.crumbs a{color:var(--muted);text-decoration:none}
+.crumbs a:hover{color:var(--ink)}
+.sub{color:var(--ink2);max-width:70ch;margin-top:6px}
+section{display:flex;flex-direction:column;gap:10px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sec-head .q{color:var(--muted);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--ring);border-radius:6px;padding:12px 14px;min-width:0}
+.panel.pad0{padding:0;overflow:hidden}
+.grid{display:grid;gap:10px}
+.tiles{grid-template-columns:repeat(auto-fill,minmax(168px,1fr))}
+.tile{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit}
+.tile .label{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.tile .value{font-size:28px;font-weight:600;line-height:1.05;letter-spacing:-.01em}
+.tile .value small{font-size:14px;font-weight:500;color:var(--ink2);margin-left:4px}
+.tile .delta{font-size:13px;color:var(--ink2)}
+.tile a.more{font-size:13px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.status.good::before{background:var(--good)}
+.status.warn::before{background:var(--warn)}
+.status.serious::before{background:var(--serious)}
+.status.critical::before{background:var(--critical)}
+.meter{height:6px;border-radius:3px;background:var(--grid);overflow:hidden;margin-top:6px}
+.meter > i{display:block;height:100%;background:var(--ink2);border-radius:3px}
+.meter.warn > i{background:var(--warn)}
+.meter.serious > i{background:var(--serious)}
+.recipes{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
 .recipe{display:flex;flex-direction:column;gap:8px}
-.recipe .bag{font-family:var(--display);font-size:22px;line-height:1.1}
-.recipe .roaster{color:var(--muted);font-size:14px}
-.recipe .dial{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
-.recipe .big{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1}
-.recipe .unit{font-family:var(--label);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:4px}
-.recipe .line{font-size:15px}
-.status{display:inline-block;font-family:var(--label);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--muted)}
-.status.settled{color:var(--good);border:1px solid var(--good);background:transparent}
-.status.open{color:var(--warn);border:1px solid var(--warn);background:transparent}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-family:var(--label);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 10px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
-td{padding:9px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.recipe .bag{font-size:18px;font-weight:650;line-height:1.15}
+.recipe .roaster{color:var(--ink2);font-size:13px;overflow-wrap:anywhere}
+.recipe .eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.bagchips{margin-top:10px}
+.bagchips .chip{text-decoration:none;color:var(--ink);padding:4px 10px;font-size:13px}
+.bagchips .chip.settled{border-color:var(--good)}
+.bagchips .chip.open{border-color:var(--warn)}
+:root{--band:#ecebe6}
+@media (prefers-color-scheme: dark){:root{--band:#2f2f2c}}
+@media (max-width:640px){ header{order:-2} #recipes{order:-1} }
+.recipe .dial{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.recipe .big{font-size:30px;font-weight:600;line-height:1}
+.recipe .unit{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-left:4px}
+.recipe .line{font-size:14px;overflow-wrap:anywhere}
+.recipe svg.spark{display:block;width:100%;height:44px;overflow:visible}
+.recipe .spark-cap{font-size:12px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--ring);color:var(--ink2);width:max-content}
+.pill.settled{color:var(--good-text);border-color:var(--good)}
+.pill.open{color:var(--ink2);border-color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{font-weight:600;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 10px 7px;border-bottom:1px solid var(--grid);white-space:nowrap}
+th.num{text-align:right}
+td{padding:8px 10px;border-bottom:1px solid var(--grid);vertical-align:top}
 tr:last-child td{border-bottom:0}
-td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-td.wrap{min-width:16ch}
-.v-good{color:var(--good);font-weight:600}
-.v-bad{color:var(--bad)}
-.v-open{color:var(--warn)}
+td.wrap{min-width:16ch;overflow-wrap:anywhere}
+.v-good{color:var(--good-text);font-weight:600}
+.v-bad{color:var(--critical)}
+.v-open{color:var(--ink2)}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 10px}
-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
-.ref{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.ref dl{margin:0;display:grid;grid-template-columns:minmax(9ch,38%) minmax(0,1fr);gap:4px 12px;font-size:14px}
+select,button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--ring);border-radius:6px;padding:6px 10px}
+button[aria-pressed="true"]{border-color:var(--s1);color:var(--s1)}
+/* provenance chain */
+.chain{display:grid;grid-template-columns:1fr;gap:10px}
+.chain .hop{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1.4fr);gap:8px;align-items:start}
+.chain .hop .arrow{color:var(--muted);align-self:center;font-size:18px}
+.hop .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hop .v{font-weight:600;overflow-wrap:anywhere}
+.hop .d{font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip{font-size:12px;padding:1px 7px;border-radius:999px;border:1px solid var(--ring);color:var(--ink2)}
+.chip.me{border-color:var(--s2);color:var(--ink)}
+@media (max-width:640px){
+  .chain .hop{grid-template-columns:1fr;gap:4px}
+  .chain .hop .arrow{display:none}
+  .hop + .hop{border-top:1px solid var(--grid);padding-top:8px}
+}
+/* bars */
+.bars{display:grid;grid-template-columns:minmax(7ch,auto) 1fr auto;gap:6px 10px;align-items:center;font-size:13.5px}
+.bars .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars .track{height:14px;position:relative}
+.bars .track i{position:absolute;left:0;top:2px;height:10px;background:var(--deemph);border-radius:0 3px 3px 0}
+.bars .me .track i{background:var(--s2)}
+.bars .me .lbl{font-weight:600}
+.bars .n{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink2);text-align:right}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.ref{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.ref dl{margin:0;display:grid;grid-template-columns:minmax(9ch,38%) minmax(0,1fr);gap:4px 12px;font-size:13.5px}
 .ref dt{color:var(--muted);overflow-wrap:anywhere}
 .ref dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .ref a{word-break:break-all}
-.recipe .roaster,.recipe .line{overflow-wrap:anywhere}
-.card{min-width:0}
-.ref h3{margin-bottom:8px;font-size:15px}
-.ref .note{color:var(--muted);font-size:13px;display:block}
-footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px}
+.ref .note{color:var(--muted);font-size:12.5px;display:block}
+.ref h3{margin-bottom:8px;font-size:14px}
+footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:4px}
 .empty{color:var(--muted);font-style:italic}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--plane);font-size:12.5px;padding:5px 8px;border-radius:4px;z-index:9;max-width:260px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <a class="back" href="/artifacts/">← Artifacts</a>
-    <h1 style="margin-top:10px">Coffee Dial-In</h1>
-    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2 in Robby's kitchen. If you're standing at the machine and he's not home: find your bag under <strong>Current recipes</strong>, set the grinder to that micron number and RPM, follow the house rules, and log what happened. Every shot ever pulled is in the log below.</p>
+    <div class="topbar">
+      <div class="crumbs"><a href="/artifacts/">← Artifacts</a><a id="water-top" href="#water">Water chemistry</a><a href="#log">Shot log</a><a href="#origin">Origin</a></div>
+      <span class="small muted" id="generated"></span>
+    </div>
+    <h1 style="margin-top:8px">Coffee Dial-In</h1>
+    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2 in Robby's kitchen. Standing at the machine without him? Tap your bag, set the grinder to the number on its card, follow the house rules, and text him the numbers afterwards. Words on the cards are defined in the <a href="#glossary">glossary</a>.</p>
+    <nav class="chips bagchips" id="bag-chips" aria-label="Bags on the counter"></nav>
   </header>
 
-  <section id="recipes">
-    <h2>Current recipes</h2>
-    <div class="grid" id="recipe-grid"></div>
+  <section id="health">
+    <div class="sec-head"><h2>Health</h2><span class="q">Is the log, the machine and the origin graph current?</span></div>
+    <div class="grid tiles" id="tiles"></div>
   </section>
 
-  <section id="rules">
-    <h2>How to pull a shot here</h2>
-    <div class="ref" id="reference"></div>
+  <section id="recipes">
+    <div class="sec-head"><h2>Current recipes</h2><span class="q">What do I set the grinder to for this bag?</span></div>
+    <div class="grid recipes" id="recipe-grid"></div>
+  </section>
+
+  <section id="water">
+    <div class="sec-head"><h2>Water</h2><span class="q">What goes in the tank?</span></div>
+    <div class="panel" id="water-panel"></div>
+  </section>
+
+  <section id="origin">
+    <div class="sec-head"><h2>Origin</h2><span class="q">Where did the coffee on the counter come from, and who else roasts it?</span></div>
+    <div class="panel"><h3 style="margin-bottom:10px">Bags on the counter, traced back</h3><div class="chain" id="chain"></div></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div class="panel"><h3>Producers per origin country</h3><p class="small muted" style="margin:2px 0 10px" id="country-sub"></p><div class="bars" id="country-bars"></div></div>
+      <div class="panel"><h3>Producers roasted by three or more roasters</h3><p class="small muted" style="margin:2px 0 10px">The shared-supply backbone. ● marks a producer in one of Robby's bags.</p><div class="scroll"><table id="shared"><thead></thead><tbody></tbody></table></div></div>
+    </div>
+    <div class="panel pad0 scroll"><table id="roasters"><thead></thead><tbody></tbody></table></div>
   </section>
 
   <section id="log">
-    <h2>Shot log</h2>
+    <div class="sec-head"><h2>Shot log</h2><span class="q">What has already been tried?</span></div>
     <div class="controls">
       <label class="small muted" for="bag-filter">Bag</label>
       <select id="bag-filter"><option value="">All bags</option></select>
       <button id="only-settled" aria-pressed="false" type="button">Dialed shots only</button>
       <span class="small muted" id="log-count"></span>
     </div>
-    <div class="card pad0 scroll"><table id="shots"><thead></thead><tbody></tbody></table></div>
+    <div class="panel pad0 scroll"><table id="shots"><thead></thead><tbody></tbody></table></div>
   </section>
 
   <section id="experiments">
-    <h2>Experiments</h2>
-    <div class="card pad0 scroll"><table id="exp"><thead></thead><tbody></tbody></table></div>
+    <div class="sec-head"><h2>Experiments</h2><span class="q">Which A/B tests settled a rule?</span></div>
+    <div class="panel pad0 scroll"><table id="exp"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="rules">
+    <div class="sec-head"><h2>House rules</h2><span class="q">How is a shot pulled here?</span></div>
+    <div class="grid ref" id="reference"></div>
   </section>
 
   <footer>
-    <span id="generated"></span>
-    <span>This page is a read-only copy of Robby's dial-in database, regenerated hourly. Shot times include the 5 s pre-brew. Pulled a shot? Text him the numbers (bag, µm, rpm, grams in and out, seconds, how it tasted) and it gets logged.</span>
+    <span>Read-only copy of Robby's Postgres (shots, bags, rules, the untamped origin graph, machine telemetry), regenerated hourly. Shot times include the 5 s pre-brew. Pulled a shot? Text him bag, µm, rpm, grams in and out, seconds, and how it tasted.</span>
   </footer>
 </div>
+<div class="tip" id="tip" hidden></div>
 <script src="data/log.js"></script>
 <script src="app.js"></script>
 </body>
