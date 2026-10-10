@@ -1,8 +1,9 @@
-/* Coffee Dial-In — renders data/log.js (a copy of the dial-in sheet) into the page.
-   Nothing here knows a grind setting; every number comes from the sheet. */
+/* Coffee Dial-In — renders data/log.js, the public export of Postgres (coffee_bags,
+   coffee_shots, coffee_experiments, kv coffee-dialin). Nothing here knows a grind
+   setting; every number comes from the database. */
 (function () {
   'use strict';
-  var D = window.DIALIN || { shots: [], bags: [], experiments: [], reference: [], generated_at: '' };
+  var D = window.DIALIN || { bags: [], shots: [], experiments: [], rules: {}, generated_at: '' };
   var $ = function (s) { return document.querySelector(s); };
 
   function el(tag, cls, text) {
@@ -11,104 +12,73 @@
     if (text != null) e.textContent = text;
     return e;
   }
-  function isNum(s) { return /^-?\d+(\.\d+)?$/.test(String(s).trim()); }
-  function parseDate(s) {           // sheet dates arrive as M/D/YYYY
-    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(s).trim());
-    return m ? new Date(+m[3], +m[1] - 1, +m[2]) : null;
-  }
-  function fmtDate(s) {
-    var d = parseDate(s);
-    if (!d) return s;
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return String(iso).slice(0, 10);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
+  function n(v) { return v == null || v === '' ? '' : String(+v); }
   function verdictClass(v) {
     var t = (v || '').toLowerCase();
     if (/dialed|settled/.test(t)) return 'v-good';
-    if (/queued/.test(t)) return 'v-open';
     if (/choke|gush|too |way too|hollow|bitter|sour|messy|slow|fast/.test(t)) return 'v-bad';
     return '';
   }
-  function settledShot(v) { return /dialed|settled/i.test(v || ''); }
 
   /* ---------- current recipes: one card per bag ---------- */
-  function latestShotFor(bag) {
-    var rows = D.shots.filter(function (s) { return s.Bag === bag; });
-    // newest first: by date, then by sheet order within a day (later rows are later shots)
-    rows.sort(function (a, b) { var d = (parseDate(b.Date) || 0) - (parseDate(a.Date) || 0); return d || (D.shots.indexOf(b) - D.shots.indexOf(a)); });
-    var isQueued = function (r) { return /queued/i.test(r.Verdict) || /^\s*queued/i.test(r['Next change'] || ''); };
-    var queued = rows.find(isQueued);
-    var real = rows.find(function (r) { return !isQueued(r) && (r['µm'] || r.RPM); });
-    return { latest: real || rows[0] || null, queued: queued || null, count: rows.length };
-  }
-
   function renderRecipes() {
     var grid = $('#recipe-grid');
     if (!D.bags.length) { grid.appendChild(el('p', 'empty', 'No bags logged yet.')); return; }
-    var bags = D.bags.slice().sort(function (a, b) { return (parseDate(b.Opened) || 0) - (parseDate(a.Opened) || 0); });
-    bags.forEach(function (b) {
+    D.bags.forEach(function (b) {
+      var d = (b.data || {}), di = d.dialin || {};
       var card = el('div', 'card recipe');
-      var settled = !!(b['Settled µm'] || '').trim();
       var head = el('div');
-      head.appendChild(el('div', 'bag', b.Bag));
-      var who = [b.Roaster, b['Beans / Process']].filter(Boolean).join(' · ');
+      head.appendChild(el('div', 'bag', b.short_name));
+      var who = [d.roaster, d.process].filter(Boolean).join(' · ');
       if (who) head.appendChild(el('div', 'roaster', who));
       card.appendChild(head);
+      card.appendChild(el('span', 'status ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
 
-      var status = el('span', 'status ' + (settled ? 'settled' : 'open'), settled ? 'Settled' : 'Dialing in');
-      card.appendChild(status);
-
-      var info = latestShotFor(b.Bag);
+      var um = di.settled ? di.microns : (b.queued && b.queued.microns) || (b.last_shot && b.last_shot.microns) || (di.start && di.start.microns);
+      var rpm = di.settled ? di.rpm : (b.queued && b.queued.rpm) || (b.last_shot && b.last_shot.rpm) || (di.start && di.start.rpm);
       var dial = el('div', 'dial');
-      var um = settled ? b['Settled µm'] : (info.queued && info.queued['µm']) || (info.latest && info.latest['µm']) || '';
-      var rpmFromRecipe = /(\d{3,4})\s*RPM/i.exec(b['Settled recipe'] || '');
-      var rpm = settled && rpmFromRecipe ? rpmFromRecipe[1] : (info.queued && info.queued.RPM) || (info.latest && info.latest.RPM) || '';
-      if (um) { var a = el('div'); a.appendChild(el('span', 'big mono', um)); a.appendChild(el('span', 'unit', 'µm')); dial.appendChild(a); }
-      if (rpm) { var r = el('div'); r.appendChild(el('span', 'big mono', rpm)); r.appendChild(el('span', 'unit', 'rpm')); dial.appendChild(r); }
+      if (um) { var a = el('div'); a.appendChild(el('span', 'big mono', n(um))); a.appendChild(el('span', 'unit', 'µm')); dial.appendChild(a); }
+      if (rpm) { var r = el('div'); r.appendChild(el('span', 'big mono', n(rpm))); r.appendChild(el('span', 'unit', 'rpm')); dial.appendChild(r); }
       if (dial.children.length) card.appendChild(dial);
 
-      if (settled) {
-        card.appendChild(el('p', 'line', b['Settled recipe']));
+      if (di.settled) {
+        if (di.recipe) card.appendChild(el('p', 'line', di.recipe));
       } else {
-        if (info.queued) card.appendChild(el('p', 'line', 'Next shot planned: ' + [info.queued['µm'] && info.queued['µm'] + ' µm', info.queued.RPM && info.queued.RPM + ' rpm'].filter(Boolean).join(' at ') + (info.queued['Next change'] ? ' — ' + info.queued['Next change'].replace(/^\s*queued\s*[—–-]*\s*/i, '') : '')));
-        if (info.latest && info.latest !== info.queued) {
-          var l = info.latest;
-          var bits = [];
-          if (l['Dose (g)'] && l['Yield (g)']) bits.push(l['Dose (g)'] + ' g → ' + l['Yield (g)'] + ' g');
-          if (l['Time (s)']) bits.push(l['Time (s)'] + ' s');
-          card.appendChild(el('p', 'line small muted', 'Last shot ' + fmtDate(l.Date) + ': ' + l['µm'] + ' µm at ' + l.RPM + ' rpm' + (bits.length ? ', ' + bits.join(', ') : '') + (l.Verdict ? '. ' + l.Verdict : '')));
-          if (l['Next change'] && !info.queued) card.appendChild(el('p', 'line small', 'Next: ' + l['Next change']));
-        }
-        if (!info.latest && b['Settled recipe']) card.appendChild(el('p', 'line', b['Settled recipe']));
-        if (!info.latest && !b['Settled recipe']) card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
+        if (b.queued) card.appendChild(el('p', 'line', 'Next shot planned: ' + [b.queued.microns && n(b.queued.microns) + ' µm', b.queued.rpm && n(b.queued.rpm) + ' rpm'].filter(Boolean).join(' at ') + (b.queued.next_change ? ' — ' + b.queued.next_change : '')));
+        else if (di.start) card.appendChild(el('p', 'line', 'Start here: ' + [di.start.microns && n(di.start.microns) + ' µm', di.start.rpm && n(di.start.rpm) + ' rpm'].filter(Boolean).join(' at ') + (di.start_note ? ' — ' + di.start_note : '')));
+        else if (di.start_note) card.appendChild(el('p', 'line', di.start_note));
+        if (b.last_shot) {
+          var l = b.last_shot, bits = [];
+          if (l.dose_g && l.yield_g) bits.push(n(l.dose_g) + ' g → ' + n(l.yield_g) + ' g');
+          if (l.time_s) bits.push(n(l.time_s) + ' s');
+          card.appendChild(el('p', 'line small muted', 'Last shot ' + fmtDate(l.shot_at) + ': ' + n(l.microns) + ' µm at ' + n(l.rpm) + ' rpm' + (bits.length ? ', ' + bits.join(', ') : '') + (l.verdict ? '. ' + l.verdict : '')));
+          if (l.next_change && !b.queued) card.appendChild(el('p', 'line small', 'Next: ' + l.next_change));
+        } else if (!di.start && !di.start_note) card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
       }
-      if (b.Verdict) card.appendChild(el('p', 'line small muted', 'Verdict: ' + b.Verdict));
-      card.appendChild(el('p', 'small muted', info.count + (info.count === 1 ? ' shot' : ' shots') + ' logged' + (b.Opened ? ' · opened ' + fmtDate(b.Opened) : '')));
+      if (b.verdict) card.appendChild(el('p', 'line small muted', 'Verdict: ' + b.verdict));
+      card.appendChild(el('p', 'small muted', b.shots + (b.shots === 1 ? ' shot' : ' shots') + ' logged' + (d.opened ? ' · opened ' + fmtDate(d.opened) : '')));
       grid.appendChild(card);
     });
   }
 
-  /* ---------- reference tab: blocks separated by blank rows ---------- */
+  /* ---------- house rules: kv coffee-dialin sections ---------- */
   function renderReference() {
     var host = $('#reference');
-    var rows = D.reference || [];
-    var blocks = [], cur = [];
-    rows.forEach(function (r) {
-      var blank = !r.some(function (c) { return String(c).trim(); });
-      if (blank) { if (cur.length) blocks.push(cur); cur = []; } else cur.push(r);
-    });
-    if (cur.length) blocks.push(cur);
-    blocks.forEach(function (blk) {
+    var R = D.rules || {};
+    var sections = R.sections || [];
+    sections.forEach(function (sec) {
       var card = el('div', 'card');
-      var first = blk[0];
-      var heading = first[0], headVal = (first[1] || '').trim();
-      var isHeader = heading === heading.toUpperCase() || blk.length === 1 || !headVal;
-      card.appendChild(el('h3', null, heading.replace(/\s*\(.*\)\s*$/, function (m) { return m; })));
+      card.appendChild(el('h3', null, sec.title));
       var dl = el('dl');
-      var body = isHeader ? blk.slice(1) : blk;
-      if (isHeader && headVal && headVal !== '#ERROR!') dl.appendChild(el('dd', null, headVal));
-      body.forEach(function (r) {
-        var label = (r[0] || '').trim(), val = (r[1] || '').trim(), note = (r[2] || '').trim();
-        if (val === '#ERROR!') val = '';
+      if (sec.title_value) { var tv = el('dd'); tv.style.gridColumn = '1 / -1'; tv.textContent = sec.title_value; dl.appendChild(tv); }
+      (sec.rows || []).forEach(function (r) {
+        var label = r[0] || '', val = r[1] || '', note = r[2] || '';
         if (!label && !val) return;
         if (!val) { var only = el('dd'); only.style.gridColumn = '1 / -1'; only.textContent = label; dl.appendChild(only); return; }
         dl.appendChild(el('dt', null, label));
@@ -121,7 +91,7 @@
       if (dl.children.length) card.appendChild(dl);
       host.appendChild(card);
     });
-    if (!blocks.length) host.appendChild(el('p', 'empty', 'No house rules logged yet.'));
+    if (!sections.length) host.appendChild(el('p', 'empty', 'No house rules logged yet.'));
   }
 
   /* ---------- tables ---------- */
@@ -130,16 +100,18 @@
     var thead = tbl.querySelector('thead'), tbody = tbl.querySelector('tbody');
     thead.innerHTML = ''; tbody.innerHTML = '';
     var tr = el('tr');
-    cols.forEach(function (c) { tr.appendChild(el('th', opts.numeric && opts.numeric.indexOf(c) >= 0 ? 'num' : '', c)); });
+    cols.forEach(function (c) { tr.appendChild(el('th', opts.numeric && opts.numeric.indexOf(c.key) >= 0 ? 'num' : '', c.label)); });
     thead.appendChild(tr);
     if (!rows.length) { var e = el('tr'); var td = el('td', 'empty', 'Nothing here yet.'); td.colSpan = cols.length; e.appendChild(td); tbody.appendChild(e); return; }
     rows.forEach(function (r) {
       var row = el('tr');
       cols.forEach(function (c) {
-        var v = r[c] == null ? '' : r[c];
-        var td = el('td', opts.numeric && opts.numeric.indexOf(c) >= 0 ? 'num' : (opts.wrap && opts.wrap.indexOf(c) >= 0 ? 'wrap' : ''));
-        if (c === 'Date') v = fmtDate(v);
-        if (c === 'Verdict') td.className += ' ' + verdictClass(v);
+        var v = r[c.key] == null ? '' : r[c.key];
+        var isNum = opts.numeric && opts.numeric.indexOf(c.key) >= 0;
+        var td = el('td', isNum ? 'num' : (opts.wrap && opts.wrap.indexOf(c.key) >= 0 ? 'wrap' : ''));
+        if (c.key === 'shot_at' || c.key === 'run_on') v = fmtDate(v);
+        else if (isNum) v = n(v);
+        if (c.key === 'verdict') { td.className += ' ' + verdictClass(v); if (r.status === 'queued') { td.className += ' v-open'; v = 'Queued' + (v ? ' — ' + v : ''); } }
         td.textContent = v;
         row.appendChild(td);
       });
@@ -147,35 +119,32 @@
     });
   }
 
-  var SHOT_COLS = ['Date', 'Bag', 'µm', 'RPM', 'Dose (g)', 'Yield (g)', 'Time (s)', 'Ratio', 'Taste', 'Verdict', 'Next change'];
-  var SHOT_NUM = ['µm', 'RPM', 'Dose (g)', 'Yield (g)', 'Time (s)', 'Ratio'];
+  var SHOT_COLS = [
+    { key: 'shot_at', label: 'Date' }, { key: 'bag', label: 'Bag' }, { key: 'microns', label: 'µm' }, { key: 'rpm', label: 'RPM' },
+    { key: 'dose_g', label: 'Dose (g)' }, { key: 'yield_g', label: 'Yield (g)' }, { key: 'time_s', label: 'Time (s)' }, { key: 'ratio', label: 'Ratio' },
+    { key: 'taste', label: 'Taste' }, { key: 'verdict', label: 'Verdict' }, { key: 'next_change', label: 'Next change' }, { key: 'by_whom', label: 'By' }
+  ];
+  var SHOT_NUM = ['microns', 'rpm', 'dose_g', 'yield_g', 'time_s', 'ratio'];
   var onlySettled = false;
 
   function renderShots() {
     var bag = $('#bag-filter').value;
-    var rows = D.shots.slice();
-    if (bag) rows = rows.filter(function (s) { return s.Bag === bag; });
-    if (onlySettled) rows = rows.filter(function (s) { return settledShot(s.Verdict); });
-    rows.sort(function (a, b) { return (parseDate(b.Date) || 0) - (parseDate(a.Date) || 0); });
-    // same-day order in the sheet is chronological; newest-first within a day = reverse sheet order
-    var byDay = {};
-    rows.forEach(function (r, i) { r.__i = D.shots.indexOf(r); });
-    rows.sort(function (a, b) { var d = (parseDate(b.Date) || 0) - (parseDate(a.Date) || 0); return d || (b.__i - a.__i); });
-    renderTable($('#shots'), rows, SHOT_COLS, { numeric: SHOT_NUM, wrap: ['Taste', 'Verdict', 'Next change'] });
+    var rows = D.shots.slice();   // export order is newest first
+    if (bag) rows = rows.filter(function (s) { return s.bag === bag; });
+    if (onlySettled) rows = rows.filter(function (s) { return /dialed|settled/i.test(s.verdict || ''); });
+    renderTable($('#shots'), rows, SHOT_COLS, { numeric: SHOT_NUM, wrap: ['taste', 'verdict', 'next_change'] });
     $('#log-count').textContent = rows.length + ' of ' + D.shots.length + ' shots';
   }
 
   function renderExperiments() {
-    var cols = ['Date', 'Method', 'Variable under test', 'Held constant', 'A', 'B', 'Winner', 'Notes'];
-    var rows = D.experiments.slice().reverse();
-    renderTable($('#exp'), rows, cols, { wrap: cols });
+    var cols = [{ key: 'run_on', label: 'Date' }, { key: 'method', label: 'Method' }, { key: 'variable', label: 'Variable under test' },
+      { key: 'held_constant', label: 'Held constant' }, { key: 'option_a', label: 'A' }, { key: 'option_b', label: 'B' }, { key: 'winner', label: 'Winner' }, { key: 'notes', label: 'Notes' }];
+    renderTable($('#exp'), D.experiments.slice(), cols, { wrap: cols.map(function (c) { return c.key; }) });
   }
 
   /* ---------- boot ---------- */
   var sel = $('#bag-filter');
-  var bagNames = [];
-  D.shots.forEach(function (s) { if (s.Bag && bagNames.indexOf(s.Bag) < 0) bagNames.push(s.Bag); });
-  bagNames.forEach(function (b) { var o = el('option', null, b); o.value = b; sel.appendChild(o); });
+  D.bags.forEach(function (b) { var o = el('option', null, b.short_name); o.value = b.short_name; sel.appendChild(o); });
   sel.addEventListener('change', renderShots);
   $('#only-settled').addEventListener('click', function () {
     onlySettled = !onlySettled; this.setAttribute('aria-pressed', String(onlySettled)); renderShots();
