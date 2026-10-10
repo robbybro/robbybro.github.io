@@ -31,6 +31,7 @@
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + fmtTime(d);
   }
   function daysAgo(v) { var d = parseDT(v); return d ? Math.floor((NOW - d) / 864e5) : null; }
+  function fmtAbs(v) { var d = parseDT(v); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + fmtTime(d) : ''; }
   function n(v) { return v == null || v === '' ? '' : String(+v); }
   function fmtInt(v) { return v == null ? '' : (+v).toLocaleString('en-US'); }
   function verdictClass(v) {
@@ -60,18 +61,20 @@
     if (statusText) t.appendChild(el('span', 'status ' + (status || ''), statusText));
     return t;
   }
+  /* Status ranks, one hue per rank, stated on the tile: good (dot green) · warn (amber) = something to do,
+     not a fault · critical (red) = a fault. Unlogged shots are never a fault (they are usually Emily's). */
   function renderHealth() {
     var H = D.health, O = D.origin, T = O.totals || {}, host = $('#tiles');
     // 1. the log: one tile, headline = the count that needs Robby (shots the machine pulled that nobody logged)
     var pulled = H.machine_shots_7d, logged = H.shots_7d || 0;
     var unlogged = pulled == null ? null : Math.max(0, pulled - logged);
     var la = daysAgo(H.last_shot_at);
-    var logStatus = unlogged == null ? (la == null ? '' : la <= 3 ? 'good' : 'warn') : unlogged === 0 ? 'good' : unlogged <= 3 ? 'warn' : 'serious';
+    var logStatus = unlogged == null ? (la == null ? '' : la <= 3 ? 'good' : 'warn') : unlogged >= 3 ? 'warn' : 'good';
     host.appendChild(tile(
       unlogged == null ? 'Shots logged, 7 days' : 'Unlogged shots, 7 days',
       unlogged == null ? String(logged) : String(unlogged), '',
-      (H.last_shot_at ? 'last logged ' + fmtWhen(H.last_shot_at) : 'nothing logged yet') + (pulled != null ? ' · machine pulled ' + pulled + ', log has ' + logged : ''),
-      logStatus, unlogged == null ? (la == null ? 'no shots yet' : la <= 3 ? 'log is current' : 'log going quiet') : unlogged === 0 ? 'every pulled shot is logged' : 'need logging (text Robby the numbers)', '#log'));
+      (H.last_shot_at ? 'last logged ' + fmtAbs(H.last_shot_at) : 'nothing logged yet') + (pulled != null ? ' · machine pulled ' + pulled + ', log has ' + logged : ''),
+      logStatus, unlogged == null ? (la == null ? 'no shots yet' : la <= 3 ? 'log is current' : 'log going quiet') : unlogged >= 3 ? 'amber at 3 or more unlogged' : unlogged === 0 ? 'every pulled shot is logged' : 'under 3 unlogged is fine', '#log'));
     // 2. bags — physical bags vs blends, counted the way the cards show them
     var blends = D.bags.filter(function (b) { return (b.data || {}).blend_of; }).length, physical = D.bags.length - blends;
     var settled = D.bags.filter(function (b) { return ((b.data || {}).dialin || {}).settled; }).length, dialing = D.bags.length - settled;
@@ -82,23 +85,23 @@
     var bf = H.backflush || {};
     if (bf.last) {
       var left = bf.cadence_days - bf.days_ago;
-      host.appendChild(tile('Backflush', String(bf.days_ago), 'days ago', 'last ' + fmtDate(bf.last) + ' · every ' + bf.cadence_days + ' days', left > 14 ? 'good' : left > 0 ? 'warn' : 'serious',
-        left > 0 ? 'due in ' + left + ' days' : 'overdue by ' + (-left) + ' days', null, 100 * bf.days_ago / bf.cadence_days));
+      host.appendChild(tile('Backflush', String(bf.days_ago), 'days ago', 'last ' + fmtDate(bf.last) + ' · every ' + bf.cadence_days + ' days', left > 14 ? 'good' : left > 0 ? 'warn' : 'critical',
+        left > 14 ? 'due in ' + left + ' days' : left > 0 ? 'due in ' + left + ' days — amber inside 2 weeks' : 'overdue by ' + (-left) + ' days', null, 100 * bf.days_ago / bf.cadence_days));
     }
     // 4. origin graph — stale state leads; the catalogue size moves to the footnote when the refresh is failing
     var ls = O.last_scrape, rel = daysAgo(T.last_release), failing = ls && ls.status !== 'ok';
-    var st = !ls ? '' : failing ? (rel > 35 ? 'serious' : 'warn') : (rel <= 35 ? 'good' : 'warn');
+    var st = !ls ? '' : failing ? ((ls.failing_runs || 1) >= 2 ? 'critical' : 'warn') : (rel <= 35 ? 'good' : 'warn');
     var foot = fmtInt(T.offerings_available) + ' live offerings as of ' + fmtDate(T.last_release) + ' · ' + fmtInt(T.roasters) + ' roasters · ' + fmtInt(T.producers) + ' producers';
     if (failing) host.appendChild(tile('Origin graph', String(rel), 'days stale', foot, st,
-      'refresh failing since ' + fmtDate(ls.failing_since || ls.fired_at) + (ls.failing_runs > 1 ? ' (' + ls.failing_runs + ' runs)' : '') + (ls.last_ok ? ' · last good ' + fmtDate(ls.last_ok) : ''), '#origin'));
+      'refresh failing since ' + fmtDate(ls.failing_since || ls.fired_at) + (ls.failing_runs > 1 ? ' (' + ls.failing_runs + ' runs, red at 2)' : ' (1 run)') + (ls.last_ok ? ' · last good ' + fmtDate(ls.last_ok) : ''), '#origin'));
     else host.appendChild(tile('Origin graph', fmtInt(T.offerings_available), 'live offerings', fmtInt(T.roasters) + ' roasters · ' + fmtInt(T.producers) + ' producers · newest release ' + fmtDate(T.last_release), st,
-      !ls ? 'no refresh recorded' : 'refreshed ' + fmtDate(ls.fired_at), '#origin'));
-    // 5. this page — built when, checked against the reader's clock
-    var g = parseDT(D.generated_at), ageH = g ? (NOW - g) / 36e5 : null;
-    var pst = ageH == null ? '' : ageH <= 2 ? 'good' : ageH <= 26 ? 'warn' : 'serious';
-    var built = g ? g.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + fmtTime(g) : '—';
-    host.appendChild(tile('This page built', built, '', 'rebuilt hourly from Postgres when anything changed', pst,
-      ageH == null ? '' : ageH <= 2 ? 'current' : ageH <= 26 ? Math.round(ageH) + ' hours old — refresh job may be stuck' : Math.round(ageH / 24) + ' days old — refresh job is down', null));
+      !ls ? 'no refresh recorded' : 'refreshed ' + fmtDate(ls.fired_at) + (rel > 35 ? ' · no new release in ' + rel + ' days' : ''), '#origin'));
+    // 5. this page — the data stamp. The page is rebuilt only when the data changed, so the stamp is the data's
+    //    age, not the job's heartbeat (that lives in the Sunday claude-health report). A quiet week is not a fault.
+    var g = parseDT(D.generated_at), ageD = g ? (NOW - g) / 864e5 : null;
+    var pst = ageD == null ? '' : ageD <= 7 ? 'good' : 'warn';
+    host.appendChild(tile('Data as of', g ? fmtAbs(g.toISOString()) : '—', '', 'the page is rebuilt whenever a shot, bag, rule or the origin graph changes', pst,
+      ageD == null ? '' : ageD <= 7 ? 'changed within 7 days' : Math.round(ageD) + ' days without a change — quiet, or the hourly job is stuck (claude-health will say)', null));
   }
 
   /* ---------- water panel ---------- */
@@ -124,7 +127,9 @@
     var W = 240, H = 48, lo = 10, hi = 45, pad = 6, BAND_LO = 30, BAND_HI = 35;
     var y = function (t) { t = Math.max(lo, Math.min(hi, +t)); return pad + (H - 2 * pad) * (1 - (t - lo) / (hi - lo)); };
     var x = function (i) { return pad + (W - 2 * pad) * (i / (pts.length - 1)); };
-    var inBand = function (p) { return +p.time_s >= BAND_LO && +p.time_s <= BAND_HI; };
+    var inBand = function (p) { return +p.time_s >= BAND_LO - 0.5 && +p.time_s < BAND_HI + 0.5; };   // the band as read on a stopwatch, to the nearest second
+    // one ring per chart: the shot that set the CURRENT recipe (the newest SETTLED verdict); earlier "dialed" moments get no glyph
+    var ringIdx = -1; pts.forEach(function (p, i) { if (/settled/i.test(p.verdict || '')) ringIdx = i; });
     var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'img');
     svg.setAttribute('aria-label', 'Shot time per shot, ' + pts.length + ' of ' + totalPulled + ' shots timed; band is the 30 to 35 second target; filled dots are inside the band');
@@ -133,8 +138,7 @@
     path.setAttribute('d', pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.time_s).toFixed(1); }).join(' '));
     path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'var(--deemph)'); path.setAttribute('stroke-width', '1.5'); path.setAttribute('stroke-linejoin', 'round'); svg.appendChild(path);
     pts.forEach(function (p, i) {
-      var settledShot = /dialed|settled/i.test(p.verdict || '');
-      if (settledShot) { var ring = document.createElementNS(ns, 'circle'); ring.setAttribute('cx', x(i)); ring.setAttribute('cy', y(p.time_s)); ring.setAttribute('r', 7); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'var(--s1)'); ring.setAttribute('stroke-width', '1.5'); svg.appendChild(ring); }
+      if (i === ringIdx) { var ring = document.createElementNS(ns, 'circle'); ring.setAttribute('cx', x(i)); ring.setAttribute('cy', y(p.time_s)); ring.setAttribute('r', 7); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'var(--s1)'); ring.setAttribute('stroke-width', '1.5'); svg.appendChild(ring); }
       var c = document.createElementNS(ns, 'circle'); c.setAttribute('cx', x(i)); c.setAttribute('cy', y(p.time_s)); c.setAttribute('r', 3.2);
       c.setAttribute('fill', inBand(p) ? 'var(--ink2)' : 'var(--surface)'); c.setAttribute('stroke', 'var(--ink2)'); c.setAttribute('stroke-width', '1.5');
       var t = document.createElementNS(ns, 'title'); t.textContent = fmtDate(p.shot_at) + ': ' + n(p.time_s) + ' s at ' + n(p.microns) + ' µm / ' + n(p.rpm) + ' rpm' + (inBand(p) ? ' (in the 30–35 s band)' : ' (outside the band)') + (p.verdict ? ' — ' + p.verdict : ''); c.appendChild(t);
@@ -142,8 +146,7 @@
     });
     function label(i, anchor) { var p = pts[i], lab = document.createElementNS(ns, 'text'); lab.setAttribute('x', x(i) + (anchor === 'start' ? 6 : -6)); lab.setAttribute('y', y(p.time_s) + (y(p.time_s) < 16 ? 14 : -7)); lab.setAttribute('text-anchor', anchor); lab.setAttribute('font-size', '10'); lab.setAttribute('fill', 'var(--ink2)'); lab.textContent = n(p.time_s) + ' s'; svg.appendChild(lab); }
     label(0, 'start'); label(pts.length - 1, 'end');
-    var settledCount = pts.filter(function (p) { return /dialed|settled/i.test(p.verdict || ''); }).length;
-    return { svg: svg, count: pts.length, settled: settledCount };
+    return { svg: svg, count: pts.length, settled: ringIdx >= 0 ? 1 : 0 };
   }
 
   /* ---------- current recipes ---------- */
@@ -185,7 +188,8 @@
         } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
       }
       var sp = sparkline(b.short_name, b.shots);
-      if (sp) { card.appendChild(sp.svg); card.appendChild(el('div', 'spark-cap', 'Shot time, ' + sp.count + ' of ' + b.shots + ' shots timed · band = 30 to 35 s target · filled = in band' + (sp.settled ? ' · ring = the settling shot' : ''))); }
+      if (sp) { card.appendChild(sp.svg); card.appendChild(el('div', 'spark-cap', 'Shot time, ' + sp.count + ' of ' + b.shots + ' shots timed · band = 30 to 35 s target, to the nearest second · filled = in band' + (sp.settled ? ' · ring = the shot that set this recipe' : ''))); }
+      var gl = el('a', 'small', 'words on this card ↓'); gl.href = '#glossary'; card.appendChild(gl);
       card.appendChild(el('p', 'small muted', b.shots + (b.shots === 1 ? ' shot' : ' shots') + ' logged' + (d.opened ? ' · opened ' + fmtDate(d.opened) : '')));
       grid.appendChild(card);
     });
@@ -225,8 +229,9 @@
         var dd = b.data || {};
         if (dd.blend_of) { c3.appendChild(el('div', 'v', 'blend of ' + dd.blend_of.join(' + '))); c3.appendChild(el('div', 'd', 'see those two bags above')); }
         else {
-          c3.appendChild(el('div', 'v', dd.farm || (dd.region || dd.country ? [dd.region, dd.country].filter(Boolean).join(', ') : 'origin not recorded')));
-          var w2 = [dd.farm && dd.region, dd.process, dd.elevation_masl && dd.elevation_masl + ' masl'].filter(Boolean).join(' · '); if (w2) c3.appendChild(el('div', 'd', w2));
+          var place = [dd.region, dd.country].filter(function (x, i, arr) { return x && arr.indexOf(x) === i && !(i === 1 && arr[0] && arr[0].indexOf(x) >= 0); }).join(', ');
+          c3.appendChild(el('div', 'v', dd.producer || dd.farm || place || 'origin not recorded'));
+          var w2 = [(dd.producer || dd.farm) && place, dd.harvest, dd.elevation_masl && dd.elevation_masl + ' masl'].filter(Boolean).join(' · '); if (w2) c3.appendChild(el('div', 'd', w2));
         }
       }
       hop.appendChild(c3);
@@ -327,7 +332,9 @@
   function renderReference() {
     var host = $('#reference'), sections = (D.rules.sections || []);
     if (D.rules.glossary && D.rules.glossary.length) {   // words on the cards, defined once, first
-      var g = el('div', 'panel'); g.id = 'glossary'; g.appendChild(el('h3', null, 'Words on the cards'));
+      var g = el('div', 'panel'); g.id = 'glossary';
+      var gh = el('div'); gh.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px';
+      gh.appendChild(el('h3', null, 'Words on the cards')); var back = el('a', 'small', '↑ back to recipes'); back.href = '#recipes'; gh.appendChild(back); g.appendChild(gh);
       var gl = el('dl');
       D.rules.glossary.forEach(function (row) { gl.appendChild(el('dt', null, row[0])); gl.appendChild(el('dd', null, row[1])); });
       g.appendChild(gl); host.appendChild(g);
@@ -365,5 +372,4 @@
 
   renderHealth(); renderRecipes(); renderWater(); renderChain(); renderCountryBars(); renderShared(); renderRoasters();
   renderShots(); renderExperiments(); renderReference();
-  if (D.generated_at) { var g = parseDT(D.generated_at); $('#generated').textContent = 'Built ' + (g ? g.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + fmtTime(g) : D.generated_at) + ' Pacific'; }
 })();

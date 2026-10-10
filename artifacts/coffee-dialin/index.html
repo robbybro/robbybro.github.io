@@ -63,7 +63,6 @@ section{display:flex;flex-direction:column;gap:10px}
 .status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
 .status.good::before{background:var(--good)}
 .status.warn::before{background:var(--warn)}
-.status.serious::before{background:var(--serious)}
 .status.critical::before{background:var(--critical)}
 .meter{height:6px;border-radius:3px;background:var(--grid);overflow:hidden;margin-top:6px}
 .meter > i{display:block;height:100%;background:var(--ink2);border-radius:3px}
@@ -100,6 +99,7 @@ td.wrap{min-width:16ch;overflow-wrap:anywhere}
 .v-bad{color:var(--critical)}
 .v-open{color:var(--ink2)}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#shared{min-width:620px}#roasters{min-width:560px}#shots{min-width:900px}#exp{min-width:900px}
 .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 select,button{font:inherit;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--ring);border-radius:6px;padding:6px 10px}
 button[aria-pressed="true"]{border-color:var(--s1);color:var(--s1)}
@@ -145,10 +145,9 @@ footer{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;ga
   <header>
     <div class="topbar">
       <div class="crumbs"><a href="/artifacts/">← Artifacts</a><a id="water-top" href="#water">Water chemistry</a><a href="#log">Shot log</a><a href="#origin">Origin</a></div>
-      <span class="small muted" id="generated"></span>
     </div>
     <h1 style="margin-top:8px">Coffee Dial-In</h1>
-    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2 in Robby's kitchen. Standing at the machine without him? Tap your bag, set the grinder to the number on its card, follow the house rules, and text him the numbers afterwards. Words on the cards are defined in the <a href="#glossary">glossary</a>.</p>
+    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2 in Robby's kitchen. Standing at the machine without him? Tap your bag, set the grinder to the number on its card, and follow the house rules. Words on the cards are defined in the <a href="#glossary">glossary</a>.</p>
     <nav class="chips bagchips" id="bag-chips" aria-label="Bags on the counter"></nav>
   </header>
 
