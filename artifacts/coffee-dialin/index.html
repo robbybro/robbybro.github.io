@@ -67,9 +67,12 @@ td.wrap{min-width:16ch}
 select,button{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 10px}
 button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .ref{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.ref dl{margin:0;display:grid;grid-template-columns:minmax(9ch,38%) 1fr;gap:4px 12px;font-size:14px}
-.ref dt{color:var(--muted)}
-.ref dd{margin:0}
+.ref dl{margin:0;display:grid;grid-template-columns:minmax(9ch,38%) minmax(0,1fr);gap:4px 12px;font-size:14px}
+.ref dt{color:var(--muted);overflow-wrap:anywhere}
+.ref dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.ref a{word-break:break-all}
+.recipe .roaster,.recipe .line{overflow-wrap:anywhere}
+.card{min-width:0}
 .ref h3{margin-bottom:8px;font-size:15px}
 .ref .note{color:var(--muted);font-size:13px;display:block}
 footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px}

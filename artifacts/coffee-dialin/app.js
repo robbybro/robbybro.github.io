@@ -33,10 +33,11 @@
   /* ---------- current recipes: one card per bag ---------- */
   function latestShotFor(bag) {
     var rows = D.shots.filter(function (s) { return s.Bag === bag; });
-    rows.sort(function (a, b) { return (parseDate(b.Date) || 0) - (parseDate(a.Date) || 0); });
-    // newest row with any numbers; the very last row may be a QUEUED plan
-    var queued = rows.find(function (r) { return /queued/i.test(r.Verdict); });
-    var real = rows.find(function (r) { return !/queued/i.test(r.Verdict) && (r['µm'] || r.RPM); });
+    // newest first: by date, then by sheet order within a day (later rows are later shots)
+    rows.sort(function (a, b) { var d = (parseDate(b.Date) || 0) - (parseDate(a.Date) || 0); return d || (D.shots.indexOf(b) - D.shots.indexOf(a)); });
+    var isQueued = function (r) { return /queued/i.test(r.Verdict) || /^\s*queued/i.test(r['Next change'] || ''); };
+    var queued = rows.find(isQueued);
+    var real = rows.find(function (r) { return !isQueued(r) && (r['µm'] || r.RPM); });
     return { latest: real || rows[0] || null, queued: queued || null, count: rows.length };
   }
 
@@ -68,7 +69,7 @@
       if (settled) {
         card.appendChild(el('p', 'line', b['Settled recipe']));
       } else {
-        if (info.queued) card.appendChild(el('p', 'line', 'Next shot planned: ' + [info.queued['µm'] && info.queued['µm'] + ' µm', info.queued.RPM && info.queued.RPM + ' rpm'].filter(Boolean).join(' at ') + (info.queued['Next change'] ? ' — ' + info.queued['Next change'] : '')));
+        if (info.queued) card.appendChild(el('p', 'line', 'Next shot planned: ' + [info.queued['µm'] && info.queued['µm'] + ' µm', info.queued.RPM && info.queued.RPM + ' rpm'].filter(Boolean).join(' at ') + (info.queued['Next change'] ? ' — ' + info.queued['Next change'].replace(/^\s*queued\s*[—–-]*\s*/i, '') : '')));
         if (info.latest && info.latest !== info.queued) {
           var l = info.latest;
           var bits = [];
