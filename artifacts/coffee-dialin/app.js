@@ -14,7 +14,8 @@
   }
   function fmtDate(iso) {
     if (!iso) return '';
-    var d = new Date(iso);
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso));
+    var d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(iso);   // date-only strings are local days, not UTC midnight
     if (isNaN(d)) return String(iso).slice(0, 10);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
