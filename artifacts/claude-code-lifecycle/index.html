@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="How a Claude Code session actually runs: startup discovery, the turn and tool loop, hooks, mods, skills, the permission gate, a real coach-to-Zwift trace, and a keyboard cheat sheet.">
+<title>Claude Code Lifecycle</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a lifecycle reference in the spirit of the React lifecycle chart —
+   four phase lanes read top-down, each step tagged by WHO runs it, then the
+   mechanism drawings, the worked trace, and a key cheat sheet. */
+:root{
+  --bg:#F5F6F3;          /* cool paper */
+  --bg2:#FFFFFF;         /* card */
+  --bg3:#EAEDE7;         /* inset / table band */
+  --fg:#17202B;          /* ink */
+  --fg2:#5A6675;         /* muted */
+  --line:#CBD2C9;
+  --accent:#0E6F8E;      /* harness blue */
+  --hook:#9A6A12;        /* hooks: amber */
+  --hook-bg:#F7EBD2;
+  --mod:#5B46A8;         /* mods: violet */
+  --mod-bg:#E7E2F6;
+  --skill:#1B7A5E;       /* skills: green */
+  --skill-bg:#D9EFE5;
+  --model:#1F3A5F;       /* model: navy */
+  --model-bg:#DCE5F0;
+  --you:#8A3B2E;         /* you: brick */
+  --you-bg:#F5DFD8;
+  --harness:#0E6F8E;
+  --harness-bg:#D6E9F0;
+  --warn:#B4412A;
+  --font-display:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#131719;--bg2:#1B2124;--bg3:#232B2F;--fg:#E6EAE6;--fg2:#9AA6AE;--line:#343F45;
+    --accent:#5FB6D4;--hook:#E0B45C;--hook-bg:#3A2F15;--mod:#B4A4F0;--mod-bg:#2B2544;
+    --skill:#6FD0AC;--skill-bg:#17352B;--model:#9DB9DC;--model-bg:#1F2D3F;--you:#E39B8B;--you-bg:#3E2521;
+    --harness:#5FB6D4;--harness-bg:#16343E;--warn:#F08A72;color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 64px;padding-inline:20px}
+h1,h2,h3,h4{font-family:var(--font-display);text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,4.5vw,46px);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+h2{font-size:24px;font-weight:600;letter-spacing:-.01em;margin-top:56px;padding-top:20px;border-top:2px solid var(--fg)}
+h3{font-size:17px;font-weight:600;margin-top:28px}
+p{max-width:68ch;margin:10px 0}
+.lede{font-size:17px;color:var(--fg2);max-width:70ch}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)}
+code,kbd,.mono{font-family:var(--font-mono);font-size:.9em}
+code{background:var(--bg3);padding:1px 5px;border-radius:3px}
+pre{background:var(--bg3);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--font-mono);font-size:12.5px;line-height:1.5;margin:12px 0}
+pre code{background:none;padding:0}
+a{color:var(--accent)}
+kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;background:var(--bg2);padding:0 6px;font-size:12px;line-height:20px;white-space:nowrap}
+.toc{display:flex;flex-wrap:wrap;gap:8px 18px;margin:18px 0 0;padding:0;list-style:none;font-size:14px}
+.toc a{text-decoration:none;border-bottom:1px solid var(--line)}
+
+/* actor legend + tags */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:3px;font-weight:600;white-space:nowrap}
+.tag::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.t-you{color:var(--you);background:var(--you-bg)}
+.t-harness{color:var(--harness);background:var(--harness-bg)}
+.t-hook{color:var(--hook);background:var(--hook-bg)}
+.t-mod{color:var(--mod);background:var(--mod-bg)}
+.t-skill{color:var(--skill);background:var(--skill-bg)}
+.t-model{color:var(--model);background:var(--model-bg)}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:3px;padding:0 5px;vertical-align:middle;margin-left:4px}
+
+/* phase lanes */
+.phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:22px}
+.phase{min-width:0;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:16px 14px 14px;display:flex;flex-direction:column}
+.phase-head{display:flex;flex-direction:column;gap:4px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.phase-head .n{font-family:var(--font-mono);font-size:11px;color:var(--fg2);letter-spacing:.1em}
+.phase-head h3{margin:0;font-size:18px}
+.phase-head .when{font-size:13px;color:var(--fg2)}
+.step{position:relative;padding:10px 0 10px 14px;border-left:2px solid var(--line);margin-left:6px}
+.step::before{content:"";position:absolute;left:-6px;top:16px;width:10px;height:10px;border-radius:50%;background:var(--bg2);border:2px solid var(--line)}
+.step.s-you{border-left-color:var(--you)}.step.s-you::before{border-color:var(--you)}
+.step.s-harness{border-left-color:var(--harness)}.step.s-harness::before{border-color:var(--harness)}
+.step.s-hook{border-left-color:var(--hook)}.step.s-hook::before{border-color:var(--hook)}
+.step.s-mod{border-left-color:var(--mod)}.step.s-mod::before{border-color:var(--mod)}
+.step.s-skill{border-left-color:var(--skill)}.step.s-skill::before{border-color:var(--skill)}
+.step.s-model{border-left-color:var(--model)}.step.s-model::before{border-color:var(--model)}
+.step .t{font-weight:600;font-size:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+.step .d{font-size:13px;color:var(--fg2);margin-top:2px}
+.step .d code{font-size:11.5px}
+.step .mine{font-size:12.5px;margin-top:4px;padding:4px 8px;background:var(--bg3);border-radius:4px}
+.step .mine b{font-weight:600}
+.exit{margin-top:auto;padding-top:12px;font-size:12.5px;color:var(--fg2);border-top:1px dashed var(--line)}
+.exit b{color:var(--fg)}
+@media (max-width:980px){.phases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.phases{grid-template-columns:1fr}}
+
+/* figures */
+figure{margin:22px 0;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px}
+figure svg{max-width:100%;height:auto;display:block;color:var(--fg);font-family:var(--font-body)}
+figcaption{font-size:13px;color:var(--fg2);margin-top:10px;max-width:none}
+.fig-scroll{overflow-x:auto}
+.fig-scroll svg{min-width:720px}
+
+/* tables */
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg2);background:var(--bg3)}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--bg3) 45%,transparent)}
+td.k{white-space:nowrap}
+td.y{color:var(--skill);font-weight:600}td.n{color:var(--fg2)}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+
+/* trace */
+.trace{list-style:none;margin:16px 0 0;padding:0;counter-reset:tr}
+.trace li{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.trace li::before{counter-increment:tr;content:counter(tr,decimal-leading-zero);font-family:var(--font-mono);font-size:12px;color:var(--fg2);padding-top:3px}
+.trace .h{font-weight:600;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+.trace .b{font-size:13.5px;color:var(--fg2);margin-top:3px}
+.trace .b code{font-size:12px}
+.trace .ev{margin-top:6px;font-family:var(--font-mono);font-size:12px;background:var(--bg3);border-left:3px solid var(--line);padding:6px 10px;white-space:pre-wrap;word-break:break-word}
+.trace .ev.ok{border-left-color:var(--skill)}
+.trace .ev.hk{border-left-color:var(--hook)}
+.trace .ev.md{border-left-color:var(--mod)}
+
+/* cheat sheet */
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:14px}
+.kgroup{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+.kgroup h4{font-size:13px;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg2);margin:0 0 6px}
+.kgroup table{font-size:13px}
+.kgroup td{padding:5px 6px;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.kgroup td:first-child{white-space:nowrap;width:44%}
+.kgroup tr:last-child td{border-bottom:0}
+.kgroup tbody tr:nth-child(even){background:none}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:14px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card h4{font-size:14px;margin:0 0 6px}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:13.5px}
+.card li{margin:3px 0}
+.foot{margin-top:48px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--fg2)}
+.foot ul{padding-left:18px;margin:6px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="eyebrow">Reference · verified against code.claude.com docs on Oct 10, 2026 · this machine: beelzebub</div>
+  <h1>Claude Code Lifecycle</h1>
+  <p class="lede">What actually happens between you pressing Enter and the reply landing: where settings, CLAUDE.md, skills, plugins and mods are discovered, when each hook fires, how a tool call clears permissions and the sandbox, and what the model sees at every point. Laid out like the React lifecycle chart: phases top to bottom, every step tagged by who runs it.</p>
+  <ul class="toc">
+    <li><a href="#phases">The four phases</a></li>
+    <li><a href="#loop">The turn loop</a></li>
+    <li><a href="#gate">The permission gate</a></li>
+    <li><a href="#hooks">Hook events</a></li>
+    <li><a href="#mods">Mods vs hooks vs skills</a></li>
+    <li><a href="#trace">Real trace: a Zwift ride from the coach</a></li>
+    <li><a href="#keys">Keyboard cheat sheet</a></li>
+    <li><a href="#files">Where things live</a></li>
+  </ul>
+
+  <div class="legend">
+    <span class="tag t-you">You</span>
+    <span class="tag t-harness">Harness</span>
+    <span class="tag t-hook">Hook (settings.json)</span>
+    <span class="tag t-mod">Mod (plugin hooks module)</span>
+    <span class="tag t-skill">Skill</span>
+    <span class="tag t-model">Model</span>
+  </div>
+  <p style="font-size:13px;color:var(--fg2)">Harness = the Claude Code process itself. Hooks = shell commands from <code>settings.json</code> that run on named events. Mods = your three plugins (<code>context-bar</code>, <code>documented</code>, <code>skill-ledger</code>), JavaScript modules loaded <em>inside</em> the harness that wrap engine events. Boxes marked <span class="chip">unverified</span> are inferred from behaviour on this machine, not from the docs.</p>
+
+  <!-- ============ PHASES ============ -->
+  <h2 id="phases">The four phases</h2>
+  <p>Startup runs once. A turn runs every time you submit. The tool loop runs zero to many times inside a turn. End and housekeeping run when the model stops, when context is compacted, and when the process exits.</p>
+
+  <div class="phases">
+    <!-- STARTUP -->
+    <section class="phase">
+      <div class="phase-head"><span class="n">PHASE 1</span><h3>Startup</h3><span class="when">once, at <code>claude</code> launch or resume</span></div>
+      <div class="step s-harness"><div class="t">Merge settings</div><div class="d">Managed › <code>--settings</code> › <code>.claude/settings.local.json</code> › <code>.claude/settings.json</code> › <code>~/.claude/settings.json</code>. Arrays like <code>permissions.allow</code> merge; scalars take the highest level. <code>auto</code> and <code>bypassPermissions</code> as <code>defaultMode</code> are ignored from project files.</div></div>
+      <div class="step s-harness"><div class="t">Load instructions</div><div class="d">Managed CLAUDE.md › <code>~/.claude/CLAUDE.md</code> › every <code>CLAUDE.md</code> from <code>/</code> down to cwd › <code>CLAUDE.local.md</code>. Concatenated, never overridden. <code>@imports</code> up to 4 hops. Subdirectory files load lazily on first read/edit there. Delivered as a user message after the system prompt.</div><div class="mine"><b>Here:</b> <code>/Users/robby/CLAUDE.md</code> loads for every session under your home.</div></div>
+      <div class="step s-harness"><div class="t">Load memory</div><div class="d">First 200 lines / 25 KB of <code>~/.claude/projects/&lt;project&gt;/memory/MEMORY.md</code>. Topic files on demand. Not passed to subagents (forks excepted).</div></div>
+      <div class="step s-skill"><div class="t">Index skills</div><div class="d">Scan <code>~/.claude/skills/*/SKILL.md</code>, <code>.claude/skills/</code>, nested and <code>--add-dir</code> copies, plugin <code>skills/</code>. Only <b>name + description</b> enter context now (combined text capped at 1,536 chars each). Enterprise › personal › project on name clash.</div><div class="mine"><b>Here:</b> 25+ personal skills from the dotfiles symlink; <code>coach</code> is one line of description until invoked.</div></div>
+      <div class="step s-mod"><div class="t">Load plugins → mods</div><div class="d">For each enabled plugin: <code>skills/</code>, <code>commands/</code>, <code>agents/</code>, <code>hooks/hooks.json</code>, <code>.mcp.json</code>, <code>.lsp.json</code>. A <code>hooks.json</code> with <code>modules:</code> loads JS into the harness; its <code>register(on)</code> subscribes to engine events. <code>/reload-plugins</code> re-reads them.</div><div class="mine"><b>Here:</b> <code>context-bar</code>, <code>documented</code>, <code>skill-ledger</code> from marketplace <code>mac-dotfiles</code>; <code>swift-lsp</code>, <code>cloudflare</code> from theirs.</div></div>
+      <div class="step s-harness"><div class="t">Connect MCP servers</div><div class="d">Plugin and configured servers connect; claude.ai connectors (Strava, Gmail, Calendar…) attach. Tool <em>names</em> and server instructions enter context; full schemas stay deferred until <code>ToolSearch</code> pulls them.</div></div>
+      <div class="step s-mod"><div class="t"><code>session.start</code></div><div class="d">Mods see the new session first: register slash commands, read env, cache the session id.</div><div class="mine"><b>Here:</b> all three register <code>/context-bar</code>, <code>/documented</code>, <code>/skill-ledger</code>.</div></div>
+      <div class="step s-hook"><div class="t">SessionStart hooks</div><div class="d">Input: <code>source</code> = startup | resume | clear | compact | fork. Cannot block. stdout or <code>additionalContext</code> is injected into the first turn.</div><div class="mine"><b>Here:</b> <code>blocked_notice.sh</code> (the "18 blocked items" banner) and <code>tmux-sn-state clear</code>.</div></div>
+      <div class="step s-harness"><div class="t">Status line</div><div class="d">The <code>statusLine</code> script runs now and after every assistant message, compact, mode change (300 ms debounce). Local only, no tokens.</div><div class="mine"><b>Here:</b> <code>statusLine: null</code>; the tmux sidebar panel does this job from mod stamps.</div></div>
+      <div class="exit">Exit → <b>waits for the first prompt</b>. Everything above is already in the model's context window before you type.</div>
+    </section>
+
+    <!-- TURN -->
+    <section class="phase">
+      <div class="phase-head"><span class="n">PHASE 2</span><h3>Turn</h3><span class="when">every time you submit</span></div>
+      <div class="step s-you"><div class="t">You press Enter</div><div class="d">Prefix decides the kind: <code>/name</code> skill or command · <code>!cmd</code> shell, output lands in the session · <code>@path</code> file mention · plain text.</div></div>
+      <div class="step s-hook"><div class="t">UserPromptSubmit hooks</div><div class="d">Run before the model sees anything. Exit 2 or <code>decision:"block"</code> rejects the prompt with a reason; stdout or <code>additionalContext</code> is appended to it. 30 s timeout.</div><div class="mine"><b>Here (3):</b> <code>ingest/route_hook.py</code> (bare URL/image → ingest), <code>viz_route_hook.py</code> (structure visual → artifact-diagramming), <code>tmux-sn-state work</code> (sidebar 🔧).</div></div>
+      <div class="step s-mod"><div class="t"><code>prompt.submit</code></div><div class="d">Mods wrap the same moment with <code>next(e)</code> middleware.</div><div class="mine"><b>Here:</b> <code>documented</code> clears last turn's 📝 stamp.</div></div>
+      <div class="step s-skill"><div class="t">Expand a typed <code>/skill</code></div><div class="d">UserPromptExpansion hooks run; <code>SKILL.md</code> renders with <code>$ARGUMENTS</code> (or an appended <code>ARGUMENTS: …</code> line), <code>$1</code>, <code>${CLAUDE_SKILL_DIR}</code>; each <code>!`cmd`</code> runs <em>now</em> and its output replaces the placeholder. Skill-frontmatter hooks register for the session. <code>allowed-tools</code> are pre-approved for this turn only.</div><div class="mine"><b>Mod:</b> engine raises <code>skill.prompt</code> → <code>skill-ledger</code> appends a <code>"slash"</code> row.</div></div>
+      <div class="step s-harness"><div class="t">Assemble the request</div><div class="d">System prompt + CLAUDE.md + MEMORY.md + skill descriptions + tool names + the whole transcript so far (older tool outputs may already be cleared) + your prompt + hook context. The whole thing goes to the API.</div></div>
+      <div class="step s-model"><div class="t">Model turn</div><div class="d">Returns text and/or <code>tool_use</code> blocks. Text streams to you as it arrives (MessageDisplay hook, 10 s). A natural-language ask that matches a skill description makes the model call the <b>Skill tool</b>, which is itself a tool call (Phase 3) whose result is the rendered <code>SKILL.md</code>.</div></div>
+      <div class="exit">Exit → <b>tool_use present</b>: Phase 3, then back here with results. <b>No tool_use</b>: Phase 4.</div>
+    </section>
+
+    <!-- TOOL LOOP -->
+    <section class="phase">
+      <div class="phase-head"><span class="n">PHASE 3</span><h3>Tool call</h3><span class="when">zero to many per turn; parallel calls run as a batch</span></div>
+      <div class="step s-mod"><div class="t"><code>tool.call</code> (outer)</div><div class="d">A mod's <code>on("tool.call", {tool})</code> wraps the whole call: it sees the args before and the result after <code>next(e)</code>.</div><div class="mine"><b>Here:</b> <code>skill-ledger</code> marks a <code>Skill</code> call pending so the inner <code>skill.prompt</code> is recorded as <code>"nl"</code>, not <code>"slash"</code>.</div></div>
+      <div class="step s-hook"><div class="t">PreToolUse hooks</div><div class="d">Input: <code>tool_name</code>, <code>tool_input</code>, <code>tool_use_id</code>. Can return <code>permissionDecision</code> allow | deny | ask | defer (precedence deny › defer › ask › allow across hooks) or exit 2 to block. Can inject context.</div><div class="mine"><b>Here:</b> none configured.</div></div>
+      <div class="step s-harness"><div class="t">Permission rules</div><div class="d"><b>deny → ask → allow</b>, first match wins; specificity does not reorder. A hook's <code>allow</code> skips the prompt but deny and ask rules still apply.</div><div class="mine"><b>Here:</b> ~75 allow rules — <code>db.py:*</code>, <code>metrics.py:*</code>, the Strava and Chrome MCP tools, <code>git commit:*</code>…</div></div>
+      <div class="step s-harness"><div class="t">Permission mode</div><div class="d"><b>auto</b>: a classifier model reviews the call in the background and blocks the risky class (force-push, secrets to public repos…) → PermissionDenied hook, <code>retry:true</code> possible. <b>default</b>/<b>acceptEdits</b>: unmatched calls prompt you → PermissionRequest hook (JSON decision only) → Notification hook <code>permission_prompt</code>. <b>plan</b>: no edits. <b>bypass</b>: no prompts.</div><div class="mine"><b>Here:</b> a prompt fires <code>notify.sh</code> (phone) and <code>tmux-sn-state blocked</code> (sidebar ⏸).</div></div>
+      <div class="step s-harness"><div class="t">Sandbox (Bash only)</div><div class="d">macOS Seatbelt wraps each Bash command: write allow-list, network through a filtering proxy, Unix sockets limited (Postgres allowed here). File tools, MCP servers and hooks run <em>outside</em> it. <code>dangerouslyDisableSandbox:true</code> is a separate "unsandboxed" prompt; <code>excludedCommands</code> skip it.</div></div>
+      <div class="step s-harness"><div class="t">Execute</div><div class="d">Built-in tool, MCP tool (Elicitation hook if the server asks you something), Skill tool (renders SKILL.md), or Agent tool (SubagentStart → its own Phase 2/3 loop in a fresh context → SubagentStop; only a summary returns).</div></div>
+      <div class="step s-hook"><div class="t">PostToolUse / PostToolUseFailure</div><div class="d">See the result; cannot undo it. stderr and <code>additionalContext</code> go back to the model. Default 600 s.</div></div>
+      <div class="step s-hook"><div class="t">PostToolBatch</div><div class="d">After a parallel batch, before the next model call. Can stop the loop.</div></div>
+      <div class="exit">Exit → results appended as a user message → <b>Phase 2 "Model turn"</b> again. Mods' <code>tool.call</code> returns here.</div>
+    </section>
+
+    <!-- END -->
+    <section class="phase">
+      <div class="phase-head"><span class="n">PHASE 4</span><h3>End &amp; housekeeping</h3><span class="when">when the model stops; on compaction; on exit</span></div>
+      <div class="step s-hook"><div class="t">Stop hooks</div><div class="d">Input: <code>last_assistant_message</code>, <code>stop_hook_active</code>, <code>background_tasks</code>. Exit 2 or <code>decision:"block"</code> forces the model to continue (guard with <code>stop_hook_active</code> or you loop forever). StopFailure instead on an API error.</div><div class="mine"><b>Here:</b> <code>tmux-sn-state done</code> (sidebar ✅).</div></div>
+      <div class="step s-mod"><div class="t"><code>session.measure</code></div><div class="d">Fires after a turn whose context fill moved. Mods can read <code>$.session.usage()</code>.</div><div class="mine"><b>Here:</b> <code>context-bar</code> stamps <code>@cc_ctx</code> + <code>@cc_model</code> on the tmux pane; the sidebar draws <code>ctx 7% ███░</code>.</div></div>
+      <div class="step s-hook"><div class="t">Notification <code>idle_prompt</code></div><div class="d">Claude is waiting on you. Cannot block.</div><div class="mine"><b>Here:</b> <code>notify.sh</code> → macOS / phone.</div></div>
+      <div class="step s-harness"><div class="t">Status line + queue</div><div class="d">Status line re-runs. Queued messages (typed while it worked) are sent now; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> sends them earlier.</div></div>
+      <div class="step s-hook"><div class="t">PreCompact → PostCompact</div><div class="d">When context nears the limit, or on <code>/compact</code>. Older tool outputs are cleared first, then the conversation is summarised. PreCompact can block. Project CLAUDE.md is re-read; each invoked skill's latest render is re-attached (5k tokens each, 25k total). SessionStart fires again with <code>source:"compact"</code>.</div></div>
+      <div class="step s-hook"><div class="t">SessionEnd</div><div class="d">On exit or <code>/clear</code>. Shared 1.5 s budget (raisable to 60 s). Cannot block.</div></div>
+      <div class="step s-harness"><div class="t">Headless twin: <code>claude -p</code></div><div class="d">Dispatch jobs run this exact lifecycle without a terminal: same hooks, same mods (<code>isInteractive:false</code>), no prompts (unmatched calls are denied). Needs <code>--setting-sources user,project,local</code> or hooks and skills never load. SessionStart's <code>blocked_notice.sh</code> runs there too.</div></div>
+      <div class="exit">Exit → <b>idle</b>. Next Enter starts Phase 2 again with the same context (or the compacted one).</div>
+    </section>
+  </div>
+
+  <!-- ============ TURN LOOP SVG ============ -->
+  <h2 id="loop">The turn loop</h2>
+  <p>The part the four lanes can't show: it is one loop. A turn is model → tools → model until the model answers with no tool call. Mods wrap each tool call from the outside; hooks fire at fixed points inside; the permission gate sits between "the model wants this" and "it ran".</p>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 1000 400" role="img" aria-label="One turn: your prompt passes UserPromptSubmit hooks and the prompt.submit mod, reaches the model; each tool_use passes the tool.call mod, PreToolUse hooks, the permission gate and the sandbox, runs, passes PostToolUse hooks, and its result returns to the model; when the model stops, Stop hooks, session.measure and the idle notification run.">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0E6F8E"/></marker>
+      </defs>
+      <g font-size="12" fill="currentColor">
+        <!-- row 1: you -> hooks -> mod -> model -->
+        <rect x="20" y="40" width="110" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="75" y="59" text-anchor="middle" font-weight="600">You</text>
+        <text x="75" y="75" text-anchor="middle" font-size="11">prompt / slash</text>
+
+        <line x1="130" y1="63" x2="170" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="172" y="40" width="150" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="247" y="59" text-anchor="middle" font-weight="600">UserPromptSubmit</text>
+        <text x="247" y="75" text-anchor="middle" font-size="11">hooks · can block / inject</text>
+
+        <line x1="322" y1="63" x2="362" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="364" y="40" width="130" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 3"/>
+        <text x="429" y="59" text-anchor="middle" font-weight="600">prompt.submit</text>
+        <text x="429" y="75" text-anchor="middle" font-size="11">mod · then skill render</text>
+
+        <line x1="494" y1="63" x2="534" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="536" y="30" width="170" height="66" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
+        <text x="621" y="55" text-anchor="middle" font-weight="700" font-size="14">Model</text>
+        <text x="621" y="73" text-anchor="middle" font-size="11">system + CLAUDE.md + memory</text>
+        <text x="621" y="87" text-anchor="middle" font-size="11">+ transcript + tool names</text>
+
+        <!-- end branch -->
+        <line x1="706" y1="63" x2="760" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <text x="733" y="55" text-anchor="middle" font-size="10.5">no tool_use</text>
+        <rect x="762" y="40" width="110" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="817" y="59" text-anchor="middle" font-weight="600">Stop hooks</text>
+        <text x="817" y="75" text-anchor="middle" font-size="11">may force continue</text>
+        <line x1="872" y1="63" x2="912" y2="63" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="914" y="40" width="70" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="949" y="59" text-anchor="middle" font-weight="600">Reply</text>
+        <text x="949" y="75" text-anchor="middle" font-size="11">+ idle ping</text>
+
+        <!-- tool_use branch down -->
+        <line x1="621" y1="96" x2="621" y2="150" stroke="#0E6F8E" stroke-width="2" marker-end="url(#arrA)"/>
+        <text x="632" y="128" font-size="11" fill="#0E6F8E" font-weight="600">tool_use</text>
+
+        <!-- mod wrapper box -->
+        <rect x="120" y="152" width="760" height="190" rx="10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <text x="132" y="170" font-size="11" font-weight="600">tool.call mod wraps everything inside (sees args before next(e), result after)</text>
+
+        <!-- inner chain, right to left back to model -->
+        <rect x="520" y="190" width="200" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="620" y="209" text-anchor="middle" font-weight="600">PreToolUse hooks</text>
+        <text x="620" y="225" text-anchor="middle" font-size="11">allow / deny / ask / defer</text>
+
+        <line x1="520" y1="213" x2="470" y2="213" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="300" y="190" width="170" height="46" rx="6" fill="none" stroke="#0E6F8E" stroke-width="2"/>
+        <text x="385" y="209" text-anchor="middle" font-weight="600" fill="#0E6F8E">Permission gate</text>
+        <text x="385" y="225" text-anchor="middle" font-size="11">rules → mode → prompt?</text>
+
+        <line x1="300" y1="213" x2="250" y2="213" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="140" y="190" width="110" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="195" y="209" text-anchor="middle" font-weight="600">Sandbox</text>
+        <text x="195" y="225" text-anchor="middle" font-size="11">Bash only</text>
+
+        <line x1="195" y1="236" x2="195" y2="278" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="140" y="280" width="110" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="195" y="299" text-anchor="middle" font-weight="600">Tool runs</text>
+        <text x="195" y="315" text-anchor="middle" font-size="11">file · MCP · Skill · Agent</text>
+
+        <line x1="250" y1="303" x2="330" y2="303" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="332" y="280" width="180" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="422" y="299" text-anchor="middle" font-weight="600">PostToolUse / Failure</text>
+        <text x="422" y="315" text-anchor="middle" font-size="11">hooks · may add context</text>
+
+        <line x1="512" y1="303" x2="590" y2="303" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr)"/>
+        <rect x="592" y="280" width="130" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="657" y="299" text-anchor="middle" font-weight="600">PostToolBatch</text>
+        <text x="657" y="315" text-anchor="middle" font-size="11">after parallel batch</text>
+
+        <!-- return to model -->
+        <path d="M722,303 L840,303 L840,120 L706,120 L706,96" fill="none" stroke="#0E6F8E" stroke-width="2" marker-end="url(#arrA)"/>
+        <text x="850" y="215" font-size="11" fill="#0E6F8E" font-weight="600">tool_result</text>
+        <text x="850" y="229" font-size="11" fill="#0E6F8E">→ next model turn</text>
+
+        <!-- notification side -->
+        <line x1="385" y1="190" x2="385" y2="150" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="385" y="143" text-anchor="middle" font-size="10.5">prompt → Notification hook → notify.sh · tmux ⏸</text>
+
+        <!-- legend -->
+        <g transform="translate(20,360)" font-size="11">
+          <rect x="0" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="28" y="10">harness</text>
+          <rect x="90" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 3"/><text x="118" y="10">hook (settings.json)</text>
+          <rect x="250" y="0" width="22" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2 3"/><text x="278" y="10">mod (plugin module)</text>
+          <line x1="410" y1="6" x2="440" y2="6" stroke="#0E6F8E" stroke-width="2"/><text x="448" y="10">the loop</text>
+        </g>
+      </g>
+    </svg>
+    </div>
+    <figcaption>One turn. The blue path is the loop: every <code>tool_use</code> the model emits goes down through the gate and comes back up as a <code>tool_result</code>, and the model is called again. Stop hooks only run when a model turn ends with no tool call.</figcaption>
+  </figure>
+
+  <!-- ============ PERMISSION GATE SVG ============ -->
+  <h2 id="gate">The permission gate</h2>
+  <p>Every tool call clears this in order. The thing people get wrong: rule order is fixed at deny → ask → allow and specificity never reorders it, so an allow rule cannot carve an exception out of a deny. The sandbox is a separate layer that only wraps Bash.</p>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 1000 250" role="img" aria-label="A tool call passes PreToolUse hooks, then deny rules, ask rules, allow rules, then the permission mode decides whether to prompt, run a classifier, or auto-approve; Bash commands then run inside the sandbox.">
+      <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+      <g font-size="12" fill="currentColor">
+        <rect x="10" y="60" width="110" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="65" y="81" text-anchor="middle" font-weight="600">tool_use</text><text x="65" y="97" text-anchor="middle" font-size="11">name + input</text>
+        <line x1="120" y1="85" x2="150" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+        <rect x="152" y="60" width="130" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 3"/>
+        <text x="217" y="81" text-anchor="middle" font-weight="600">PreToolUse</text><text x="217" y="97" text-anchor="middle" font-size="11">deny › defer › ask › allow</text>
+        <line x1="282" y1="85" x2="312" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+        <rect x="314" y="60" width="86" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="357" y="81" text-anchor="middle" font-weight="600">deny rules</text><text x="357" y="97" text-anchor="middle" font-size="11">match → ✗</text>
+        <line x1="400" y1="85" x2="430" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+        <rect x="432" y="60" width="86" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="475" y="81" text-anchor="middle" font-weight="600">ask rules</text><text x="475" y="97" text-anchor="middle" font-size="11">match → prompt</text>
+        <line x1="518" y1="85" x2="548" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+        <rect x="550" y="60" width="86" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="593" y="81" text-anchor="middle" font-weight="600">allow rules</text><text x="593" y="97" text-anchor="middle" font-size="11">match → run</text>
+        <line x1="636" y1="85" x2="666" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+        <text x="651" y="75" text-anchor="middle" font-size="10.5">no match</text>
+
+        <rect x="668" y="40" width="150" height="90" rx="8" fill="none" stroke="#0E6F8E" stroke-width="2"/>
+        <text x="743" y="60" text-anchor="middle" font-weight="600" fill="#0E6F8E">permission mode</text>
+        <text x="743" y="78" text-anchor="middle" font-size="11">auto → classifier reviews</text>
+        <text x="743" y="93" text-anchor="middle" font-size="11">default / acceptEdits → prompt</text>
+        <text x="743" y="108" text-anchor="middle" font-size="11">plan → no edits · bypass → run</text>
+        <text x="743" y="123" text-anchor="middle" font-size="11">headless -p → denied</text>
+        <line x1="818" y1="85" x2="848" y2="85" stroke="currentColor" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+        <rect x="850" y="60" width="140" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="920" y="81" text-anchor="middle" font-weight="600">run</text><text x="920" y="97" text-anchor="middle" font-size="11">Bash → Seatbelt sandbox</text>
+
+        <!-- side notes -->
+        <line x1="217" y1="110" x2="217" y2="150" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="217" y="166" text-anchor="middle" font-size="11">hook "allow" skips the prompt;</text>
+        <text x="217" y="180" text-anchor="middle" font-size="11">deny + ask rules still checked</text>
+
+        <line x1="743" y1="130" x2="743" y2="150" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="743" y="166" text-anchor="middle" font-size="11">prompt → PermissionRequest hook (JSON decision)</text>
+        <text x="743" y="180" text-anchor="middle" font-size="11">→ Notification permission_prompt → your notify.sh</text>
+        <text x="743" y="194" text-anchor="middle" font-size="11">"don't ask again" → .claude/settings.local.json</text>
+
+        <line x1="920" y1="110" x2="920" y2="150" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="920" y="166" text-anchor="middle" font-size="11">write allow-list, proxy net,</text>
+        <text x="920" y="180" text-anchor="middle" font-size="11">PG socket allowed here;</text>
+        <text x="920" y="194" text-anchor="middle" font-size="11">unsandboxed = its own prompt</text>
+        <text x="920" y="208" text-anchor="middle" font-size="11">(Shift+Tab cycles the mode)</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption>The gate, left to right. Rules are evaluated deny → ask → allow and the first match decides. Only an unmatched call reaches the mode, which is where auto mode's classifier or an interactive prompt lives.</figcaption>
+  </figure>
+
+  <!-- ============ HOOK EVENTS TABLE ============ -->
+  <h2 id="hooks">Hook events</h2>
+  <p>Hooks are entries in <code>settings.json</code> (user, project, local, managed), a plugin's <code>hooks/hooks.json</code>, a skill's frontmatter (registered on invocation, kept for the session; the only place <code>once:true</code> is honoured) or a subagent's frontmatter. Types: <code>command</code> (stdin JSON, exit code), <code>http</code>, <code>mcp_tool</code>, <code>prompt</code> (single-turn model eval, 30 s), <code>agent</code> (experimental, 60 s). Every input carries <code>session_id</code>, <code>transcript_path</code>, <code>cwd</code>, <code>permission_mode</code>, <code>hook_event_name</code>.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Event</th><th>Fires</th><th>Can block</th><th>Can inject context</th><th>Yours</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Setup</td><td><code>--init-only</code>, or <code>--init</code>/<code>--maintenance</code> with <code>-p</code></td><td class="n">no</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">SessionStart</td><td>start, resume, <code>/clear</code>, after compact, fork (<code>source</code> field)</td><td class="n">no</td><td class="y">yes</td><td>blocked_notice.sh · tmux-sn-state clear</td></tr>
+      <tr><td class="k">InstructionsLoaded</td><td>a CLAUDE.md or rules file loads</td><td class="n">no</td><td class="n">no</td><td></td></tr>
+      <tr><td class="k">UserPromptSubmit</td><td>prompt submitted, before the model</td><td class="y">yes</td><td class="y">yes</td><td>route_hook.py · viz_route_hook.py · tmux-sn-state work</td></tr>
+      <tr><td class="k">UserPromptExpansion</td><td>a typed <code>/command</code> expands</td><td class="y">yes</td><td class="y">yes</td><td></td></tr>
+      <tr><td class="k">PreToolUse</td><td>before a tool runs</td><td class="y">yes (allow/deny/ask/defer)</td><td class="y">yes</td><td></td></tr>
+      <tr><td class="k">PermissionRequest</td><td>a call needs a decision</td><td class="y">JSON decision only; exit 2 ignored</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">PermissionDenied</td><td>auto-mode classifier denied</td><td class="n">no (<code>retry:true</code>)</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">PostToolUse</td><td>tool succeeded</td><td class="n">no</td><td class="y">yes</td><td></td></tr>
+      <tr><td class="k">PostToolUseFailure</td><td>tool failed</td><td class="n">—</td><td class="y">yes</td><td></td></tr>
+      <tr><td class="k">PostToolBatch</td><td>after a parallel batch, before next model call</td><td class="y">yes</td><td class="y">yes</td><td></td></tr>
+      <tr><td class="k">Elicitation / ElicitationResult</td><td>an MCP server asks you something</td><td class="y">yes (decline)</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">Notification</td><td><code>permission_prompt</code>, <code>idle_prompt</code>, others</td><td class="n">no</td><td class="n">no</td><td>notify.sh · tmux-sn-state blocked</td></tr>
+      <tr><td class="k">MessageDisplay</td><td>assistant text displays (10 s)</td><td class="n">no</td><td class="n">no</td><td></td></tr>
+      <tr><td class="k">SubagentStart / SubagentStop</td><td>Agent tool spawns / returns</td><td class="n">start no · stop yes</td><td class="y">yes</td><td>tmux-sn-state agent-start / agent-stop</td></tr>
+      <tr><td class="k">TaskCreated / TaskCompleted</td><td>background task lifecycle</td><td class="y">yes</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">Stop</td><td>model finished the turn</td><td class="y">yes (continue)</td><td class="y">yes</td><td>tmux-sn-state done</td></tr>
+      <tr><td class="k">StopFailure</td><td>turn ended on API error</td><td class="n">no</td><td class="n">no</td><td></td></tr>
+      <tr><td class="k">PreCompact / PostCompact</td><td>before / after compaction</td><td class="n">pre yes · post no</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">PreModelSwitch / PostModelSwitch</td><td>model change (<code>from_model</code>, <code>to_model</code>)</td><td class="n">pre yes</td><td class="y">post yes</td><td></td></tr>
+      <tr><td class="k">ConfigChange</td><td>a settings file changes mid-session</td><td class="y">yes (not policy)</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">CwdChanged · DirectoryAdded · FileChanged</td><td>environment changes</td><td class="n">no</td><td class="n">no</td><td></td></tr>
+      <tr><td class="k">WorktreeCreate / WorktreeRemove</td><td>isolation worktrees</td><td class="n">create yes</td><td class="n">no</td><td></td></tr>
+      <tr><td class="k">TeammateIdle</td><td>agent-team teammate idle</td><td class="y">yes</td><td class="n">—</td><td></td></tr>
+      <tr><td class="k">SessionEnd</td><td>exit / clear (1.5 s shared budget)</td><td class="n">no</td><td class="n">no</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:13px;color:var(--fg2)">Matchers: <code>Edit|Write</code> is a list, anything with other characters is a regex (<code>mcp__memory__.*</code>). <code>additionalContext</code> strings cap at 10,000 characters. Default timeout 600 s; 30 s on UserPromptSubmit and model-switch events. <code>onFailure:"block"</code> makes a crashing hook block instead of continue.</p>
+
+  <!-- ============ MODS VS HOOKS VS SKILLS ============ -->
+  <h2 id="mods">Mods vs hooks vs skills</h2>
+  <p>Three extension points, three different places in the process. A hook is a subprocess the harness calls at a fixed point. A mod runs <em>inside</em> the harness and wraps engine events as middleware. A skill is text the model reads.</p>
+  <div class="grid2">
+    <div class="card"><h4><span class="tag t-hook">Hook</span> &nbsp;subprocess at a fixed point</h4>
+      <ul><li>Declared in <code>settings.json</code> / <code>hooks.json</code> / skill frontmatter.</li><li>Gets JSON on stdin, answers with exit code + JSON on stdout.</li><li>Can block (exit 2) or inject text into the model's context.</li><li>Runs outside the sandbox. Cannot see the UI or the context meter.</li><li>Yours: 9 command hooks across 6 events, all shell scripts.</li></ul></div>
+    <div class="card"><h4><span class="tag t-mod">Mod</span> &nbsp;plugin hooks module, in-process</h4>
+      <ul><li><code>hooks/hooks.json → {"modules":["./x.mjs"]}</code>; the file exports <code>register(on)</code>.</li><li>Subscribes with <code>on("event", {filter}, async ($, e, next) =&gt; …)</code> and calls <code>next(e)</code> to let the engine proceed. Wraps, not just observes.</li><li>Events used here: <code>session.start</code>, <code>prompt.submit</code>, <code>tool.call</code>, <code>skill.prompt</code>, <code>command.run</code>, <code>session.measure</code>.</li><li>Host API used here: <code>$.command.register</code>, <code>$.session.usage</code>, <code>$.process.run</code>, <code>$.store.get/set</code>, <code>$.ui.toast</code>, <code>$.fs.read</code>, <code>$.env.get</code>.</li><li>Rule on this machine: mods draw nothing above the prompt; they stamp tmux pane options and the sidebar panel renders them.</li></ul></div>
+    <div class="card"><h4><span class="tag t-skill">Skill</span> &nbsp;text the model reads</h4>
+      <ul><li><code>SKILL.md</code> with frontmatter: <code>name</code>, <code>description</code>, <code>disable-model-invocation</code>, <code>user-invocable</code>, <code>allowed-tools</code>, <code>model</code>, <code>effort</code>, <code>context: fork</code>, <code>hooks</code>, <code>paths</code>.</li><li>Only the description is in context at startup. Two ways in: you type <code>/coach …</code> (expansion in Phase 2) or the model calls the <b>Skill</b> tool (Phase 3). Either way the body is injected with <code>ARGUMENTS:</code>.</li><li><code>!`cmd`</code> lines run before injection; a failure aborts the invocation.</li><li>Survives compaction: latest render re-attached, 5k tokens each.</li><li>Here: skills dir is a read-only symlink; state goes to Postgres via <code>db.py</code>.</li></ul></div>
+  </div>
+
+  <!-- ============ REAL TRACE ============ -->
+  <h2 id="trace">Real trace: a Zwift ride from the coach</h2>
+  <p>What ran, in order, when you asked for the Wednesday trainer session on Sep 30, 2026 and got <b>Rrainer Toad - Sweet Spot 4x12</b>. Evidence lines are the real rows from Postgres and your settings. The same session type was re-pushed on Oct 7 for Friday Oct 9 after the Sep 30 ride stopped in block 3.</p>
+  <ol class="trace">
+    <li><div><div class="h"><span class="tag t-you">You</span> "Zwift session for Wednesday" (or <code>/coach Zwift session for Wednesday</code>)</div><div class="b">Two doors into the same skill. Typed slash → expanded in Phase 2 and recorded by skill-ledger as <code>slash</code>. Plain English → the model matches the coach description and calls the Skill tool in Phase 3, recorded as <code>nl</code>.</div></div></li>
+    <li><div><div class="h"><span class="tag t-hook">UserPromptSubmit</span> three hooks, ~10 s budget each</div><div class="b"><code>route_hook.py</code>: not a bare URL or image, passes. <code>viz_route_hook.py</code>: not a structure visual, passes. <code>tmux-sn-state work</code>: sidebar window flips to 🔧.</div></div></li>
+    <li><div><div class="h"><span class="tag t-mod">prompt.submit</span> documented clears its 📝 stamp</div><div class="b">The band from the previous turn's memory write is gone before this turn starts.</div></div></li>
+    <li><div><div class="h"><span class="tag t-skill">Skill render</span> coach/SKILL.md + <code>ARGUMENTS: Zwift session for Wednesday</code></div><div class="b">~600 lines of coaching rules enter the conversation. The model picks the <code>trainer-workout</code> mode from the trigger list. Engine raises <code>skill.prompt</code>.</div><div class="ev md">skill-ledger.jsonl ← {"at":…,"skill":"coach","mode":"slash","entry":"interactive"}</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> reads the files the skill names</div><div class="b">Read <code>athlete.json</code>, <code>knowledge.md</code> (file tools: no sandbox, allowed by <code>Read(//Users/robby/**)</code>). Each is a Phase 3 loop: tool.call mod → PreToolUse (none) → rules → run → PostToolUse (none) → result back.</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> readiness + state, all pre-allowed</div><div class="b"><code>db.py garmin recent --limit 7</code>, <code>db.py kv get coach-state</code>, <code>db.py coach recent</code>. Bash → sandbox → Postgres over the allowed Unix socket. Matched <code>Bash(~/.claude/skills/_db/db.py:*)</code>, so no prompt.</div><div class="ev ok">garmin 2026-09-30: HRV balanced · sleep ≥ 7 h · readiness green → no cap on intensity</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> live Strava through MCP</div><div class="b">Strava tools are deferred, so first a <code>ToolSearch</code> loads the schema, then <code>list_activities</code> (last 10 days) and <code>get_athlete_zones</code>. MCP runs outside the sandbox; both names are in your allow list.</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> numbers from <code>metrics.py</code>, never from its head</div><div class="b"><code>python3 lib/metrics.py ride-load --hours 1.42 --if 0.88</code> → the TSS proxy. Allowed by <code>Bash(python3 lib/metrics.py:*)</code>.</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> writes the session JSON</div><div class="b">Absolute watts off <code>ftp_agreed = 262</code>, one cue per block saying what changes next. Written under <code>~/.claude/dispatch/out/</code> (the skills dir is write-denied). File tool, no prompt.</div>
+      <div class="tbl"><table><thead><tr><th>Block</th><th class="num">min</th><th class="num">W</th><th class="num">% FTP</th><th>Cue (abridged)</th></tr></thead><tbody>
+        <tr><td>Warmup</td><td class="num">10</td><td class="num">100→180</td><td class="num"></td><td></td></tr>
+        <tr><td>Primer</td><td class="num">2</td><td class="num">200</td><td class="num">76</td><td>open the legs</td></tr>
+        <tr><td>Block 1</td><td class="num">12</td><td class="num">230</td><td class="num">88</td><td>smooth and seated, HR parks mid Z3</td></tr>
+        <tr><td>Block 2</td><td class="num">12</td><td class="num">236</td><td class="num">90</td><td>same feel, bites a hair sooner</td></tr>
+        <tr><td>Block 3</td><td class="num">12</td><td class="num">236</td><td class="num">90</td><td>hold cadence 90; under 85 is fatigue</td></tr>
+        <tr><td>Block 4</td><td class="num">12</td><td class="num">240</td><td class="num">92</td><td>top of sweet spot, no hero finish</td></tr>
+        <tr><td>Easy between / cooldown</td><td class="num">4 ×4 + 6</td><td class="num">145 · 150→100</td><td class="num"></td><td>85 min total, TSS proxy 83</td></tr>
+      </tbody></table></div></div></li>
+    <li><div><div class="h"><span class="tag t-harness">Permission prompt</span> the one call that needs you</div><div class="b"><code>python3 lib/intervals_client.py push session.json</code> with <code>dangerouslyDisableSandbox:true</code> (keychain + intervals.icu network). Not in the allow list and unsandboxed, so the gate prompts. That raises PermissionRequest, then Notification <code>permission_prompt</code>.</div><div class="ev hk">Notification[permission_prompt] → notify.sh (phone) · tmux-sn-state blocked (sidebar ⏸)</div></div></li>
+    <li><div><div class="h"><span class="tag t-you">You</span> approve → push runs</div><div class="b">Syncs <code>zwift_ftp.py</code> (read only; writes are dead), aligns intervals.icu Ride FTP, upserts the calendar event; then <code>zwo.py render</code> writes the local <code>.zwo</code> as bridge-outage insurance. Sidebar back to 🔧.</div><div class="ev ok">bridge event upserted · local ~/Documents/Zwift/Workouts/5079586/coach/*.zwo written</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Model</span> persists state, both pre-allowed</div><div class="b"><code>db.py kv set coach-state</code> adds <code>zwift.pushed["2026-09-30-rrainer-toad-sweet-spot-4x12"]</code> with the immutable <code>intermediate</code> baseline; <code>db.py activity log</code> writes the audit row.</div><div class="ev ok">activity_log 2026-09-30 1:47pm · Pushed Zwift workout Rrainer Toad - Sweet Spot 4x12 2026-09-30 · 85 min, 4x12 @ 230/236/236/240W (88-92% FTP 262), 4 min @145 between, TSS-proxy 83; Wed quality slot, Disco skipped; readiness green</div></div></li>
+    <li><div><div class="h"><span class="tag t-model">Reply</span> no more tool calls → turn ends</div><div class="b">Name, date, block table, "on your Zwift home screen day-of; until then Workouts → Custom → Intervals.icu".</div></div></li>
+    <li><div><div class="h"><span class="tag t-hook">Stop</span> + <span class="tag t-mod">session.measure</span> + <span class="tag t-hook">Notification idle_prompt</span></div><div class="b"><code>tmux-sn-state done</code> (✅). context-bar stamps <code>@cc_ctx</code> so the sidebar shows the fill. notify.sh pings that Claude is waiting.</div></div></li>
+    <li><div><div class="h"><span class="tag t-harness">Next morning, headless</span> the lifecycle runs again without you</div><div class="b">Dispatch job <code>coach-zwift-revise</code> (chained after the 8am Garmin pull) spawns <code>claude -p "/coach revise-zwift …"</code>: same SessionStart hooks, same mods with <code>entry:"headless"</code>, no prompts possible. It may only ease the session. On Sep 30 readiness was green, so nothing changed.</div><div class="ev">activity_log 2026-09-30 3:43pm · Ridden Zwift Sweet Spot 4x12 · bonked, cut short · 67/85 min, blocks 229/235/207W, block 4 skipped · NP 204, IF 0.78, TSS ~68 of 83 plan</div><div class="ev ok">activity_log 2026-10-07 1:08pm · Pushed Sweet Spot 4x12 for Fri 10/9 · repeats 230/236/236/240W · fuel in the bottle, not the gummy bag</div></div></li>
+  </ol>
+
+  <!-- ============ KEYBOARD CHEAT SHEET ============ -->
+  <h2 id="keys">Keyboard cheat sheet</h2>
+  <p>Interactive mode. Customise in <code>~/.claude/keybindings.json</code> (open with <code>/keybindings</code>, applies without restart). Reserved and not rebindable: <kbd>Ctrl</kbd>+<kbd>C</kbd>, <kbd>Ctrl</kbd>+<kbd>D</kbd>, <kbd>Ctrl</kbd>+<kbd>M</kbd>, <kbd>Ctrl</kbd>+<kbd>[</kbd>, <kbd>Ctrl</kbd>+<kbd>I</kbd>, <kbd>Ctrl</kbd>+<kbd>H</kbd>. Under tmux, <kbd>Ctrl</kbd>+<kbd>B</kbd> is the prefix: press it twice.</p>
+  <div class="keys">
+    <div class="kgroup"><h4>Submit &amp; compose</h4><table><tbody>
+      <tr><td><kbd>Enter</kbd></td><td>submit</td></tr>
+      <tr><td><kbd>\</kbd>+<kbd>Enter</kbd> · <kbd>Shift</kbd>+<kbd>Enter</kbd> · <kbd>Ctrl</kbd>+<kbd>J</kbd></td><td>newline (Option+Enter once Option is Meta)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>send queued messages now</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>G</kbd> · <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>open prompt in external editor</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>stash prompt; again on empty to restore</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>V</kbd> (<kbd>Cmd</kbd>+<kbd>V</kbd> in iTerm2)</td><td>paste image as [Image #N]</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>accept autocomplete; on a prompt, add a comment</td></tr>
+      <tr><td><kbd>Esc</kbd> <kbd>Esc</kbd></td><td>with text: clear draft · empty: rewind menu</td></tr>
+    </tbody></table></div>
+    <div class="kgroup"><h4>Interrupt &amp; exit</h4><table><tbody>
+      <tr><td><kbd>Esc</kbd></td><td>stop the response / close dialog / decline prompt</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>interrupt; idle: clear prompt, twice exits (↑ restores draft)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd> ×2</td><td>exit (within 800 ms)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>suspend; <code>fg</code> resumes</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>L</kbd></td><td>redraw, keeps everything</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>background the running task (tmux: twice)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>K</kbd> ×2</td><td>stop background subagents</td></tr>
+    </tbody></table></div>
+    <div class="kgroup"><h4>Modes &amp; model</h4><table><tbody>
+      <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>cycle default → acceptEdits → plan → (bypass) → auto</td></tr>
+      <tr><td><kbd>Option</kbd>+<kbd>P</kbd></td><td>model picker</td></tr>
+      <tr><td><kbd>Option</kbd>+<kbd>T</kbd></td><td>toggle thinking</td></tr>
+      <tr><td><kbd>Option</kbd>+<kbd>O</kbd></td><td>toggle fast mode</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>toggle above-prompt band · <kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>Tab</kbd> focuses it</td></tr>
+    </tbody></table></div>
+    <div class="kgroup"><h4>Panels &amp; history</h4><table><tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>transcript viewer (q / Esc closes; Ctrl+E show-all)</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>T</kbd></td><td>Claude's task checklist</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>R</kbd></td><td>reverse history search (Ctrl+S cycles scope)</td></tr>
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> · <kbd>Ctrl</kbd>+<kbd>P</kbd>/<kbd>N</kbd></td><td>lines, then history; ↑ from first queued row takes it back</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>X</kbd> <kbd>B</kbd></td><td>cycle diff base in the diff panel</td></tr>
+    </tbody></table></div>
+    <div class="kgroup"><h4>Line editing (Emacs)</h4><table><tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd> / <kbd>E</kbd></td><td>start / end of line</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd> / <kbd>U</kbd></td><td>delete to end / to start</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td>delete previous word</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd> · <kbd>Alt</kbd>+<kbd>Y</kbd></td><td>paste last deleted · cycle paste history</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>_</kbd></td><td>undo input edit</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>B</kbd> / <kbd>F</kbd> / <kbd>D</kbd></td><td>word back / forward / delete (Option as Meta)</td></tr>
+    </tbody></table></div>
+    <div class="kgroup"><h4>Prefixes &amp; vim</h4><table><tbody>
+      <tr><td><code>/</code></td><td>command or skill; Tab on a bare <code>/</code> lists them</td></tr>
+      <tr><td><code>!</code></td><td>shell mode, output joins the session (unsandboxed here)</td></tr>
+      <tr><td><code>@</code></td><td>file mention with autocomplete</td></tr>
+      <tr><td><code>#</code> <span class="chip">unverified</span></td><td>memory shortcut, not found in current docs</td></tr>
+      <tr><td><kbd>Esc</kbd> / <kbd>Ctrl</kbd>+<kbd>[</kbd></td><td>vim NORMAL (after <code>/config</code> → Editor mode); <code>?</code> help, <code>/</code> history</td></tr>
+      <tr><td><code>vimInsertModeRemaps</code></td><td>e.g. <code>jj</code> → Esc; vim keys themselves are not rebindable</td></tr>
+    </tbody></table></div>
+  </div>
+  <pre><code>// ~/.claude/keybindings.json — chords are space-separated, 3 s between keys; null unbinds
+{ "bindings": [
+  { "context": "Chat", "bindings": { "ctrl+e": "chat:externalEditor", "ctrl+s": null } }
+] }
+// contexts: Global Chat Autocomplete Transcript HistorySearch Task DiffPanel ModelPicker AbovePrompt Pane …
+// actions:  chat:submit chat:newline chat:cycleMode chat:stash app:toggleTodos history:search task:background</code></pre>
+
+  <!-- ============ FILES ============ -->
+  <h2 id="files">Where things live</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Thing</th><th>Path</th><th>Loaded</th></tr></thead>
+    <tbody>
+      <tr><td>User settings, hooks, allow rules, enabled plugins</td><td><code>~/.claude/settings.json</code></td><td>startup; ConfigChange hook on edit</td></tr>
+      <tr><td>Project / local settings</td><td><code>.claude/settings.json</code> · <code>.claude/settings.local.json</code></td><td>startup; "don't ask again" writes the local one</td></tr>
+      <tr><td>Global instructions</td><td><code>~/.claude/CLAUDE.md</code> → here <code>/Users/robby/CLAUDE.md</code></td><td>startup, re-read after compaction</td></tr>
+      <tr><td>Auto memory</td><td><code>~/.claude/projects/&lt;project&gt;/memory/MEMORY.md</code> + topic files</td><td>index at startup, topics on demand</td></tr>
+      <tr><td>Personal skills</td><td><code>~/.claude/skills/&lt;name&gt;/SKILL.md</code> (symlink → <code>~/git/mac-dotfiles/claude/skills</code>, read-only)</td><td>descriptions at startup, body on invoke</td></tr>
+      <tr><td>Mods (plugins)</td><td><code>~/git/mac-dotfiles/claude/plugins/&lt;mod&gt;/hooks/*.mjs</code> via marketplace <code>mac-dotfiles</code>; install records in <code>~/.claude/plugins/installed_plugins.json</code></td><td>startup or <code>/reload-plugins</code></td></tr>
+      <tr><td>Hook scripts</td><td><code>~/git/mac-dotfiles/claude/hooks/</code>, <code>~/git/mac-dotfiles/bin/tmux-sn-state</code>, <code>~/.claude/skills/*/hooks/</code></td><td>referenced from settings.json; the folder itself is not special</td></tr>
+      <tr><td>MCP servers</td><td><code>~/.claude.json</code> (user/local), <code>.mcp.json</code> (project), plugin <code>.mcp.json</code>, claude.ai connectors</td><td>startup; schemas deferred until ToolSearch</td></tr>
+      <tr><td>Keybindings</td><td><code>~/.claude/keybindings.json</code></td><td>live</td></tr>
+      <tr><td>Transcripts</td><td><code>~/.claude/projects/&lt;project&gt;/*.jsonl</code> (<code>transcript_path</code> in every hook input)</td><td>append-only during the session</td></tr>
+      <tr><td>Skill invocation ledger (mod output)</td><td><code>~/.claude/dispatch/out/skill-ledger.jsonl</code> → Postgres <code>skill_invocations</code> every 15 min</td><td>every skill call</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="foot">
+    <b>Sources.</b> code.claude.com docs: settings, memory, skills, hooks, permissions, permission-modes, sandboxing, how-claude-code-works, statusline, keybindings, interactive-mode, plugins/components, mcp (fetched Oct 10, 2026). Mod event names and host API from the three modules in <code>~/git/mac-dotfiles/claude/plugins</code>. Hook inventory from <code>~/.claude/settings.json</code>. Trace rows from Postgres <code>activity_log</code> and kv <code>coach-state</code>.
+    <ul>
+      <li>Unverified from the docs: the exact startup ordering across settings → CLAUDE.md → skills → plugins → MCP (the docs describe each piece, not one numbered sequence); that the mod <code>tool.call</code> wrapper encloses PreToolUse and PostToolUse (inferred from skill-ledger's pending-mark comment); <code>~/.claude/commands/</code> as a current legacy path; whether the status line runs sandboxed; the <code>#</code> memory and <code>?</code> help keys.</li>
+      <li>Hook input fields were verified for SessionStart, PreToolUse, Stop, SubagentStop and the model-switch events; the others are listed from the event table only.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
