@@ -1,0 +1,744 @@
+{
+ "generated_at": "2026-10-10T14:54-07:00",
+ "shots": [
+  {
+   "Date": "8/31/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "165",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "",
+   "Time (s)": "",
+   "Ratio": "#REF!",
+   "Taste": "a little sour",
+   "Verdict": "close",
+   "Next change": "went finer"
+  },
+  {
+   "Date": "8/31/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "125",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "",
+   "Time (s)": "",
+   "Ratio": "",
+   "Taste": "barely poured — choked",
+   "Verdict": "way too fine",
+   "Next change": "back coarser"
+  },
+  {
+   "Date": "8/31/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "160",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "37",
+   "Time (s)": "27",
+   "Ratio": "",
+   "Taste": "",
+   "Verdict": "DIALED ✅",
+   "Next change": "retro: 27s incl. 5s pre-brew = ~22s pressure, fast — try 155"
+  },
+  {
+   "Date": "8/31/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "160",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "40",
+   "Time (s)": "21",
+   "Ratio": "",
+   "Taste": "gushed — 40g in 21s",
+   "Verdict": "way too coarse",
+   "Next change": "big step finer → try ~135"
+  },
+  {
+   "Date": "8/31/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "140",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "38",
+   "Time (s)": "22",
+   "Ratio": "",
+   "Taste": "still fast — barely moved vs 160",
+   "Verdict": "too coarse",
+   "Next change": "→ 130"
+  },
+  {
+   "Date": "8/31/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "125",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "37.5",
+   "Time (s)": "32.1",
+   "Ratio": "",
+   "Taste": "pretty smooth",
+   "Verdict": "DIALED ✅",
+   "Next change": "settled — time incl. 3s pre-soak"
+  },
+  {
+   "Date": "9/1/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "180",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "39",
+   "Time (s)": "30.7",
+   "Ratio": "",
+   "Taste": "sprayed a lot (channeling)",
+   "Verdict": "in window, messy",
+   "Next change": "RDT 1–2 sprays + WDT next; trim yield toward 36"
+  },
+  {
+   "Date": "9/1/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "180",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "39.1",
+   "Time (s)": "31.5",
+   "Ratio": "",
+   "Taste": "pretty good, a little bitter",
+   "Verdict": "close",
+   "Next change": "cut at 34g → land ~36; if still bitter at 36, coarsen ~5µm or temp down"
+  },
+  {
+   "Date": "9/1/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "145",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "35.8",
+   "Time (s)": "38.5",
+   "Ratio": "",
+   "Taste": "a little bitter",
+   "Verdict": "slow — too fine at 1000",
+   "Next change": "→ 155; cut-at-34 confirmed (~1.8g lag). Decaf RPM offset runs bigger than GR's"
+  },
+  {
+   "Date": "9/2/2026",
+   "Bag": "GR/VdC 50:50",
+   "Burrs": "Core",
+   "µm": "168",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "36.1",
+   "Time (s)": "30.3",
+   "Ratio": "",
+   "Taste": "passable; a little sour + bitter, leaning bitter; not very sweet",
+   "Verdict": "good enough for a half-caf",
+   "Next change": "optional: 172 next to shave the decaf bitterness"
+  },
+  {
+   "Date": "9/9/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "175",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "36.73",
+   "Time (s)": "39.4",
+   "Ratio": "",
+   "Taste": "one of the better-balanced ones; spray reduced",
+   "Verdict": "good — slow per the clock, great per the cup",
+   "Next change": "taste > window noted"
+  },
+  {
+   "Date": "9/9/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "177.5",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "38",
+   "Time (s)": "31.7",
+   "Ratio": "",
+   "Taste": "a little more sour; liked it straight; 175 was better for milk",
+   "Verdict": "good straight",
+   "Next change": "bald middle → check headspace imprint, consider puck screen, A/B without distributor"
+  },
+  {
+   "Date": "9/9/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "177.5",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "38.4",
+   "Time (s)": "27.7",
+   "Ratio": "",
+   "Taste": "good, a little muted; milk verdict pending",
+   "Verdict": "NO DISTRIBUTOR: −4s vs same setting with it; headspace clean (no imprint)",
+   "Next change": "bald spot gone? → if yes, distributor leaves the chain. GR → 165 for ~33s"
+  },
+  {
+   "Date": "9/9/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "148",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "35.4",
+   "Time (s)": "33.9",
+   "Ratio": "",
+   "Taste": "hollow — bitter + acidic, no sweetness; really not bad",
+   "Verdict": "time target hit; taste at its 1000-RPM ceiling?",
+   "Next change": "next decaf: 400 RPM @ 125 (day-one smooth shot) — test bean-specific RPM"
+  },
+  {
+   "Date": "9/10/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "165",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "36.5",
+   "Time (s)": "42",
+   "Ratio": "",
+   "Taste": "",
+   "Verdict": "too slow — overshot the finer step",
+   "Next change": "→ 170"
+  },
+  {
+   "Date": "9/10/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "170",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "37",
+   "Time (s)": "37",
+   "Ratio": "",
+   "Taste": "closer, still slow vs 33s target",
+   "Verdict": "",
+   "Next change": "next: hold 170, drop to 800 RPM (lower RPM = faster) — else one tick coarser"
+  },
+  {
+   "Date": "9/10/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "170",
+   "RPM": "800",
+   "Dose (g)": "18",
+   "Yield (g)": "37.38",
+   "Time (s)": "34.9",
+   "Ratio": "",
+   "Taste": "bitter — do not love",
+   "Verdict": "800 RPM loses to 1000 on taste for GR",
+   "Next change": "back to 1000; 1200 test still pending"
+  },
+  {
+   "Date": "9/10/2026",
+   "Bag": "Ghost Rider",
+   "Burrs": "Core",
+   "µm": "180",
+   "RPM": "1200",
+   "Dose (g)": "18",
+   "Yield (g)": "37",
+   "Time (s)": "35.4",
+   "Ratio": "",
+   "Taste": "a lot more balance, real depth",
+   "Verdict": "1200 RPM SETTLED for GR",
+   "Next change": "cut 33.5 on slow shots (longer drip)"
+  },
+  {
+   "Date": "9/10/2026",
+   "Bag": "VdC Decaf",
+   "Burrs": "Core",
+   "µm": "125",
+   "RPM": "400",
+   "Dose (g)": "18",
+   "Yield (g)": "35.71",
+   "Time (s)": "30.3",
+   "Ratio": "",
+   "Taste": "way better than 1000 RPM",
+   "Verdict": "SETTLED — decaf lives at 400 RPM",
+   "Next change": "per-bean RPM confirmed"
+  },
+  {
+   "Date": "9/11/2026",
+   "Bag": "Oaxaca (D. Garcia)",
+   "Burrs": "Core",
+   "µm": "180",
+   "RPM": "1200",
+   "Dose (g)": "18",
+   "Yield (g)": "38",
+   "Time (s)": "19.7",
+   "Ratio": "",
+   "Taste": "pretty sour — as the 19.7s predicted",
+   "Verdict": "gusher — bean denser/lighter-roasted than GR",
+   "Next change": "→ 167; roast-level prior would have called this"
+  },
+  {
+   "Date": "9/13/2026",
+   "Bag": "Oaxaca (D. Garcia)",
+   "Burrs": "Core",
+   "µm": "167",
+   "RPM": "1200",
+   "Dose (g)": "18",
+   "Yield (g)": "37",
+   "Time (s)": "",
+   "Ratio": "",
+   "Taste": "",
+   "Verdict": "",
+   "Next change": "QUEUED — aim 33–36s, cut 34"
+  },
+  {
+   "Date": "10/9/2026",
+   "Bag": "Makeworth Danche",
+   "Burrs": "Core",
+   "µm": "160",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "0",
+   "Time (s)": "12",
+   "Ratio": "",
+   "Taste": "nothing came out",
+   "Verdict": "choked — bean runs much finer than GR at same µm",
+   "Next change": "→ 195 (big bracket); if it gushes <25s, bisect to ~178"
+  },
+  {
+   "Date": "10/9/2026",
+   "Bag": "Makeworth Danche",
+   "Burrs": "Core",
+   "µm": "225",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "",
+   "Time (s)": "",
+   "Ratio": "",
+   "Taste": "good-looking stream; heavy spray reset the scale",
+   "Verdict": "poured — fresh bag (<10d), choked at 160",
+   "Next change": "fresh light roast runs tight; expect to walk finer as it degasses. Spray + group seal issue → silicone gasket"
+  },
+  {
+   "Date": "10/10/2026",
+   "Bag": "Makeworth Danche",
+   "Burrs": "Core",
+   "µm": "225",
+   "RPM": "1000",
+   "Dose (g)": "18",
+   "Yield (g)": "37.8",
+   "Time (s)": "28.1",
+   "Ratio": "2.1",
+   "Taste": "",
+   "Verdict": "in window, tons of spray (taller glass to contain)",
+   "Next change": "drop RPM 1000 → 600, same µm (fewer fines, less static)"
+  },
+  {
+   "Date": "10/10/2026",
+   "Bag": "Makeworth Danche",
+   "Burrs": "Core",
+   "µm": "225",
+   "RPM": "600",
+   "Dose (g)": "18",
+   "Yield (g)": "38",
+   "Time (s)": "18.4",
+   "Ratio": "2.11",
+   "Taste": "",
+   "Verdict": "spray much reduced — too fast",
+   "Next change": "→ 200 at 600 RPM; if <22s go 190"
+  },
+  {
+   "Date": "10/10/2026",
+   "Bag": "Makeworth Danche",
+   "Burrs": "Core",
+   "µm": "200",
+   "RPM": "600",
+   "Dose (g)": "18",
+   "Yield (g)": "",
+   "Time (s)": "",
+   "Ratio": "",
+   "Taste": "",
+   "Verdict": "QUEUED",
+   "Next change": "aim 25–30s, watch spray stays calm as it goes finer"
+  }
+ ],
+ "bags": [
+  {
+   "Bag": "Ghost Rider",
+   "Roaster": "Proud Mary",
+   "Beans / Process": "Brazil + Ethiopia, natural",
+   "Roast": "Espresso (medium)",
+   "Roast date": "",
+   "Opened": "8/31/2026",
+   "Burrs": "Core",
+   "Settled µm": "180",
+   "Settled recipe": "18g → 37g, ~35s total, 1200 RPM, no distributor (Core) — SETTLED 9/10; cut 34 fast/33.5 slow",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "",
+   "Region": "",
+   "Harvest year": "",
+   "Relationship": "",
+   "Elev (masl)": "",
+   "Density (g/L)": ""
+  },
+  {
+   "Bag": "VdC Decaf",
+   "Roaster": "Push Pull",
+   "Beans / Process": "Colombia Valle del Cauca, Castillo/Caturra, sugarcane (EA) decaf",
+   "Roast": "",
+   "Roast date": "",
+   "Opened": "8/31/2026",
+   "Burrs": "Core",
+   "Settled µm": "125",
+   "Settled recipe": "18g → 36g, ~30s total, 400 RPM, no distributor (Core) — SETTLED 9/10",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "",
+   "Region": "",
+   "Harvest year": "",
+   "Relationship": "",
+   "Elev (masl)": "",
+   "Density (g/L)": ""
+  },
+  {
+   "Bag": "GR/VdC 50:50",
+   "Roaster": "(blend)",
+   "Beans / Process": "9g Ghost Rider + 9g VdC Decaf, mixed pre-RDT",
+   "Roast": "",
+   "Roast date": "",
+   "Opened": "9/2/2026",
+   "Burrs": "Core",
+   "Settled µm": "168",
+   "Settled recipe": "18g → 36g, ~30s total, 1000 RPM — midpoint rule worked first try",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "",
+   "Region": "",
+   "Harvest year": "",
+   "Relationship": "",
+   "Elev (masl)": "",
+   "Density (g/L)": ""
+  },
+  {
+   "Bag": "Oaxaca (D. Garcia)",
+   "Roaster": "Drumroaster Coffee Co.",
+   "Beans / Process": "Oaxaca, Mexico — producer Dionisio García; harvested Feb 2026",
+   "Roast": "single origin (level TBD — lighter than GR per flow)",
+   "Roast date": "8/16/2026",
+   "Opened": "9/11/2026",
+   "Burrs": "Core",
+   "Settled µm": "",
+   "Settled recipe": "",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "Dionisio García",
+   "Region": "Oaxaca, Mexico",
+   "Harvest year": "2026 (Feb harvest)",
+   "Relationship": "",
+   "Elev (masl)": "",
+   "Density (g/L)": ""
+  },
+  {
+   "Bag": "Makeworth Danche",
+   "Roaster": "Makeworth Coffee",
+   "Beans / Process": "Ethiopia Habtamu Danche, washed, 74110/74112",
+   "Roast": "light",
+   "Roast date": "",
+   "Opened": "10/9/2026",
+   "Burrs": "Core",
+   "Settled µm": "",
+   "Settled recipe": "",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "Danche station, Gedeb (via Falcon Coffees)",
+   "Region": "Yirgacheffe, Gedeo Zone",
+   "Harvest year": "",
+   "Relationship": "",
+   "Elev (masl)": "2200",
+   "Density (g/L)": ""
+  },
+  {
+   "Bag": "Hyacinth Decaf",
+   "Roaster": "Hyacinth Coffee (Sea Wolf Bakers)",
+   "Beans / Process": "decaf — process unknown (ask at counter: sugarcane/EA vs Swiss Water)",
+   "Roast": "espresso-blend roaster, likely medium",
+   "Roast date": "",
+   "Opened": "10/10/2026",
+   "Burrs": "Core",
+   "Settled µm": "",
+   "Settled recipe": "START: 135 µm @ 400 RPM, 18g → 36g, cut 34, aim 30–35s total (decaf prior ~140 @ 400; VdC settled 125)",
+   "Verdict": "",
+   "Untamped": "",
+   "Farm / Producer": "",
+   "Region": "",
+   "Harvest year": "",
+   "Relationship": "",
+   "Elev (masl)": "",
+   "Density (g/L)": ""
+  }
+ ],
+ "experiments": [
+  {
+   "Date": "9/1/2026",
+   "Method": "Espresso",
+   "Variable under test": "RPM: 400 vs 1000",
+   "Held constant": "Ghost Rider, Core, 160µm, 18g → ~36g, 3+2 pre-brew",
+   "A": "400 RPM (37g/27s)",
+   "B": "1000 RPM",
+   "Winner": "1000 RPM (taste)",
+   "Notes": "RESULT 9/1: at 1000 RPM needed 180µm to hit 30.7s where 400 RPM ran 160µm fast → ~20µm finer-per-micron offset at high RPM. Taste verdict pending; sprayed (static/channeling) at 1000."
+  },
+  {
+   "Date": "9/1/2026",
+   "Method": "Espresso",
+   "Variable under test": "Spray fix at 1000 RPM",
+   "Held constant": "Ghost Rider, Core, 18g, kill at ~36g, same puck prep (orbital WDT + distributor + 25lb tamp)",
+   "A": "RDT + orbital WDT @ 1000/180 → still sprays",
+   "B": "Weber blind shaker @ 1000/180: clumpy with RDT (damp grounds re-clump) — BENCHED, back to orbital raker chain",
+   "Winner": "",
+   "Notes": "yield overshoot is the live issue: paddle lag ~2g+; cutting at 34g next. Bitterness likely partly the long 39g tail — judge again at a true 36"
+  },
+  {
+   "Date": "9/1/2026",
+   "Method": "Espresso",
+   "Variable under test": "Dose delivery: weigh loaded PF vs 18.0g in",
+   "Held constant": "RDT on, same prep",
+   "A": "@ 1000 RPM: ___ g of 18.0",
+   "B": "@ 400 RPM: ___ g of 18.0",
+   "Winner": "",
+   "Notes": "quantifies Z2 retention + chute-spray loss; if actual dose <18, ratios have been computed against a phantom dose"
+  },
+  {
+   "Date": "9/9/2026",
+   "Method": "Espresso",
+   "Variable under test": "Distributor: with vs without",
+   "Held constant": "Ghost Rider, Core, 177.5µm, 1000 RPM, 18g",
+   "A": "with: 31.7s, bald middle",
+   "B": "without: 27.7s, good flavor (slightly muted)",
+   "Winner": "WITHOUT — bald spot gone",
+   "Notes": "distributor RETIRED 9/9: compacted the puck (+4s) and caused the edge-favoring flow/bald middle. Chain is now: weigh → RDT → shake → grind → orbital raker → tamp (twist at top)"
+  },
+  {
+   "Date": "",
+   "Method": "Espresso",
+   "Variable under test": "Decaf RPM: 1000 vs 400",
+   "Held constant": "VdC Decaf, Core, no distributor, 18g",
+   "A": "1000 RPM @ 148: hollow (33.9s)",
+   "B": "400 RPM @ 125: day-one was smoothest decaf yet",
+   "Winner": "400 RPM",
+   "Notes": "RESOLVED 9/10: 125 @ 400 = way better (35.71g/30.3s) vs hollow at 1000. PER-BEAN RPM RULE: brittle sugarcane decaf → 400 (fines-averse); GR → 1200 (fines-friendly). RPM is a per-bag variable, dial it with the bag"
+  },
+  {
+   "Date": "9/10/2026",
+   "Method": "Espresso",
+   "Variable under test": "GR RPM: 800 vs 1000",
+   "Held constant": "Ghost Rider, Core, 170µm, no distributor",
+   "A": "800: 37.38g/34.9s — bitter",
+   "B": "1000 @ 177.5 (9/9): balanced, good",
+   "Winner": "1000 RPM",
+   "Notes": "RESOLVED 9/10: bracket complete — 800 bitter, 1000 good, 1200 balanced + depth. GR = 180µm @ 1200 RPM"
+  }
+ ],
+ "reference": [
+  [
+   "STARTING POINTS (Z2 dial = real microns, 0–2000)",
+   "",
+   ""
+  ],
+  [
+   "Espresso — Core",
+   "150–200µm",
+   "medium roasts ~170, light ~150, dark ~200"
+  ],
+  [
+   "Espresso — Lab Sweet",
+   "125–150µm",
+   "light-roast burr; will drift over first 2–7kg seasoning"
+  ],
+  [
+   "Pourover — Lab Sweet",
+   "600µm",
+   "community range 500–700"
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "DIAL RULES",
+   "",
+   ""
+  ],
+  [
+   "Sour / gushing / fast",
+   "go FINER ~10µm",
+   ""
+  ],
+  [
+   "Bitter / choking / slow",
+   "go COARSER ~10µm",
+   ""
+  ],
+  [
+   "Adjust finer only with motor running",
+   "",
+   ""
+  ],
+  [
+   "Re-zero after every burr swap: loosen knob 1–2 turns, run to first chirp, set dial to 0",
+   "",
+   ""
+  ],
+  [
+   "RDT: 1–2 sprays max (more = clumps)",
+   "",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "LINKS",
+   "",
+   ""
+  ],
+  [
+   "Zerno FAQ",
+   "https://zerno.co/pages/faq",
+   ""
+  ],
+  [
+   "espressoAF Zerno",
+   "https://espressoaf.com/manufacturers/zerno/z1.html",
+   ""
+  ],
+  [
+   "Owners settings spreadsheet",
+   "https://docs.google.com/spreadsheets/d/1l_Q2Ebh48SsCl7b0TFkflBrK11kf-bfUthRuspAanuI/edit",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "TIMING",
+   "",
+   ""
+  ],
+  [
+   "Clock starts at pump start and INCLUDES pre-brew",
+   "#ERROR!",
+   ""
+  ],
+  [
+   "Pre-brew = 3s on + 2s off (5s total) → target 30–35s total",
+   "classic 25–30s window + the 5s pre-brew",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "LAWS (fixed — not variables)",
+   "",
+   ""
+  ],
+  [
+   "Espresso dose",
+   "18g",
+   ""
+  ],
+  [
+   "Espresso ratio",
+   "1:2.05 (37g out) — cut at 34 on ~30s flow, 33.5 slower (amended 9/10 from 36g: the cup kept voting 37–38)",
+   ""
+  ],
+  [
+   "Pourover ratio",
+   "1:16 (e.g. 20g → 320g water); 1:15 stronger, 1:17 lighter",
+   ""
+  ],
+  [
+   "Pre-brew",
+   "3s on + 2s off, always on, counted in shot time",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "VARIABLES (dial these)",
+   "grind µm (primary), RPM (per method, A/B first), water temp (later)",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "POWER (20A shared circuit: Mini + fridge + Z2)",
+   "Z2 solo is fine to 2000 RPM; trips = cumulative load. Grind >400 RPM only with Mini in standby, until grinder moves to another circuit.",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "PREP CHAIN (as of 9/9)",
+   "weigh → RDT 1–2 sprays → shake beans → grind → orbital raker → tamp ×2 (twist at top) → pull",
+   ""
+  ],
+  [
+   "Retired tools",
+   "distributor (edge flow + bald middle, +4s), Weber blind shaker (clumps with RDT)",
+   ""
+  ],
+  [
+   "",
+   "",
+   ""
+  ],
+  [
+   "NEW-BAG INTAKE (v1, 9/11)",
+   "log roaster/producer/region/variety/process/masl/roast date + MEASURE density (weigh 100mL beans → g/L)",
+   ""
+  ],
+  [
+   "Prior: espresso-roast blend",
+   "start 180µm",
+   ""
+  ],
+  [
+   "Prior: lighter single origin",
+   "start 165–170 (−10–15 vs blend)",
+   ""
+  ],
+  [
+   "Prior: sugarcane decaf",
+   "start ~140 AND 400 RPM (−40 vs blend)",
+   ""
+  ],
+  [
+   "Then",
+   "dial grind at one RPM until time is in window; only then bracket RPM per bean",
+   ""
+  ]
+ ]
+}
