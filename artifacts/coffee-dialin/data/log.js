@@ -1,6 +1,6 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T15:05-07:00",
- "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin",
+ "generated_at": "2026-10-10T15:21-07:00",
+ "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
   "laws": {
@@ -37,6 +37,16 @@ window.DIALIN = {
    ]
   ],
   "power": "20 A circuit shared by Mini + fridge + Z2: grind above 400 RPM only with the Mini in standby until the grinder moves circuits",
+  "water": {
+   "url": "https://robbybro.com/marzocco-water/",
+   "base": "distilled",
+   "note": "chloride-free: all hardness from Epsom salt (MgSO4·7H2O), alkalinity from baking soda; inside La Marzocco spec (hardness 70–100, alkalinity 40–80, chloride <30 ppm)",
+   "source": "~/git/marzocco-water (house default agreed 2026-07-11)",
+   "hardness_ppm": 75,
+   "alkalinity_ppm": 47,
+   "epsom_g_per_gal": 0.7,
+   "baking_soda_g_per_gal": 0.3
+  },
   "priors": {
    "note": "then dial grind at one RPM until time is in window; only then bracket RPM",
    "espresso_blend": {
@@ -282,8 +292,22 @@ window.DIALIN = {
     "roaster": "Hyacinth Coffee",
     "roaster_city": "Seattle, WA"
    },
-   "shots": 0,
-   "last_shot": null,
+   "shots": 1,
+   "last_shot": {
+    "id": 29,
+    "shot_at": "2026-10-10T15:09:47.429041-07:00",
+    "burrs": "Core",
+    "microns": 155,
+    "rpm": 500,
+    "dose_g": 18,
+    "yield_g": 35.3,
+    "time_s": 29.8,
+    "ratio": 1.96,
+    "taste": "good crema; a little bitter straight, should be great with milk",
+    "verdict": "in window, first shot",
+    "next_change": "straight: 160 or 400 rpm; for milk: hold 155 @ 500",
+    "by_whom": "Robby"
+   },
    "queued": null
   },
   {
@@ -438,7 +462,7 @@ window.DIALIN = {
    "label": "Push Pull — VdC Decaf (Colombia Valle del Cauca, Castillo/Caturra, sugarcane (EA) decaf)",
    "verdict": null,
    "noted_at": "2026-08-31 12:00:00-07:00",
-   "offering_id": null,
+   "offering_id": 943,
    "data": {
     "dialin": {
      "rpm": 400,
@@ -475,7 +499,7 @@ window.DIALIN = {
    "label": "Proud Mary — Ghost Rider (Brazil + Ethiopia, natural)",
    "verdict": null,
    "noted_at": "2026-08-31 12:00:00-07:00",
-   "offering_id": null,
+   "offering_id": 2296,
    "data": {
     "roast": "Espresso (medium)",
     "dialin": {
@@ -509,6 +533,24 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 29,
+   "shot_at": "2026-10-10 15:09:47.429041-07:00",
+   "bag": "Hyacinth Decaf",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": "Core",
+   "microns": 155,
+   "rpm": 500,
+   "dose_g": "18",
+   "yield_g": "35.3",
+   "time_s": "29.8",
+   "ratio": "1.96",
+   "taste": "good crema; a little bitter straight, should be great with milk",
+   "verdict": "in window, first shot",
+   "next_change": "straight: 160 or 400 rpm; for milk: hold 155 @ 500",
+   "by_whom": "Robby"
+  },
   {
    "id": 26,
    "shot_at": "2026-10-10 12:25:00-07:00",
@@ -1081,5 +1123,816 @@ window.DIALIN = {
    "winner": "400 RPM",
    "notes": "RESOLVED 9/10: 125 @ 400 = way better (35.71g/30.3s) vs hollow at 1000. PER-BEAN RPM RULE: brittle sugarcane decaf → 400 (fines-averse); GR → 1200 (fines-friendly). RPM is a per-bag variable, dial it with the bag"
   }
- ]
+ ],
+ "health": {
+  "last_shot_at": "2026-10-10 15:09:47.429041-07:00",
+  "shots_7d": 5,
+  "shots_30d": 6,
+  "shots_total": 27,
+  "queued": 2,
+  "bags_settled": 3,
+  "bags_dialing": 3,
+  "backflush": {
+   "last": "2026-09-15",
+   "cadence_days": 90,
+   "days_ago": 25
+  },
+  "machine_shots_7d": 10,
+  "machine_telemetry_at": "2026-10-10T13:15:45+00:00"
+ },
+ "origin": {
+  "provenance": [
+   {
+    "bag": "Makeworth Danche",
+    "offering_id": 23941,
+    "title": "Ethiopia • Habtamu Danche",
+    "url": "https://makeworthcoffee.com/products/ethiopia-habtamu-danche",
+    "roaster": "Makeworth Coffee",
+    "roaster_city": "Bellingham, WA",
+    "roaster_country": "USA",
+    "lat": 48.7519,
+    "lng": -122.4787,
+    "website": "https://makeworthcoffee.com",
+    "producer_id": 4397,
+    "producer": "Danche",
+    "producer_country": "Ethiopia",
+    "producer_region": "Gedeo, Gedeb",
+    "also_roasted_by": [
+     "Friedhats",
+     "Offshoot Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "origin": {
+     "country": "Ethiopia",
+     "region": "Yirgacheffe",
+     "process": "Washed",
+     "variety": "74110, 74112",
+     "elevation": "2,200 masl"
+    }
+   },
+   {
+    "bag": "Ghost Rider",
+    "offering_id": 2296,
+    "title": "Ghost Rider Blend",
+    "url": "https://proudmarycoffee.com/products/ghost-rider",
+    "roaster": "Proud Mary Coffee",
+    "roaster_city": "Portland, OR (ex-Melbourne)",
+    "roaster_country": "USA",
+    "lat": 45.5202,
+    "lng": -122.6742,
+    "website": "https://proudmarycoffee.com",
+    "producer_id": null,
+    "producer": null,
+    "producer_country": null,
+    "producer_region": null,
+    "also_roasted_by": null,
+    "origin": {
+     "country": "Brazil",
+     "process": "Natural"
+    }
+   },
+   {
+    "bag": "VdC Decaf",
+    "offering_id": 943,
+    "title": "DECAF! COLOMBIA VALLE DE CAUCA EA DECAF",
+    "url": "https://www.pushxpullcoffee.com/products/decaf-colombia-valle-de-cauca-ea-decaf",
+    "roaster": "Push x Pull",
+    "roaster_city": "Seattle, WA",
+    "roaster_country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://www.pushxpullcoffee.com",
+    "producer_id": 5109,
+    "producer": "Various smallholders",
+    "producer_country": "Colombia",
+    "producer_region": "Valle de Cauca",
+    "also_roasted_by": null,
+    "origin": {
+     "country": "Colombia",
+     "region": "Valle de Cauca",
+     "farm": "Various smallholders",
+     "process": "EA sugarcane decaf",
+     "variety": "Caturra, castillo",
+     "elevation": "1750 MASL",
+     "importer": "Genuine Origin"
+    }
+   }
+  ],
+  "roasters": [
+   {
+    "name": "Proud Mary Coffee",
+    "city": "Portland, OR (ex-Melbourne)",
+    "country": "USA",
+    "lat": 45.5202,
+    "lng": -122.6742,
+    "website": "https://proudmarycoffee.com",
+    "offerings": 35,
+    "producers": 16,
+    "in_my_bags": true
+   },
+   {
+    "name": "Black & White Coffee Roasters",
+    "city": "Wake Forest, NC",
+    "country": "USA",
+    "lat": 35.9799,
+    "lng": -78.5097,
+    "website": "https://www.blackwhiteroasters.com",
+    "offerings": 19,
+    "producers": 15,
+    "in_my_bags": true
+   },
+   {
+    "name": "Makeworth Coffee",
+    "city": "Bellingham, WA",
+    "country": "USA",
+    "lat": 48.7519,
+    "lng": -122.4787,
+    "website": "https://makeworthcoffee.com",
+    "offerings": 15,
+    "producers": 3,
+    "in_my_bags": true
+   },
+   {
+    "name": "Push x Pull",
+    "city": "Seattle, WA",
+    "country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://www.pushxpullcoffee.com",
+    "offerings": 13,
+    "producers": 12,
+    "in_my_bags": true
+   },
+   {
+    "name": "Archers Coffee",
+    "city": "Dubai",
+    "country": "UAE",
+    "lat": 25.2048,
+    "lng": 55.2708,
+    "website": "https://archerscoffee.com",
+    "offerings": 221,
+    "producers": 103,
+    "in_my_bags": false
+   },
+   {
+    "name": "Coffee Collective",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6828,
+    "lng": 12.5357,
+    "website": "https://coffeecollective.dk",
+    "offerings": 53,
+    "producers": 30,
+    "in_my_bags": false
+   },
+   {
+    "name": "Onyx Coffee Lab",
+    "city": "Rogers, AR",
+    "country": "USA",
+    "lat": 36.332,
+    "lng": -94.1185,
+    "website": "https://onyxcoffeelab.com",
+    "offerings": 48,
+    "producers": 24,
+    "in_my_bags": false
+   },
+   {
+    "name": "Assembly Coffee",
+    "city": "London",
+    "country": "UK",
+    "lat": 51.4613,
+    "lng": -0.1156,
+    "website": "https://assemblycoffee.co.uk",
+    "offerings": 43,
+    "producers": 34,
+    "in_my_bags": false
+   },
+   {
+    "name": "Offshoot Coffee",
+    "city": "Melbourne",
+    "country": "Australia",
+    "lat": -37.8136,
+    "lng": 144.9631,
+    "website": "https://www.offshootcoffee.com.au",
+    "offerings": 37,
+    "producers": 17,
+    "in_my_bags": false
+   },
+   {
+    "name": "April Coffee Roasters",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6867,
+    "lng": 12.57,
+    "website": "https://aprilcoffeeroasters.com",
+    "offerings": 27,
+    "producers": 5,
+    "in_my_bags": false
+   },
+   {
+    "name": "Hydrangea Coffee Roasters",
+    "city": "Petaluma, CA",
+    "country": "USA",
+    "lat": 38.2324,
+    "lng": -122.6367,
+    "website": "https://hydrangea.coffee",
+    "offerings": 25,
+    "producers": 12,
+    "in_my_bags": false
+   },
+   {
+    "name": "Bows & Arrows",
+    "city": "Victoria, BC",
+    "country": "Canada",
+    "lat": 48.4284,
+    "lng": -123.3656,
+    "website": "https://bowsandarrowscoffee.com",
+    "offerings": 24,
+    "producers": 9,
+    "in_my_bags": false
+   },
+   {
+    "name": "Tim Wendelboe",
+    "city": "Oslo",
+    "country": "Norway",
+    "lat": 59.9227,
+    "lng": 10.7527,
+    "website": "https://timwendelboe.no",
+    "offerings": 24,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "September Coffee",
+    "city": "Vancouver, BC",
+    "country": "Canada",
+    "lat": 49.2827,
+    "lng": -123.1207,
+    "website": "https://september.coffee",
+    "offerings": 22,
+    "producers": 8,
+    "in_my_bags": false
+   },
+   {
+    "name": "Friedhats",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.3676,
+    "lng": 4.9041,
+    "website": "https://www.friedhats.com",
+    "offerings": 21,
+    "producers": 19,
+    "in_my_bags": false
+   },
+   {
+    "name": "Devoción",
+    "city": "Brooklyn, NY",
+    "country": "USA",
+    "lat": 40.7176,
+    "lng": -73.9629,
+    "website": "https://devocion.com",
+    "offerings": 21,
+    "producers": 11,
+    "in_my_bags": false
+   },
+   {
+    "name": "Kuma Coffee",
+    "city": "Seattle, WA",
+    "country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://kumacoffee.com",
+    "offerings": 18,
+    "producers": 6,
+    "in_my_bags": false
+   },
+   {
+    "name": "NATIVE Coffee Co.",
+    "city": "Dallas, TX",
+    "country": "USA",
+    "lat": 32.9334,
+    "lng": -96.8354,
+    "website": "https://www.thenativecoffeecompany.com",
+    "offerings": 18,
+    "producers": 5,
+    "in_my_bags": false
+   },
+   {
+    "name": "POMA Coffee Research Lab",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6761,
+    "lng": 12.5683,
+    "website": "https://www.pomacoffee.com",
+    "offerings": 18,
+    "producers": 1,
+    "in_my_bags": false
+   },
+   {
+    "name": "Prolog Coffee",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.669,
+    "lng": 12.5586,
+    "website": "https://prologcoffee.com",
+    "offerings": 12,
+    "producers": 11,
+    "in_my_bags": false
+   },
+   {
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "country": "Denmark",
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 12,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Heart Coffee Roasters",
+    "city": "Portland, OR",
+    "country": "USA",
+    "lat": 45.5231,
+    "lng": -122.6765,
+    "website": "https://www.heartroasters.com",
+    "offerings": 11,
+    "producers": 6,
+    "in_my_bags": false
+   },
+   {
+    "name": "Sweven Coffee",
+    "city": "Bristol",
+    "country": "UK",
+    "lat": 51.4545,
+    "lng": -2.5879,
+    "website": "https://www.swevencoffee.co.uk",
+    "offerings": 10,
+    "producers": 9,
+    "in_my_bags": false
+   },
+   {
+    "name": "SEY",
+    "city": "Brooklyn, NY",
+    "country": "USA",
+    "lat": 40.7057,
+    "lng": -73.9204,
+    "website": "https://www.seycoffee.com",
+    "offerings": 10,
+    "producers": 9,
+    "in_my_bags": false
+   },
+   {
+    "name": "Coffee Project NY",
+    "city": "New York, NY",
+    "country": "USA",
+    "lat": 40.7264,
+    "lng": -73.9878,
+    "website": "https://coffeeprojectny.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   }
+  ],
+  "countries": [
+   {
+    "country": "Colombia",
+    "producers": 92,
+    "roasters": 18,
+    "offerings": 121,
+    "my_bags": 1
+   },
+   {
+    "country": "Panama",
+    "producers": 66,
+    "roasters": 7,
+    "offerings": 141,
+    "my_bags": 0
+   },
+   {
+    "country": "Ethiopia",
+    "producers": 51,
+    "roasters": 17,
+    "offerings": 88,
+    "my_bags": 1
+   },
+   {
+    "country": "Peru",
+    "producers": 22,
+    "roasters": 7,
+    "offerings": 28,
+    "my_bags": 0
+   },
+   {
+    "country": "Kenya",
+    "producers": 19,
+    "roasters": 12,
+    "offerings": 29,
+    "my_bags": 0
+   },
+   {
+    "country": "Guatemala",
+    "producers": 17,
+    "roasters": 9,
+    "offerings": 17,
+    "my_bags": 0
+   },
+   {
+    "country": "Brazil",
+    "producers": 11,
+    "roasters": 5,
+    "offerings": 16,
+    "my_bags": 0
+   },
+   {
+    "country": "Costa Rica",
+    "producers": 10,
+    "roasters": 7,
+    "offerings": 16,
+    "my_bags": 0
+   },
+   {
+    "country": "Ecuador",
+    "producers": 10,
+    "roasters": 6,
+    "offerings": 11,
+    "my_bags": 0
+   },
+   {
+    "country": "Honduras",
+    "producers": 9,
+    "roasters": 6,
+    "offerings": 11,
+    "my_bags": 0
+   },
+   {
+    "country": "Bolivia",
+    "producers": 7,
+    "roasters": 3,
+    "offerings": 7,
+    "my_bags": 0
+   },
+   {
+    "country": "Mexico",
+    "producers": 6,
+    "roasters": 5,
+    "offerings": 7,
+    "my_bags": 0
+   },
+   {
+    "country": "Nicaragua",
+    "producers": 5,
+    "roasters": 2,
+    "offerings": 7,
+    "my_bags": 0
+   },
+   {
+    "country": "El Salvador",
+    "producers": 4,
+    "roasters": 3,
+    "offerings": 4,
+    "my_bags": 0
+   },
+   {
+    "country": "Tanzania",
+    "producers": 3,
+    "roasters": 1,
+    "offerings": 3,
+    "my_bags": 0
+   },
+   {
+    "country": "Burundi",
+    "producers": 3,
+    "roasters": 2,
+    "offerings": 3,
+    "my_bags": 0
+   },
+   {
+    "country": "Uganda",
+    "producers": 2,
+    "roasters": 2,
+    "offerings": 2,
+    "my_bags": 0
+   },
+   {
+    "country": "Rwanda",
+    "producers": 2,
+    "roasters": 2,
+    "offerings": 2,
+    "my_bags": 0
+   },
+   {
+    "country": "DR Congo",
+    "producers": 2,
+    "roasters": 1,
+    "offerings": 2,
+    "my_bags": 0
+   },
+   {
+    "country": "Zambia",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "China",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Coffee Discovery Set",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Denmark",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 4,
+    "my_bags": 0
+   },
+   {
+    "country": "Drip Coffee Bags",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Finca",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 2,
+    "my_bags": 0
+   },
+   {
+    "country": "Indonesia",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Kayon Mountain",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Timor-Leste",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Yemen",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Assembly Decaf",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   }
+  ],
+  "shared_producers": [
+   {
+    "name": "Finca El Paraíso (Bermúdez)",
+    "country": "Colombia",
+    "region": null,
+    "roasters": 7,
+    "offerings": 49,
+    "roasted_by": [
+     "Archers Coffee",
+     "Black & White Coffee Roasters",
+     "Hydrangea Coffee Roasters",
+     "NATIVE Coffee Co.",
+     "Offshoot Coffee",
+     "Onyx Coffee Lab",
+     "September Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Hacienda La Esmeralda",
+    "country": "Panama",
+    "region": "Jaramillo",
+    "roasters": 6,
+    "offerings": 26,
+    "roasted_by": [
+     "Black & White Coffee Roasters",
+     "Hydrangea Coffee Roasters",
+     "Offshoot Coffee",
+     "Onyx Coffee Lab",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Finca Soledad",
+    "country": "Ecuador",
+    "region": "Imababura",
+    "roasters": 5,
+    "offerings": 26,
+    "roasted_by": [
+     "Archers Coffee",
+     "Black & White Coffee Roasters",
+     "Hydrangea Coffee Roasters",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Hachi Project",
+    "country": "Panama",
+    "region": "Chiriquí",
+    "roasters": 5,
+    "offerings": 18,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "NATIVE Coffee Co.",
+     "Offshoot Coffee",
+     "September Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Danche",
+    "country": "Ethiopia",
+    "region": "Gedeo, Gedeb",
+    "roasters": 5,
+    "offerings": 11,
+    "roasted_by": [
+     "Friedhats",
+     "Makeworth Coffee",
+     "Offshoot Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": true
+   },
+   {
+    "name": "Gesha Village",
+    "country": "Ethiopia",
+    "region": "Bench Maji, Ethiopia",
+    "roasters": 5,
+    "offerings": 10,
+    "roasted_by": [
+     "April Coffee Roasters",
+     "Black & White Coffee Roasters",
+     "Friedhats",
+     "Offshoot Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Elida Estate",
+    "country": "Panama",
+    "region": "Falda",
+    "roasters": 4,
+    "offerings": 22,
+    "roasted_by": [
+     "Archers Coffee",
+     "Black & White Coffee Roasters",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Finca Hartmann",
+    "country": "Panama",
+    "region": "Santa Clara, Renacimiento, Chiriquí",
+    "roasters": 3,
+    "offerings": 41,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "Proud Mary Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "El Mirador",
+    "country": "Colombia",
+    "region": "Palestina, Huila",
+    "roasters": 3,
+    "offerings": 16,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "Push x Pull",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Finca Nuguo (Gallardo)",
+    "country": "Panama",
+    "region": null,
+    "roasters": 3,
+    "offerings": 15,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "La Esperanza",
+    "country": "Colombia",
+    "region": "Valle del Cauca",
+    "roasters": 3,
+    "offerings": 12,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Diego Horta",
+    "country": "Colombia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 11,
+    "roasted_by": [
+     "Black & White Coffee Roasters",
+     "Friedhats",
+     "Onyx Coffee Lab"
+    ],
+    "in_my_bags": true
+   },
+   {
+    "name": "Jairo Arcila",
+    "country": "Colombia",
+    "region": "Villarazo, Quindío",
+    "roasters": 3,
+    "offerings": 10,
+    "roasted_by": [
+     "Friedhats",
+     "Offshoot Coffee",
+     "Proud Mary Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Finca Sophia",
+    "country": "Panama",
+    "region": "Neuva Suiza, Panama",
+    "roasters": 3,
+    "offerings": 8,
+    "roasted_by": [
+     "Archers Coffee",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Buku Sayisa",
+    "country": "Ethiopia",
+    "region": "West Guji",
+    "roasters": 3,
+    "offerings": 7,
+    "roasted_by": [
+     "Friedhats",
+     "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   }
+  ],
+  "totals": {
+   "roasters": 25,
+   "producers": 1879,
+   "offerings": 3719,
+   "offerings_available": 757,
+   "offerings_with_producer": 530,
+   "last_release": "2026-09-30 16:42:02-07:00"
+  },
+  "last_scrape": {
+   "fired_at": "2026-10-01 14:34:55.884683-07:00",
+   "status": "error",
+   "summary": "RuntimeError: unparseable response from https://aprilcoffeeroasters.com/products.json?limit=250&page=1: Expecting value: line 1 column 1 (char 0)"
+  }
+ }
 };
