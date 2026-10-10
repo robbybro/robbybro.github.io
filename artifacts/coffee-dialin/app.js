@@ -162,7 +162,10 @@
       if (who) head.appendChild(el('div', 'roaster', who));
       card.appendChild(head);
       card.id = 'bag-' + b.short_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      card.appendChild(el('span', 'pill ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
+      var pills = el('div', 'pills');
+      if (d.house) { card.classList.add('house'); pills.appendChild(el('span', 'pill house', 'House bean')); }
+      pills.appendChild(el('span', 'pill ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
+      card.appendChild(pills);
       // The hero number means ONE thing per card, and says which: the setting to use (settled recipe or planned
       // next shot), or the last shot pulled (untested beyond that), or the intake start point (no shots yet).
       var src = di.settled ? 'settled' : b.queued ? 'planned' : b.last_shot && b.last_shot.microns ? 'last' : di.start ? 'start' : null;
@@ -365,7 +368,7 @@
   var sel = $('#bag-filter'), chips = $('#bag-chips');
   D.bags.forEach(function (b) {
     var o = el('option', null, b.short_name); o.value = b.short_name; sel.appendChild(o);
-    var c = el('a', 'chip' + (((b.data || {}).dialin || {}).settled ? ' settled' : ' open'), b.short_name); c.href = '#bag-' + b.short_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'); chips.appendChild(c);
+    var c = el('a', 'chip' + (((b.data || {}).dialin || {}).settled ? ' settled' : ' open') + ((b.data || {}).house ? ' house' : ''), ((b.data || {}).house ? '★ ' : '') + b.short_name); c.href = '#bag-' + b.short_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'); chips.appendChild(c);
   });
   sel.addEventListener('change', renderShots);
   $('#only-settled').addEventListener('click', function () { onlySettled = !onlySettled; this.setAttribute('aria-pressed', String(onlySettled)); renderShots(); });
