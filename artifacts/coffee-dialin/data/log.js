@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T15:21-07:00",
+ "generated_at": "2026-10-10T15:28-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -62,6 +62,68 @@ window.DIALIN = {
   },
   "grinder": "Zerno Z2",
   "machine": "Linea Mini R (Balthamos)",
+  "glossary": [
+   [
+    "µm",
+    "grind size on the Zerno Z2 dial, in microns (real microns, 0–2000; lower = finer)"
+   ],
+   [
+    "RPM",
+    "grinder motor speed; set per bag (decaf 400, Ghost Rider 1200, new bags start at 1000)"
+   ],
+   [
+    "cut at 34",
+    "stop the shot when the scale under the cup reads 34 g — drip lands it at ~36–37 g"
+   ],
+   [
+    "time",
+    "seconds from pressing brew, INCLUDING the 5 s pre-brew (3 s on, 2 s pause); target 30–35 s"
+   ],
+   [
+    "ratio",
+    "grams out ÷ grams in; the house law is 1:2.05 (18 g in → ~37 g out)"
+   ],
+   [
+    "RDT",
+    "Ross droplet technique — one or two sprays of water on the beans before grinding, kills static and clumps"
+   ],
+   [
+    "WDT",
+    "Weiss distribution technique — stirring the grounds in the basket with thin needles before tamping; here an orbital raker"
+   ],
+   [
+    "PF",
+    "portafilter, the basket handle"
+   ],
+   [
+    "Core / Lab Sweet",
+    "the two burr sets owned for the Z2; Core is installed"
+   ],
+   [
+    "GR",
+    "Ghost Rider, the Proud Mary espresso blend"
+   ],
+   [
+    "VdC",
+    "Valle del Cauca, the Push x Pull sugarcane decaf"
+   ],
+   [
+    "EA",
+    "ethyl acetate (sugarcane) decaffeination"
+   ],
+   [
+    "masl",
+    "metres above sea level, farm elevation"
+   ],
+   [
+    "settled",
+    "the bag has a final recipe; dialing in = still being adjusted"
+   ],
+   [
+    "queued",
+    "a planned next shot that has not been pulled yet"
+   ]
+  ],
   "rpm_rule": {
    "why": "brittle beans (sugarcane decaf) → fewer fines wanted → low RPM; dense sweet blends → fines add body → high RPM",
    "new_bag": "dial grind at 1000 first, then bracket RPM per bean",
@@ -384,6 +446,7 @@ window.DIALIN = {
     },
     "opened": "2026-09-11",
     "region": "Oaxaca, Mexico",
+    "country": "Mexico",
     "process": "Oaxaca, Mexico — producer Dionisio García; harvested Feb 2026",
     "roaster": "Drumroaster Coffee Co.",
     "roast_date": "8/16/2026",
@@ -1232,17 +1295,6 @@ window.DIALIN = {
     "in_my_bags": true
    },
    {
-    "name": "Black & White Coffee Roasters",
-    "city": "Wake Forest, NC",
-    "country": "USA",
-    "lat": 35.9799,
-    "lng": -78.5097,
-    "website": "https://www.blackwhiteroasters.com",
-    "offerings": 19,
-    "producers": 15,
-    "in_my_bags": true
-   },
-   {
     "name": "Makeworth Coffee",
     "city": "Bellingham, WA",
     "country": "USA",
@@ -1375,17 +1427,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Friedhats",
-    "city": "Amsterdam",
-    "country": "Netherlands",
-    "lat": 52.3676,
-    "lng": 4.9041,
-    "website": "https://www.friedhats.com",
-    "offerings": 21,
-    "producers": 19,
-    "in_my_bags": false
-   },
-   {
     "name": "Devoción",
     "city": "Brooklyn, NY",
     "country": "USA",
@@ -1397,14 +1438,25 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Kuma Coffee",
-    "city": "Seattle, WA",
+    "name": "Friedhats",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.3676,
+    "lng": 4.9041,
+    "website": "https://www.friedhats.com",
+    "offerings": 21,
+    "producers": 19,
+    "in_my_bags": false
+   },
+   {
+    "name": "Black & White Coffee Roasters",
+    "city": "Wake Forest, NC",
     "country": "USA",
-    "lat": 47.6062,
-    "lng": -122.3321,
-    "website": "https://kumacoffee.com",
-    "offerings": 18,
-    "producers": 6,
+    "lat": 35.9799,
+    "lng": -78.5097,
+    "website": "https://www.blackwhiteroasters.com",
+    "offerings": 19,
+    "producers": 15,
     "in_my_bags": false
    },
    {
@@ -1430,14 +1482,14 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Prolog Coffee",
-    "city": "Copenhagen",
-    "country": "Denmark",
-    "lat": 55.669,
-    "lng": 12.5586,
-    "website": "https://prologcoffee.com",
-    "offerings": 12,
-    "producers": 11,
+    "name": "Kuma Coffee",
+    "city": "Seattle, WA",
+    "country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://kumacoffee.com",
+    "offerings": 18,
+    "producers": 6,
     "in_my_bags": false
    },
    {
@@ -1449,6 +1501,17 @@ window.DIALIN = {
     "website": "https://www.lacabra.dk",
     "offerings": 12,
     "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Prolog Coffee",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.669,
+    "lng": 12.5586,
+    "website": "https://prologcoffee.com",
+    "offerings": 12,
+    "producers": 11,
     "in_my_bags": false
    },
    {
@@ -1708,6 +1771,12 @@ window.DIALIN = {
     "my_bags": 0
    }
   ],
+  "counter_countries": [
+   "Brazil",
+   "Colombia",
+   "Ethiopia",
+   "Mexico"
+  ],
   "shared_producers": [
    {
     "name": "Finca El Paraíso (Bermúdez)",
@@ -1879,7 +1948,7 @@ window.DIALIN = {
      "Friedhats",
      "Onyx Coffee Lab"
     ],
-    "in_my_bags": true
+    "in_my_bags": false
    },
    {
     "name": "Jairo Arcila",
@@ -1932,7 +2001,10 @@ window.DIALIN = {
   "last_scrape": {
    "fired_at": "2026-10-01 14:34:55.884683-07:00",
    "status": "error",
-   "summary": "RuntimeError: unparseable response from https://aprilcoffeeroasters.com/products.json?limit=250&page=1: Expecting value: line 1 column 1 (char 0)"
+   "summary": "RuntimeError: unparseable response from https://aprilcoffeeroasters.com/products.json?limit=250&page=1: Expecting value: line 1 column 1 (char 0)",
+   "failing_runs": 6,
+   "failing_since": "2026-10-01 06:40:39.488990-07:00",
+   "last_ok": null
   }
  }
 };
