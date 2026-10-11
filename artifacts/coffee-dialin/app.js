@@ -191,6 +191,14 @@
           if (l.next_change && src === 'last') card.appendChild(el('p', 'line small', 'Suggested next: ' + l.next_change));
         } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
       }
+      if (di.pourover && di.pourover.setting != null) {
+        var po = di.pourover, pl = el('p', 'line pour');
+        pl.appendChild(el('span', 'eyebrow', 'Pourover · ' + (po.grinder || 'Fellow Ode Gen 2') + ' at '));
+        pl.appendChild(el('strong', null, n(po.setting)));
+        if (po.brewers) pl.appendChild(document.createTextNode(' · ' + po.brewers));
+        if (po.why) pl.appendChild(el('span', 'small muted', ' — ' + po.why));
+        card.appendChild(pl);
+      }
       var sp = sparkline(b.short_name, b.shots);
       if (sp) { card.appendChild(sp.svg); card.appendChild(el('div', 'spark-cap', 'Shot time, ' + sp.count + ' of ' + b.shots + ' shots timed · band = 30 to 35 s target, to the nearest second · filled = in band' + (sp.settled ? ' · ring = the shot that set this recipe' : ''))); }
       var gl = el('a', 'small', 'words on this card ↓'); gl.href = '#glossary'; card.appendChild(gl);
@@ -312,8 +320,13 @@
   }
 
   var SHOT_COLS = [
-    { key: 'shot_at', label: 'Date', date: true }, { key: 'bag', label: 'Bag' }, { key: 'microns', label: 'µm', num: true }, { key: 'rpm', label: 'RPM', num: true },
-    { key: 'dose_g', label: 'Dose (g)', num: true }, { key: 'yield_g', label: 'Yield (g)', num: true }, { key: 'time_s', label: 'Time (s)', num: true }, { key: 'ratio', label: 'Ratio', num: true },
+    { key: 'shot_at', label: 'Date', date: true }, { key: 'bag', label: 'Bag' },
+    { key: 'method', label: 'Method', render: function (td, r) { td.textContent = r.method === 'pourover' ? 'pourover' + ((r.data || {}).brewer ? ' · ' + r.data.brewer : '') : 'espresso'; } },
+    { key: 'microns', label: 'Grind', num: true, render: function (td, r) { td.textContent = r.method === 'pourover' ? ((r.data || {}).grind_setting != null ? 'Ode ' + r.data.grind_setting : '') : (r.microns != null ? n(r.microns) + ' µm' : ''); } },
+    { key: 'rpm', label: 'RPM', num: true },
+    { key: 'dose_g', label: 'Dose (g)', num: true },
+    { key: 'yield_g', label: 'Out (g)', num: true, render: function (td, r) { td.textContent = r.method === 'pourover' ? ((r.data || {}).water_g != null ? n(r.data.water_g) + ' water' : '') : n(r.yield_g); } },
+    { key: 'time_s', label: 'Time (s)', num: true }, { key: 'ratio', label: 'Ratio', num: true, render: function (td, r) { var ratio = r.ratio; if (r.method === 'pourover' && ratio == null && (r.data || {}).water_g && r.dose_g) ratio = Math.round(10 * r.data.water_g / r.dose_g) / 10; td.textContent = ratio == null ? '' : (r.method === 'pourover' ? '1:' + n(ratio) : n(ratio)); } },
     { key: 'taste', label: 'Taste', wrap: true },
     { key: 'verdict', label: 'Verdict', wrap: true, render: function (td, r) { var v = r.verdict || ''; td.className += ' ' + verdictClass(v); if (r.status === 'queued') { td.className += ' v-open'; v = 'Queued' + (v ? ' — ' + v : ''); } td.textContent = v; } },
     { key: 'next_change', label: 'Next change', wrap: true }, { key: 'by_whom', label: 'By' }
@@ -342,6 +355,17 @@
       var gl = el('dl');
       D.rules.glossary.forEach(function (row) { gl.appendChild(el('dt', null, row[0])); gl.appendChild(el('dd', null, row[1])); });
       g.appendChild(gl); host.appendChild(g);
+    }
+    var PO = D.rules.pourover;
+    if (PO) {   // pourover house rules (kv coffee-dialin.pourover) — a panel beside the espresso sections
+      var pp = el('div', 'panel'); pp.id = 'pourover'; pp.appendChild(el('h3', null, 'Pourover — ' + (PO.grinder || 'grinder')));
+      var pd = el('dl');
+      var add = function (k, v) { if (v == null || v === '') return; pd.appendChild(el('dt', null, k)); pd.appendChild(el('dd', null, String(v))); };
+      add('Setting', PO.setting_range + (PO.rule ? ' — ' + PO.rule : ''));
+      add('Ratio', PO.ratio);
+      add('Scoop', PO.scoop_g != null ? '~' + PO.scoop_g + ' g' + (PO.scoop_note && /INFERRED/.test(PO.scoop_note) ? ' (inferred, not yet weighed)' : '') : null);
+      (PO.brewers || []).forEach(function (b) { add(b.name, [b.scoops != null ? b.scoops + ' scoop' + (String(b.scoops) === '1' ? '' : 's') : null, b.coffee_g ? b.coffee_g + ' g' : null, b.water, b.use].filter(Boolean).join(' · ')); });
+      pp.appendChild(pd); host.appendChild(pp);
     }
     sections.forEach(function (sec) {
       var card = el('div', 'panel');
