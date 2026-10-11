@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T17:39-07:00",
+ "generated_at": "2026-10-10T17:45-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -124,6 +124,31 @@ window.DIALIN = {
     "a planned next shot that has not been pulled yet"
    ]
   ],
+  "pourover": {
+   "rule": "4 for less dense, lower-elevation roasts; 5 for denser, high-altitude coffees",
+   "ratio": "1:16 (kv laws.pourover_ratio)",
+   "logged": "2026-10-10",
+   "brewers": [
+    {
+     "use": "single cup",
+     "name": "Kinto Slow Coffee Style",
+     "water": "~360 g (12 oz) or ~480 g (16 oz) at 1:16",
+     "scoops": "1.5 or 2",
+     "coffee_g": "~22 or ~30"
+    },
+    {
+     "use": "two cups",
+     "name": "Chemex",
+     "water": "~710 g (2 × 12 oz cups)",
+     "scoops": 3,
+     "coffee_g": "~45"
+    }
+   ],
+   "grinder": "Fellow Ode Gen 2",
+   "scoop_g": 15,
+   "scoop_note": "INFERRED from the 1:16 law and the Chemex recipe (3 scoops → 2×12 oz ≈ 710 g water ≈ 44 g coffee); confirm by weighing a scoop",
+   "setting_range": "4–5"
+  },
   "rpm_rule": {
    "why": "brittle beans (sugarcane decaf) → fewer fines wanted → low RPM; dense sweet blends → fines add body → high RPM",
    "new_bag": "dial grind at 1000 first, then bracket RPM per bean",
@@ -434,7 +459,13 @@ window.DIALIN = {
     "roast": "light",
     "dialin": {
      "burrs": "Core",
-     "settled": false
+     "settled": false,
+     "pourover": {
+      "why": "dense washed Ethiopian at 2,200 masl → top of the 4–5 band",
+      "brewers": "Kinto 1.5–2 scoops · Chemex 3 scoops for 2×12 oz",
+      "grinder": "Fellow Ode Gen 2",
+      "setting": 5
+     }
     },
     "logged": "2026-10-07",
     "opened": "2026-10-09",
@@ -623,7 +654,8 @@ window.DIALIN = {
    "taste": null,
    "verdict": null,
    "next_change": "A/B shot A: 180 µm at 1000 rpm, 18 g in, cut at 34 — then shot B at 1200 rpm, same grind; expect A a few seconds faster",
-   "by_whom": null
+   "by_whom": null,
+   "data": {}
   },
   {
    "id": 30,
@@ -641,7 +673,8 @@ window.DIALIN = {
    "taste": null,
    "verdict": null,
    "next_change": "A/B shot B: 180 µm at 1200 rpm, 18 g in, cut at 34 — pull right after shot A, taste both straight (and with milk)",
-   "by_whom": null
+   "by_whom": null,
+   "data": {}
   },
   {
    "id": 29,
@@ -659,7 +692,8 @@ window.DIALIN = {
    "taste": "good crema; a little bitter straight, should be great with milk",
    "verdict": "in window, first shot",
    "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
-   "by_whom": "Robby"
+   "by_whom": "Robby",
+   "data": {}
   },
   {
    "id": 26,
@@ -677,7 +711,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": null,
    "next_change": "aim 25–30s, watch spray stays calm as it goes finer",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 27,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 25,
@@ -695,7 +734,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": "spray much reduced — too fast",
    "next_change": "→ 200 at 600 RPM; if <22s go 190",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 26,
+    "sheet_ratio": "2.11"
+   }
   },
   {
    "id": 24,
@@ -713,7 +757,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": "in window, tons of spray (taller glass to contain)",
    "next_change": "drop RPM 1000 → 600, same µm (fewer fines, less static)",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 25,
+    "sheet_ratio": "2.1"
+   }
   },
   {
    "id": 23,
@@ -731,7 +780,12 @@ window.DIALIN = {
    "taste": "good-looking stream; heavy spray reset the scale",
    "verdict": "poured — fresh bag (<10d), choked at 160",
    "next_change": "fresh light roast runs tight; expect to walk finer as it degasses. Spray + group seal issue → silicone gasket",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 24,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 22,
@@ -749,7 +803,12 @@ window.DIALIN = {
    "taste": "nothing came out",
    "verdict": "choked — bean runs much finer than GR at same µm",
    "next_change": "→ 195 (big bracket); if it gushes <25s, bisect to ~178",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 23,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 21,
@@ -767,7 +826,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": null,
    "next_change": "aim 33–36s, cut 34",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 22,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 20,
@@ -785,7 +849,12 @@ window.DIALIN = {
    "taste": "pretty sour — as the 19.7s predicted",
    "verdict": "gusher — bean denser/lighter-roasted than GR",
    "next_change": "→ 167; roast-level prior would have called this",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 21,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 19,
@@ -803,7 +872,12 @@ window.DIALIN = {
    "taste": "way better than 1000 RPM",
    "verdict": "SETTLED — decaf lives at 400 RPM",
    "next_change": "per-bean RPM confirmed",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 20,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 18,
@@ -821,7 +895,12 @@ window.DIALIN = {
    "taste": "a lot more balance, real depth",
    "verdict": "1200 RPM SETTLED for GR",
    "next_change": "cut 33.5 on slow shots (longer drip)",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 19,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 17,
@@ -839,7 +918,12 @@ window.DIALIN = {
    "taste": "bitter — do not love",
    "verdict": "800 RPM loses to 1000 on taste for GR",
    "next_change": "back to 1000; 1200 test still pending",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 18,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 16,
@@ -857,7 +941,12 @@ window.DIALIN = {
    "taste": "closer, still slow vs 33s target",
    "verdict": null,
    "next_change": "next: hold 170, drop to 800 RPM (lower RPM = faster) — else one tick coarser",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 17,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 15,
@@ -875,7 +964,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": "too slow — overshot the finer step",
    "next_change": "→ 170",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 16,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 14,
@@ -893,7 +987,12 @@ window.DIALIN = {
    "taste": "hollow — bitter + acidic, no sweetness; really not bad",
    "verdict": "time target hit; taste at its 1000-RPM ceiling?",
    "next_change": "next decaf: 400 RPM @ 125 (day-one smooth shot) — test bean-specific RPM",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 15,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 13,
@@ -911,7 +1010,12 @@ window.DIALIN = {
    "taste": "good, a little muted; milk verdict pending",
    "verdict": "NO DISTRIBUTOR: −4s vs same setting with it; headspace clean (no imprint)",
    "next_change": "bald spot gone? → if yes, distributor leaves the chain. GR → 165 for ~33s",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 14,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 12,
@@ -929,7 +1033,12 @@ window.DIALIN = {
    "taste": "a little more sour; liked it straight; 175 was better for milk",
    "verdict": "good straight",
    "next_change": "bald middle → check headspace imprint, consider puck screen, A/B without distributor",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 13,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 11,
@@ -947,7 +1056,12 @@ window.DIALIN = {
    "taste": "one of the better-balanced ones; spray reduced",
    "verdict": "good — slow per the clock, great per the cup",
    "next_change": "taste > window noted",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 12,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 10,
@@ -965,7 +1079,12 @@ window.DIALIN = {
    "taste": "passable; a little sour + bitter, leaning bitter; not very sweet",
    "verdict": "good enough for a half-caf",
    "next_change": "optional: 172 next to shave the decaf bitterness",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 11,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 28,
@@ -983,7 +1102,11 @@ window.DIALIN = {
    "taste": "Emily made it, Robby did not taste; looked textbook if dose ~18g (~1:2.1). ALSO sprayed, less than the 180 shot — same puck prep both. Spray at two settings w/ identical prep = prep/seasoning, not the dial (coarser sprays less only because puck resistance drops).",
    "verdict": null,
    "next_change": null,
-   "by_whom": "Emily"
+   "by_whom": "Emily",
+   "data": {
+    "source": "kv zerno-dialin",
+    "bag_assumed": "Ghost Rider — bag not recorded in kv; the bag in use on 9/2"
+   }
   },
   {
    "id": 27,
@@ -1001,7 +1124,11 @@ window.DIALIN = {
    "taste": "tons of spraying (channeling); TOO SOUR — but sour-while-channeling is a prep verdict, not a dial verdict",
    "verdict": null,
    "next_change": null,
-   "by_whom": "Robby"
+   "by_whom": "Robby",
+   "data": {
+    "source": "kv zerno-dialin",
+    "bag_assumed": "Ghost Rider — bag not recorded in kv; the bag in use on 9/2"
+   }
   },
   {
    "id": 9,
@@ -1019,7 +1146,12 @@ window.DIALIN = {
    "taste": "a little bitter",
    "verdict": "slow — too fine at 1000",
    "next_change": "→ 155; cut-at-34 confirmed (~1.8g lag). Decaf RPM offset runs bigger than GR's",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 10,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 8,
@@ -1037,7 +1169,12 @@ window.DIALIN = {
    "taste": "pretty good, a little bitter",
    "verdict": "close",
    "next_change": "cut at 34g → land ~36; if still bitter at 36, coarsen ~5µm or temp down",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 9,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 7,
@@ -1055,7 +1192,12 @@ window.DIALIN = {
    "taste": "sprayed a lot (channeling)",
    "verdict": "in window, messy",
    "next_change": "RDT 1–2 sprays + WDT next; trim yield toward 36",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 8,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 6,
@@ -1073,7 +1215,12 @@ window.DIALIN = {
    "taste": "pretty smooth",
    "verdict": "DIALED ✅",
    "next_change": "settled — time incl. 3s pre-soak",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 7,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 5,
@@ -1091,7 +1238,12 @@ window.DIALIN = {
    "taste": "still fast — barely moved vs 160",
    "verdict": "too coarse",
    "next_change": "→ 130",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 6,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 4,
@@ -1109,7 +1261,12 @@ window.DIALIN = {
    "taste": "gushed — 40g in 21s",
    "verdict": "way too coarse",
    "next_change": "big step finer → try ~135",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 5,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 3,
@@ -1127,7 +1284,12 @@ window.DIALIN = {
    "taste": null,
    "verdict": "DIALED ✅",
    "next_change": "retro: 27s incl. 5s pre-brew = ~22s pressure, fast — try 155",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 4,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 2,
@@ -1145,7 +1307,12 @@ window.DIALIN = {
    "taste": "barely poured — choked",
    "verdict": "way too fine",
    "next_change": "back coarser",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 3,
+    "sheet_ratio": ""
+   }
   },
   {
    "id": 1,
@@ -1163,7 +1330,12 @@ window.DIALIN = {
    "taste": "a little sour",
    "verdict": "close",
    "next_change": "went finer",
-   "by_whom": null
+   "by_whom": null,
+   "data": {
+    "source": "sheet import",
+    "sheet_row": 2,
+    "sheet_ratio": "#REF!"
+   }
   }
  ],
  "experiments": [
