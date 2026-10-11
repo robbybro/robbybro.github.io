@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T16:51-07:00",
+ "generated_at": "2026-10-10T17:39-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -410,7 +410,15 @@ window.DIALIN = {
     "next_change": "cut 33.5 on slow shots (longer drip)",
     "by_whom": null
    },
-   "queued": null
+   "queued": {
+    "id": 31,
+    "shot_at": "2026-10-10T17:39:21.004309-07:00",
+    "burrs": "Core",
+    "microns": 180,
+    "rpm": 1000,
+    "dose_g": 18,
+    "next_change": "A/B shot A: 180 µm at 1000 rpm, 18 g in, cut at 34 — then shot B at 1200 rpm, same grind; expect A a few seconds faster"
+   }
   },
   {
    "id": 5,
@@ -599,6 +607,42 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 31,
+   "shot_at": "2026-10-10 17:39:21.004309-07:00",
+   "bag": "Ghost Rider",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": "Core",
+   "microns": 180,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "A/B shot A: 180 µm at 1000 rpm, 18 g in, cut at 34 — then shot B at 1200 rpm, same grind; expect A a few seconds faster",
+   "by_whom": null
+  },
+  {
+   "id": 30,
+   "shot_at": "2026-10-10 17:39:20.887536-07:00",
+   "bag": "Ghost Rider",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": "Core",
+   "microns": 180,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "A/B shot B: 180 µm at 1200 rpm, 18 g in, cut at 34 — pull right after shot A, taste both straight (and with milk)",
+   "by_whom": null
+  },
   {
    "id": 29,
    "shot_at": "2026-10-10 15:09:47.429041-07:00",
@@ -1124,6 +1168,17 @@ window.DIALIN = {
  ],
  "experiments": [
   {
+   "id": 7,
+   "run_on": "2026-10-10",
+   "method": "espresso",
+   "variable": "GR RPM rematch: 1000 vs 1200 at the same grind",
+   "held_constant": "Ghost Rider, Core, 180 µm, 18 g in, cut at 34, 3+2 pre-brew, back to back",
+   "option_a": "1000 rpm",
+   "option_b": "1200 rpm",
+   "winner": "",
+   "notes": "QUEUED 10/10: the 9/10 bracket crowned 1200 on one shot pulled while 1000 was being tested at 165–170 µm, never the same grind. Robby has been pulling GR at 1000 in practice (unlogged). Rematch settles the house recipe."
+  },
+  {
    "id": 6,
    "run_on": "2026-09-10",
    "method": "Espresso",
@@ -1195,7 +1250,7 @@ window.DIALIN = {
   "shots_7d": 5,
   "shots_30d": 6,
   "shots_total": 27,
-  "queued": 2,
+  "queued": 4,
   "bags_settled": 3,
   "bags_dialing": 3,
   "backflush": {
