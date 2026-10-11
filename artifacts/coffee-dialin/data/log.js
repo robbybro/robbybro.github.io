@@ -1,10 +1,10 @@
 window.DIALIN = {
- "generated_at": "2026-10-11T06:47-07:00",
+ "generated_at": "2026-10-11T12:47-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
   "laws": {
-   "timing": "clock starts at pump start and INCLUDES the 5 s pre-brew; target 30–35 s total (classic 25–30 + 5)",
+   "timing": "clock starts at pump start and INCLUDES the 5 s pre-brew (3 on / 2 off); target 30–35 s total (classic 25–30 + 5); Robby's sweet spot is 30–32 s total (reaffirmed 2026-10-11 — he subtracts the 5 s himself, so never quote a flow-only number back to him)",
    "prebrew": {
     "on_s": 3,
     "off_s": 2,
@@ -483,30 +483,30 @@ window.DIALIN = {
     "elevation_masl": "2200",
     "origin_country": "Ethiopia"
    },
-   "shots": 4,
+   "shots": 5,
    "last_shot": {
-    "id": 25,
-    "shot_at": "2026-10-10T12:24:00-07:00",
-    "burrs": "Core",
-    "microns": 225,
-    "rpm": 600,
-    "dose_g": 18,
-    "yield_g": 38,
-    "time_s": 18.4,
-    "ratio": 2.11,
-    "taste": null,
-    "verdict": "spray much reduced — too fast",
-    "next_change": "→ 200 at 600 RPM; if <22s go 190",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 26,
-    "shot_at": "2026-10-10T12:25:00-07:00",
-    "burrs": "Core",
+    "id": 32,
+    "shot_at": "2026-10-11T12:40:01.116268-07:00",
+    "burrs": null,
     "microns": 200,
     "rpm": 600,
     "dose_g": 18,
-    "next_change": "aim 25–30s, watch spray stays calm as it goes finer"
+    "yield_g": 38,
+    "time_s": 23.4,
+    "ratio": 2.11,
+    "taste": null,
+    "verdict": "still fast (23.4 s total incl. 5 s pre-brew = ~18 s flow)",
+    "next_change": "→ 190 at 600 RPM; want 30–32 s total",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 33,
+    "shot_at": "2026-10-11T12:40:01.24135-07:00",
+    "burrs": null,
+    "microns": 190,
+    "rpm": 600,
+    "dose_g": null,
+    "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180"
    }
   },
   {
@@ -639,6 +639,44 @@ window.DIALIN = {
  ],
  "shots": [
   {
+   "id": 33,
+   "shot_at": "2026-10-11 12:40:01.241350-07:00",
+   "bag": "Makeworth Danche",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 190,
+   "rpm": 600,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 32,
+   "shot_at": "2026-10-11 12:40:01.116268-07:00",
+   "bag": "Makeworth Danche",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 200,
+   "rpm": 600,
+   "dose_g": "18",
+   "yield_g": "38",
+   "time_s": "23.4",
+   "ratio": "2.11",
+   "taste": null,
+   "verdict": "still fast (23.4 s total incl. 5 s pre-brew = ~18 s flow)",
+   "next_change": "→ 190 at 600 RPM; want 30–32 s total",
+   "by_whom": null,
+   "data": {}
+  },
+  {
    "id": 31,
    "shot_at": "2026-10-10 17:39:21.004309-07:00",
    "bag": "Ghost Rider",
@@ -694,29 +732,6 @@ window.DIALIN = {
    "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
    "by_whom": "Robby",
    "data": {}
-  },
-  {
-   "id": 26,
-   "shot_at": "2026-10-10 12:25:00-07:00",
-   "bag": "Makeworth Danche",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": "Core",
-   "microns": 200,
-   "rpm": 600,
-   "dose_g": "18",
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "aim 25–30s, watch spray stays calm as it goes finer",
-   "by_whom": null,
-   "data": {
-    "source": "sheet import",
-    "sheet_row": 27,
-    "sheet_ratio": ""
-   }
   },
   {
    "id": 25,
@@ -1418,10 +1433,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-10 15:09:47.429041-07:00",
-  "shots_7d": 5,
+  "last_shot_at": "2026-10-11 12:40:01.116268-07:00",
+  "shots_7d": 6,
   "shots_30d": 6,
-  "shots_total": 27,
+  "shots_total": 28,
   "queued": 4,
   "bags_settled": 3,
   "bags_dialing": 3,
