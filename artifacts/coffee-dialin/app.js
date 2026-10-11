@@ -179,6 +179,7 @@
       if (dial.children.length) card.appendChild(dial);
       if (src === 'settled') {
         if (di.recipe) card.appendChild(el('p', 'line', di.recipe));
+        if (b.queued) card.appendChild(el('p', 'line small', 'Test queued: ' + (b.queued.next_change || n(b.queued.microns) + ' µm at ' + n(b.queued.rpm) + ' rpm')));
       } else {
         if (src === 'planned' && b.queued.next_change) card.appendChild(el('p', 'line', b.queued.next_change));
         if (src === 'start' && di.start_note) card.appendChild(el('p', 'line', di.start_note));
