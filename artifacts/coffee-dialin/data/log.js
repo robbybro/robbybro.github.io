@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-10T17:45-07:00",
+ "generated_at": "2026-10-10T17:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -145,8 +145,8 @@ window.DIALIN = {
     }
    ],
    "grinder": "Fellow Ode Gen 2",
-   "scoop_g": 15,
-   "scoop_note": "INFERRED from the 1:16 law and the Chemex recipe (3 scoops → 2×12 oz ≈ 710 g water ≈ 44 g coffee); confirm by weighing a scoop",
+   "scoop_g": null,
+   "scoop_note": "Robby thinks the scoop is ~1.5 tbsp (unweighed, 10/10). That is ~8–10 g of beans, which would put the Chemex at ~1:25 — so either the scoop is bigger than it looks or pourover runs weaker than the 1:16 law. Weigh one scoop to settle it (blocked item). Pourover precision is deliberately low: an A− cup for X+ effort is the standard.",
    "setting_range": "4–5"
   },
   "rpm_rule": {
