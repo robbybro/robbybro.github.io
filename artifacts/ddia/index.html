@@ -73,7 +73,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:var(--o
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;margin-bottom:10px;scroll-margin-top:70px}
 .card.got{border-color:var(--good)}
-.card .q{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 14px;cursor:pointer}
+.card .q{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:12px 14px}
 .card .q .n{font:500 12px var(--mono);color:var(--muted);padding-top:3px}
 .card .q .t{font-weight:500}
 .card .q .t small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
@@ -85,8 +85,11 @@ button.primary{background:var(--accent);border-color:var(--accent);color:var(--o
 .card .a li{margin-bottom:4px}
 .card .a .line{border-left:3px solid var(--accent);padding:6px 12px;background:var(--ground);border-radius:0 6px 6px 0;margin-top:10px}
 .card .a .line b{color:var(--accent)}
-.card .a .robby{border-left:3px solid var(--warn);padding:6px 12px;background:var(--warn-bg);border-radius:0 6px 6px 0;margin-bottom:10px;font-size:14px}
-.card .a .robby b{color:var(--warn)}
+.card .a .fu{margin-top:10px;border-top:1px dashed var(--rule);padding-top:8px}
+.card .a .fu-q{font-weight:500;margin:6px 0 2px}
+.card .a .fu-q b{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
+.card .a .fu-a{color:var(--ink);margin:0 0 6px;font-size:14.5px}
+.card .a .fu-a p{margin:0 0 6px}
 .card .foot{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 12px}
 .card .foot button{height:28px;font-size:12px}
 .card .foot button.on{background:var(--good-bg);border-color:var(--good);color:var(--good)}
@@ -128,7 +131,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 16px 40px;color:var(--muted);fon
   <aside class="side" id="side"></aside>
   <main class="main" id="main"></main>
 </div>
-<footer><p>Designing Data-Intensive Applications, 2nd edition (Kleppmann). Worked through with Claude, September 2026. Answers are the corrected versions from those sessions; "what I said first" boxes are the wrong turns worth remembering. Progress ticks are stored in this browser only.</p></footer>
+<footer><p>Designing Data-Intensive Applications, 2nd edition (Kleppmann). Worked through with Claude, September–October 2026, as one running design round on a messaging system. Progress ticks are stored in this browser only.</p></footer>
 <script src="content/ch2.js"></script>
 <script src="content/ch3.js"></script>
 <script src="content/ch4.js"></script>

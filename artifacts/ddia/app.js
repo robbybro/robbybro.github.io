@@ -64,35 +64,30 @@
   }
 
   /* ---------- cards ---------- */
-  function card(c, sec, it, i, openAll){
+  function card(c, sec, it, i){
     var id = "ch" + c.n + "-" + sec.id + "-" + (i+1), g = got()[id];
-    var open = openAll || false;
-    var sub = it.sub ? '<small>' + esc(it.sub) + '</small>' : "";
-    var body = "";
-    if (it.robby) body += '<div class="robby"><b>What I said first:</b> ' + it.robby + '</div>';
-    body += it.a || "";
+    var body = it.a || "";
     if (it.when || it.breaks){
       body += '<p><b>When you choose it.</b> ' + (it.when || "") + '</p>';
       if (it.breaks) body += '<p><b>Where it breaks.</b></p><ol>' + it.breaks.map(function(b){ return '<li>' + b + '</li>'; }).join("") + '</ol>';
     }
+    if (it.followups && it.followups.length){
+      body += '<div class="fu">' + it.followups.map(function(f){ return '<div class="fu-q"><b>Follow-up.</b> ' + f.q + '</div><div class="fu-a">' + f.a + '</div>'; }).join("") + '</div>';
+    }
     if (it.line) body += '<div class="line"><b>The line:</b> ' + it.line + '</div>';
     return '<article class="card' + (g ? " got" : "") + '" id="' + id + '" data-id="' + id + '">' +
-      '<div class="q" role="button" tabindex="0" aria-expanded="' + open + '"><span class="n">' + (i+1) + '</span><span class="t">' + it.q + sub + '</span><span class="tog">' + (open ? "hide" : "show") + '</span></div>' +
-      '<div class="a"' + (open ? "" : " hidden") + '>' + body + '</div>' +
-      '<div class="foot"' + (open ? "" : " hidden") + '><a href="#/ch/' + c.n + '/' + sec.id + '/' + (i+1) + '" class="prog">link</a><button type="button" class="got-btn' + (g ? " on" : "") + '">' + (g ? "✓ got it" : "mark got it") + '</button></div>' +
+      '<div class="q"><span class="n">' + (i+1) + '</span><span class="t">' + it.q + '</span></div>' +
+      '<div class="a">' + body + '</div>' +
+      '<div class="foot"><a href="#/ch/' + c.n + '/' + sec.id + '/' + (i+1) + '" class="prog">link</a><button type="button" class="got-btn' + (g ? " on" : "") + '">' + (g ? "✓ got it" : "mark got it") + '</button></div>' +
     '</article>';
   }
   function bindCards(root){
     root.querySelectorAll(".card").forEach(function(el){
-      var q = el.querySelector(".q"), a = el.querySelector(".a"), f = el.querySelector(".foot"), tog = el.querySelector(".tog");
-      if (!q) return;  // link cards (viz list, reading hub) have no question/answer parts
-      function toggle(force){ var open = force != null ? force : a.hidden; a.hidden = !open; f.hidden = !open; tog.textContent = open ? "hide" : "show"; q.setAttribute("aria-expanded", open); }
-      q.addEventListener("click", function(){ toggle(); });
-      q.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); } });
-      el.querySelector(".got-btn").addEventListener("click", function(){
+      var btn = el.querySelector(".got-btn");
+      if (!btn) return;  // link cards (viz list, reading hub) have no question/answer parts
+      btn.addEventListener("click", function(){
         var on = !el.classList.contains("got"); el.classList.toggle("got", on); this.classList.toggle("on", on); this.textContent = on ? "✓ got it" : "mark got it"; setGot(el.dataset.id, on); updateProg();
       });
-      el._toggle = toggle;
     });
   }
   function updateProg(){
@@ -102,20 +97,20 @@
       el.textContent = n + " / " + ids.length + " got";
     });
   }
-  function sectionBlock(c, s, openAll){
+  function sectionBlock(c, s){
     var ids = s.items.map(function(_, i){ return "ch" + c.n + "-" + s.id + "-" + (i+1); }).join(",");
     return '<section class="blk" id="sec-' + s.id + '"><div class="blk-head"><div><h2>' + esc(s.title) + '</h2>' + (s.intro ? '<p class="muted" style="margin:4px 0 0;max-width:80ch">' + s.intro + '</p>' : "") + '</div>' +
-      '<div class="tools"><span class="prog" data-prog="' + ids + '"></span><button type="button" data-show="' + s.id + '">show all</button><button type="button" data-hide="' + s.id + '">hide all</button></div></div>' +
-      s.items.map(function(it, i){ return card(c, s, it, i, openAll); }).join("") + '</section>';
+      '<div class="tools"><span class="prog" data-prog="' + ids + '"></span></div></div>' +
+      s.items.map(function(it, i){ return card(c, s, it, i); }).join("") + '</section>';
   }
 
   /* ---------- pages ---------- */
   function pageHome(){
     var h = '<div class="hero"><span class="kicker">Designing Data-Intensive Applications · 2nd edition</span><h1>Study site</h1>' +
-      '<p>One section per chapter: the jargon defined once, every question we worked through with the corrected answer hidden behind a click, and ten takeaways. Interactive visualizations live under their own tab.</p>' +
+      '<p>One section per chapter: the jargon defined once, then the chapter worked as a design round on one real system, a messaging system for a billion daily users, with the follow-ups an interviewer would push on, and ten takeaways. Interactive visualizations live under their own tab.</p>' +
       '<div class="chips">' + D.chapters.map(function(c){ return '<a class="chip" href="#/ch/' + c.n + '">Ch. ' + c.n + ' · ' + esc(c.title) + '</a>'; }).join("") + D.viz.map(function(v){ return '<a class="chip" href="#/viz/' + v.slug + '">▶ ' + esc(v.title) + '</a>'; }).join("") +
       (D.reading ? D.reading.books.map(function(b){ return '<a class="chip" href="#/reading/' + b.slug + '">📖 ' + esc(b.book) + '</a>'; }).join("") : "") + '<a class="chip" href="#/glossary">Glossary</a></div></div>';
-    h += '<section class="blk"><h2>How to use it</h2><ul><li>Read a question, answer it out loud, then click <b>show</b>. Mark it <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li><b>What I said first</b> boxes are the wrong turns from the live sessions. They are the cheapest thing on the site: each one is a mistake already made once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li><li><b>Reading</b> holds one page per manager book (the models and the vocabulary, not the worksheets), and <b>Glossary</b> merges the jargon from every chapter with those terms into one filterable list.</li></ul></section>';
+    h += '<section class="blk"><h2>How to use it</h2><ul><li>Each chapter is one round of the same interview. Read the prompt, answer it out loud, then read the answer and the follow-ups. Mark a card <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li>Answers are concise on purpose: the mechanism, the number, the tradeoff, the sentence to say. The jargon table above each round defines the terms once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li><li><b>Reading</b> holds one page per manager book (the models and the vocabulary, not the worksheets), and <b>Glossary</b> merges the jargon from every chapter with those terms into one filterable list.</li></ul></section>';
     var g = got(), total = 0, done = 0;
     D.chapters.forEach(function(c){ c.sections.forEach(function(s){ s.items.forEach(function(_, i){ total++; if (g["ch" + c.n + "-" + s.id + "-" + (i+1)]) done++; }); }); });
     h += '<section class="blk"><h2>Progress</h2><p>' + done + ' of ' + total + ' cards marked got it.</p></section>';
@@ -128,7 +123,7 @@
       '<a class="chip" href="#/ch/' + c.n + '/takeaways">Ten takeaways</a>' + (c.worksheet ? '<a class="chip" href="' + c.worksheet + '" target="_blank" rel="noopener">Worksheet Doc ↗</a>' : "") + '</div></div>';
     h += '<section class="blk" id="sec-jargon"><h2>Jargon, defined once</h2><div class="tbl"><table class="jarg"><thead><tr><th>Term</th><th>Plain meaning</th></tr></thead><tbody>' +
       c.jargon.map(function(j){ return '<tr><td>' + j[0] + '</td><td>' + j[1] + '</td></tr>'; }).join("") + '</tbody></table></div></section>';
-    c.sections.forEach(function(s){ h += sectionBlock(c, s, false); });
+    c.sections.forEach(function(s){ h += sectionBlock(c, s); });
     h += '<section class="blk" id="sec-takeaways"><h2>Ten takeaways</h2><ol class="take">' + c.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") + '</ol></section>';
     return h;
   }
@@ -200,19 +195,12 @@
     renderNav(r); renderSide(r);
     main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : r.page === "reading" && D.reading ? pageReading(r) : r.page === "glossary" ? pageGlossary() : pageHome();
     bindCards(main); updateProg(); bindGlossary();
-    main.querySelectorAll("[data-show],[data-hide]").forEach(function(b){
-      b.addEventListener("click", function(){
-        var sec = $("sec-" + (this.dataset.show || this.dataset.hide)), open = !!this.dataset.show;
-        sec.querySelectorAll(".card").forEach(function(el){ if (el._toggle) el._toggle(open); });
-      });
-    });
     document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : r.page === "reading" && r.slug && book(r.slug) ? book(r.slug).book : r.page === "reading" ? "Reading" : r.page === "glossary" ? "Glossary" : "DDIA") + " · DDIA study site";
     $("side").classList.remove("open");
     if ((r.page === "onepager" || r.page === "reading") && r.sec){ var t2 = $("sec-" + r.sec); if (t2) setTimeout(function(){ t2.scrollIntoView({block:"start"}); }, 30); }
     if (r.page === "ch" && r.sec){
       var target = r.item ? $("ch" + r.n + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
       if (target){
-        if (r.item && target._toggle) target._toggle(true);
         setTimeout(function(){ target.scrollIntoView({block:"start"}); }, 30);
       }
     } else window.scrollTo(0, 0);
