@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-13T08:48-07:00",
+ "generated_at": "2026-10-13T09:41-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -487,30 +487,30 @@
     "origin_country": "Colombia",
     "dialin_start_note": "light washed single origin prior 165–170 @ 1000; dial grind first, then bracket RPM"
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 36,
-    "shot_at": "2026-10-13T08:19:54.814452-07:00",
-    "burrs": null,
-    "microns": 175,
-    "rpm": 1000,
-    "dose_g": 18,
-    "yield_g": 35.8,
-    "time_s": 32.4,
-    "ratio": 1.99,
-    "taste": "really good; slightly acidic; washed out by the milk in a cappuccino",
-    "verdict": "in window first shot — time on the money",
-    "next_change": "A/B RPM: same 175, drop to 600; Robby's call for bolder + clarity. House rule predicts fewer fines → faster + cleaner but thinner; if it thins, go 170 @ 1000 and cut at 32 for milk",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 37,
-    "shot_at": "2026-10-13T08:19:54.93625-07:00",
+    "id": 38,
+    "shot_at": "2026-10-13T09:10:04.320685-07:00",
     "burrs": null,
     "microns": 175,
     "rpm": 600,
+    "dose_g": 18,
+    "yield_g": 35.6,
+    "time_s": 19,
+    "ratio": 1.98,
+    "taste": "over-acidic note gone; held up better in the cappuccino; a bit under-extracted",
+    "verdict": "fast — 600 rpm took 13 s off at the same grind; RPM A/B: 600 wins on flavour, grind must follow",
+    "next_change": "→ 165 @ 600 (finer ~10); if still under 28 s go 155",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 39,
+    "shot_at": "2026-10-13T09:10:04.444013-07:00",
+    "burrs": null,
+    "microns": 165,
+    "rpm": 600,
     "dose_g": null,
-    "next_change": "shot B of the RPM A/B: 175 µm @ 600, 18 g, cut 34; expect a few seconds faster (~28–30 s); compare body in a cappuccino against today's 1000-rpm shot"
+    "next_change": "165 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 155, >35 s → 170"
    }
   },
   {
@@ -746,13 +746,13 @@
  ],
  "shots": [
   {
-   "id": 37,
-   "shot_at": "2026-10-13 08:19:54.936250-07:00",
+   "id": 39,
+   "shot_at": "2026-10-13 09:10:04.444013-07:00",
    "bag": "Luna Victor Florez",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 175,
+   "microns": 165,
    "rpm": 600,
    "dose_g": null,
    "yield_g": null,
@@ -760,7 +760,26 @@
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "shot B of the RPM A/B: 175 µm @ 600, 18 g, cut 34; expect a few seconds faster (~28–30 s); compare body in a cappuccino against today's 1000-rpm shot",
+   "next_change": "165 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 155, >35 s → 170",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 38,
+   "shot_at": "2026-10-13 09:10:04.320685-07:00",
+   "bag": "Luna Victor Florez",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 175,
+   "rpm": 600,
+   "dose_g": "18",
+   "yield_g": "35.6",
+   "time_s": "19",
+   "ratio": "1.98",
+   "taste": "over-acidic note gone; held up better in the cappuccino; a bit under-extracted",
+   "verdict": "fast — 600 rpm took 13 s off at the same grind; RPM A/B: 600 wins on flavour, grind must follow",
+   "next_change": "→ 165 @ 600 (finer ~10); if still under 28 s go 155",
    "by_whom": null,
    "data": {}
   },
@@ -1589,6 +1608,17 @@
    "notes": "RESULT 9/1: at 1000 RPM needed 180µm to hit 30.7s where 400 RPM ran 160µm fast → ~20µm finer-per-micron offset at high RPM. Taste verdict pending; sprayed (static/channeling) at 1000."
   },
   {
+   "id": 8,
+   "run_on": null,
+   "method": "espresso",
+   "variable": "RPM: 1000 vs 600 (Luna Victor Florez, Chiroso washed)",
+   "held_constant": "175 µm, 18 g, Core burrs, cut 34, cappuccino",
+   "option_a": "1000 rpm: 35.8 g / 32.4 s — really good, slightly acidic, washed out by milk",
+   "option_b": "600 rpm: 19 s — acidity gone, held up better in milk, under-extracted",
+   "winner": "600 rpm on flavour; grind must go ~10 finer to recover time",
+   "notes": "600 took 13 s off the shot at the same grind — far more than the 'few seconds' predicted; low RPM = fewer fines = faster flow, confirmed for a light washed Colombian. Robby's milk-drink read: lower RPM, then finer."
+  },
+  {
    "id": 5,
    "run_on": null,
    "method": "Espresso",
@@ -1601,10 +1631,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-13 08:19:54.814452-07:00",
-  "shots_7d": 8,
-  "shots_30d": 8,
-  "shots_total": 30,
+  "last_shot_at": "2026-10-13 09:10:04.320685-07:00",
+  "shots_7d": 9,
+  "shots_30d": 9,
+  "shots_total": 31,
   "queued": 5,
   "bags_settled": 3,
   "bags_dialing": 5,
