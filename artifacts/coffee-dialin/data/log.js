@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-13T09:41-07:00",
+ "generated_at": "2026-10-13T10:50-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -451,7 +451,7 @@ window.DIALIN = {
    "label": "Luna — Victor Florez Chiroso (Urrao, Colombia, washed)",
    "verdict": "loved",
    "noted_at": "2026-10-13 07:21:15.047728-07:00",
-   "offering_id": null,
+   "offering_id": 27675,
    "data": {
     "url": "https://enjoylunacoffee.com/products/victor-florez-washed-chiroso-urrao-colombia",
     "farm": "La Cartagena",
@@ -480,6 +480,8 @@ window.DIALIN = {
     "producer": "Victor Florez",
     "best_after": "2 weeks post-roast",
     "roast_date": "2026-09-22",
+    "roaster_id": 185,
+    "producer_id": 24914,
     "roaster_url": "https://enjoylunacoffee.com",
     "availability": "sold out on enjoylunacoffee.com as of 2026-10-13",
     "roaster_city": "just outside Vancouver, BC (Laura & Nate)",
@@ -519,7 +521,7 @@ window.DIALIN = {
    "label": "Luna — Kii AA (Kenya Kirinyaga, double washed)",
    "verdict": null,
    "noted_at": "2026-10-13 07:21:14.929759-07:00",
-   "offering_id": null,
+   "offering_id": 27680,
    "data": {
     "url": "https://enjoylunacoffee.com/products/kii-aa-field-blend-washed-kirinyaga-kenya",
     "grade": "AA",
@@ -543,6 +545,8 @@ window.DIALIN = {
     "producer": "Rungeto Farmers Cooperative members",
     "best_after": "2 weeks post-roast",
     "roast_date": "2026-09-22",
+    "roaster_id": 185,
+    "producer_id": 5160,
     "roaster_url": "https://enjoylunacoffee.com",
     "roaster_city": "just outside Vancouver, BC (Laura & Nate)",
     "origin_country": "Kenya",
@@ -1649,6 +1653,56 @@ window.DIALIN = {
  "origin": {
   "provenance": [
    {
+    "bag": "Luna Victor Florez",
+    "offering_id": 27675,
+    "title": "Victor Florez (Washed Chiroso) | Urrao, Colombia",
+    "url": "https://enjoylunacoffee.com/products/victor-florez-washed-chiroso-urrao-colombia",
+    "roaster": "Luna Coffee",
+    "roaster_city": "just outside Vancouver, BC",
+    "roaster_country": "Canada",
+    "lat": null,
+    "lng": null,
+    "website": "https://enjoylunacoffee.com",
+    "producer_id": 24914,
+    "producer": "Victor Florez",
+    "producer_country": "Colombia",
+    "producer_region": "Urrao",
+    "also_roasted_by": null,
+    "origin": {
+     "country": "Colombia",
+     "region": "Urrao",
+     "producer": "Victor Florez",
+     "process": "Washed",
+     "variety": "Chiroso"
+    }
+   },
+   {
+    "bag": "Luna Kii AA",
+    "offering_id": 27680,
+    "title": "Kii AA (Field Blend Washed) | Kirinyaga, Kenya",
+    "url": "https://enjoylunacoffee.com/products/kii-aa-field-blend-washed-kirinyaga-kenya",
+    "roaster": "Luna Coffee",
+    "roaster_city": "just outside Vancouver, BC",
+    "roaster_country": "Canada",
+    "lat": null,
+    "lng": null,
+    "website": "https://enjoylunacoffee.com",
+    "producer_id": 5160,
+    "producer": "Kii",
+    "producer_country": "Kenya",
+    "producer_region": "Kirinyaga",
+    "also_roasted_by": [
+     "Friedhats",
+     "Sweven Coffee"
+    ],
+    "origin": {
+     "country": "Kenya",
+     "region": "Kirinyaga",
+     "process": "Washed",
+     "variety": "Field Blend"
+    }
+   },
+   {
     "bag": "Makeworth Danche",
     "offering_id": 23941,
     "title": "Ethiopia • Habtamu Danche",
@@ -1665,6 +1719,7 @@ window.DIALIN = {
     "producer_region": "Gedeo, Gedeb",
     "also_roasted_by": [
      "Friedhats",
+     "Luna Coffee",
      "Offshoot Coffee",
      "September Coffee",
      "SEY"
@@ -1760,6 +1815,17 @@ window.DIALIN = {
     "in_my_bags": true
    },
    {
+    "name": "Luna Coffee",
+    "city": "just outside Vancouver, BC",
+    "country": "Canada",
+    "lat": null,
+    "lng": null,
+    "website": "https://enjoylunacoffee.com",
+    "offerings": 2,
+    "producers": 2,
+    "in_my_bags": true
+   },
+   {
     "name": "Archers Coffee",
     "city": "Dubai",
     "country": "UAE",
@@ -1837,17 +1903,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Bows & Arrows",
-    "city": "Victoria, BC",
-    "country": "Canada",
-    "lat": 48.4284,
-    "lng": -123.3656,
-    "website": "https://bowsandarrowscoffee.com",
-    "offerings": 24,
-    "producers": 9,
-    "in_my_bags": false
-   },
-   {
     "name": "Tim Wendelboe",
     "city": "Oslo",
     "country": "Norway",
@@ -1856,6 +1911,17 @@ window.DIALIN = {
     "website": "https://timwendelboe.no",
     "offerings": 24,
     "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Bows & Arrows",
+    "city": "Victoria, BC",
+    "country": "Canada",
+    "lat": 48.4284,
+    "lng": -123.3656,
+    "website": "https://bowsandarrowscoffee.com",
+    "offerings": 24,
+    "producers": 9,
     "in_my_bags": false
    },
    {
@@ -1870,17 +1936,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Devoción",
-    "city": "Brooklyn, NY",
-    "country": "USA",
-    "lat": 40.7176,
-    "lng": -73.9629,
-    "website": "https://devocion.com",
-    "offerings": 21,
-    "producers": 11,
-    "in_my_bags": false
-   },
-   {
     "name": "Friedhats",
     "city": "Amsterdam",
     "country": "Netherlands",
@@ -1889,6 +1944,17 @@ window.DIALIN = {
     "website": "https://www.friedhats.com",
     "offerings": 21,
     "producers": 19,
+    "in_my_bags": false
+   },
+   {
+    "name": "Devoción",
+    "city": "Brooklyn, NY",
+    "country": "USA",
+    "lat": 40.7176,
+    "lng": -73.9629,
+    "website": "https://devocion.com",
+    "offerings": 21,
+    "producers": 11,
     "in_my_bags": false
    },
    {
@@ -1903,17 +1969,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "NATIVE Coffee Co.",
-    "city": "Dallas, TX",
-    "country": "USA",
-    "lat": 32.9334,
-    "lng": -96.8354,
-    "website": "https://www.thenativecoffeecompany.com",
-    "offerings": 18,
-    "producers": 5,
-    "in_my_bags": false
-   },
-   {
     "name": "POMA Coffee Research Lab",
     "city": "Copenhagen",
     "country": "Denmark",
@@ -1922,6 +1977,17 @@ window.DIALIN = {
     "website": "https://www.pomacoffee.com",
     "offerings": 18,
     "producers": 1,
+    "in_my_bags": false
+   },
+   {
+    "name": "NATIVE Coffee Co.",
+    "city": "Dallas, TX",
+    "country": "USA",
+    "lat": 32.9334,
+    "lng": -96.8354,
+    "website": "https://www.thenativecoffeecompany.com",
+    "offerings": 18,
+    "producers": 5,
     "in_my_bags": false
    },
    {
@@ -2019,9 +2085,9 @@ window.DIALIN = {
    },
    {
     "country": "Ethiopia",
-    "producers": 51,
-    "roasters": 17,
-    "offerings": 88,
+    "producers": 52,
+    "roasters": 18,
+    "offerings": 90,
     "my_bags": 1
    },
    {
@@ -2218,6 +2284,7 @@ window.DIALIN = {
    "Brazil",
    "Colombia",
    "Ethiopia",
+   "Kenya",
    "Mexico"
   ],
   "shared_producers": [
@@ -2255,6 +2322,22 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Danche",
+    "country": "Ethiopia",
+    "region": "Gedeo, Gedeb",
+    "roasters": 6,
+    "offerings": 12,
+    "roasted_by": [
+     "Friedhats",
+     "Luna Coffee",
+     "Makeworth Coffee",
+     "Offshoot Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": true
+   },
+   {
     "name": "Finca Soledad",
     "country": "Ecuador",
     "region": "Imababura",
@@ -2285,21 +2368,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Danche",
-    "country": "Ethiopia",
-    "region": "Gedeo, Gedeb",
-    "roasters": 5,
-    "offerings": 11,
-    "roasted_by": [
-     "Friedhats",
-     "Makeworth Coffee",
-     "Offshoot Coffee",
-     "September Coffee",
-     "SEY"
-    ],
-    "in_my_bags": true
-   },
-   {
     "name": "Gesha Village",
     "country": "Ethiopia",
     "region": "Bench Maji, Ethiopia",
@@ -2325,6 +2393,34 @@ window.DIALIN = {
      "Black & White Coffee Roasters",
      "Proud Mary Coffee",
      "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Chelbesa",
+    "country": "Ethiopia",
+    "region": "Gedeb",
+    "roasters": 4,
+    "offerings": 6,
+    "roasted_by": [
+     "Friedhats",
+     "Luna Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Nestor Lasso",
+    "country": "Colombia",
+    "region": "Pitalito, Huila",
+    "roasters": 4,
+    "offerings": 5,
+    "roasted_by": [
+     "Black & White Coffee Roasters",
+     "Luna Coffee",
+     "Offshoot Coffee",
+     "September Coffee"
     ],
     "in_my_bags": false
    },
@@ -2405,41 +2501,15 @@ window.DIALIN = {
      "Proud Mary Coffee"
     ],
     "in_my_bags": false
-   },
-   {
-    "name": "Finca Sophia",
-    "country": "Panama",
-    "region": "Neuva Suiza, Panama",
-    "roasters": 3,
-    "offerings": 8,
-    "roasted_by": [
-     "Archers Coffee",
-     "Proud Mary Coffee",
-     "SEY"
-    ],
-    "in_my_bags": false
-   },
-   {
-    "name": "Buku Sayisa",
-    "country": "Ethiopia",
-    "region": "West Guji",
-    "roasters": 3,
-    "offerings": 7,
-    "roasted_by": [
-     "Friedhats",
-     "Hydrangea Coffee Roasters",
-     "SEY"
-    ],
-    "in_my_bags": false
    }
   ],
   "totals": {
-   "roasters": 25,
-   "producers": 1879,
-   "offerings": 3719,
-   "offerings_available": 757,
-   "offerings_with_producer": 530,
-   "last_release": "2026-09-30 16:42:02-07:00"
+   "roasters": 26,
+   "producers": 1921,
+   "offerings": 3817,
+   "offerings_available": 759,
+   "offerings_with_producer": 532,
+   "last_release": "2026-10-09 09:32:50-07:00"
   },
   "last_scrape": {
    "fired_at": "2026-10-01 14:34:55.884683-07:00",
