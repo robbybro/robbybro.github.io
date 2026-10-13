@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-13T06:52-07:00",
+ "generated_at": "2026-10-13T07:50-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -446,6 +446,113 @@
    }
   },
   {
+   "id": 12,
+   "short_name": "Luna Victor Florez",
+   "label": "Luna — Victor Florez Chiroso (Urrao, Colombia, washed)",
+   "verdict": "loved",
+   "noted_at": "2026-10-13 07:21:15.047728-07:00",
+   "offering_id": null,
+   "data": {
+    "url": "https://enjoylunacoffee.com/products/victor-florez-washed-chiroso-urrao-colombia",
+    "farm": "La Cartagena",
+    "grams": 250,
+    "notes": "pear, butter cookie, satsuma; poached pear, fresh blueberry, orange butter cookie",
+    "roast": "light",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 168
+     },
+     "settled": false,
+     "pourover": {
+      "why": "2 scoops in the Kinto at 4.2 worked well first try (10/13); low end of the 4–5 band",
+      "grinder": "Fellow Ode Gen 2",
+      "setting": 4.2
+     }
+    },
+    "logged": "2026-10-13",
+    "opened": "2026-10-13",
+    "region": "Urrao, Antioquia",
+    "harvest": "February 2026",
+    "process": "washed with 48 hr whole-cherry ferment + 60–66 hr tank ferment after depulping",
+    "roaster": "Luna",
+    "variety": "Chiroso (Ethiopian landrace transplant)",
+    "producer": "Victor Florez",
+    "best_after": "2 weeks post-roast",
+    "roast_date": "2026-09-22",
+    "roaster_url": "https://enjoylunacoffee.com",
+    "availability": "sold out on enjoylunacoffee.com as of 2026-10-13",
+    "roaster_city": "just outside Vancouver, BC (Laura & Nate)",
+    "luna_qc_recipe": "V60 1:17 (15 g → 255 g) at 96°C, 525 µm, low-mineral water",
+    "origin_country": "Colombia",
+    "dialin_start_note": "light washed single origin prior 165–170 @ 1000; dial grind first, then bracket RPM"
+   },
+   "shots": 1,
+   "last_shot": {
+    "id": 34,
+    "shot_at": "2026-10-13T07:23:14.529235-07:00",
+    "burrs": null,
+    "microns": null,
+    "rpm": null,
+    "dose_g": null,
+    "yield_g": null,
+    "time_s": null,
+    "ratio": null,
+    "taste": "delicious",
+    "verdict": "worked well — pourover setting found first try",
+    "next_change": null,
+    "by_whom": null
+   },
+   "queued": {
+    "id": 35,
+    "shot_at": "2026-10-13T07:23:14.646033-07:00",
+    "burrs": null,
+    "microns": 175,
+    "rpm": 1000,
+    "dose_g": null,
+    "next_change": "first espresso: 175 µm @ 1000 rpm, 18 g in, cut at 34, want 30–32 s total; <28 s → 165, >35 s → 185"
+   }
+  },
+  {
+   "id": 11,
+   "short_name": "Luna Kii AA",
+   "label": "Luna — Kii AA (Kenya Kirinyaga, double washed)",
+   "verdict": null,
+   "noted_at": "2026-10-13 07:21:14.929759-07:00",
+   "offering_id": null,
+   "data": {
+    "url": "https://enjoylunacoffee.com/products/kii-aa-field-blend-washed-kirinyaga-kenya",
+    "grade": "AA",
+    "grams": 250,
+    "notes": "honeydew melon, herbal, forest fruits",
+    "roast": "light",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 168
+     },
+     "settled": false
+    },
+    "logged": "2026-10-13",
+    "opened": "2026-10-13",
+    "region": "Kirinyaga",
+    "process": "double washed (depulped, ferment, additional soak)",
+    "roaster": "Luna",
+    "station": "Kii washing station",
+    "variety": "SL28, SL34, Ruiru 11, Batian",
+    "producer": "Rungeto Farmers Cooperative members",
+    "best_after": "2 weeks post-roast",
+    "roast_date": "2026-09-22",
+    "roaster_url": "https://enjoylunacoffee.com",
+    "roaster_city": "just outside Vancouver, BC (Laura & Nate)",
+    "origin_country": "Kenya",
+    "dialin_start_note": "light washed single origin prior 165–170 @ 1000; dial grind first, then bracket RPM"
+   },
+   "shots": 0,
+   "last_shot": null,
+   "queued": null
+  },
+  {
    "id": 5,
    "short_name": "Makeworth Danche",
    "label": "Makeworth Coffee — Ethiopia Habtamu Danche, Washed",
@@ -638,6 +745,48 @@
   }
  ],
  "shots": [
+  {
+   "id": 35,
+   "shot_at": "2026-10-13 07:23:14.646033-07:00",
+   "bag": "Luna Victor Florez",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 175,
+   "rpm": 1000,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "first espresso: 175 µm @ 1000 rpm, 18 g in, cut at 34, want 30–32 s total; <28 s → 165, >35 s → 185",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 34,
+   "shot_at": "2026-10-13 07:23:14.529235-07:00",
+   "bag": "Luna Victor Florez",
+   "method": "pourover",
+   "status": "pulled",
+   "burrs": null,
+   "microns": null,
+   "rpm": null,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": "delicious",
+   "verdict": "worked well — pourover setting found first try",
+   "next_change": null,
+   "by_whom": null,
+   "data": {
+    "brewer": "Kinto",
+    "scoops": 2.0,
+    "grind_setting": "4.2"
+   }
+  },
   {
    "id": 33,
    "shot_at": "2026-10-11 12:40:01.241350-07:00",
@@ -1433,13 +1582,13 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-11 12:40:01.116268-07:00",
-  "shots_7d": 6,
-  "shots_30d": 6,
-  "shots_total": 28,
-  "queued": 4,
+  "last_shot_at": "2026-10-13 07:23:14.529235-07:00",
+  "shots_7d": 7,
+  "shots_30d": 7,
+  "shots_total": 29,
+  "queued": 5,
   "bags_settled": 3,
-  "bags_dialing": 3,
+  "bags_dialing": 5,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
