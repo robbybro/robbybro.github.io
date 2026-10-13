@@ -15,6 +15,8 @@
     if (p[0] === "ch" && p[1]) return {page:"ch", n:p[1], sec:p[2] || null, item:p[3] || null};
     if (p[0] === "viz") return {page:"viz", slug:p[1] || null};
     if (p[0] === "onepager") return {page:"onepager", sec:p[1] || null};
+    if (p[0] === "reading") return {page:"reading", slug:p[1] || null, sec:p[2] || null};
+    if (p[0] === "glossary") return {page:"glossary"};
     return {page:"home"};
   }
 
@@ -24,6 +26,8 @@
     D.chapters.forEach(function(c){ items.push(["#/ch/" + c.n, "Ch. " + c.n, r.page === "ch" && String(r.n) === String(c.n)]); });
     items.push(["#/viz", "Visualizations", r.page === "viz"]);
     if (D.onepager) items.push(["#/onepager", "One-pager", r.page === "onepager"]);
+    if (D.reading) items.push(["#/reading", "Reading", r.page === "reading"]);
+    items.push(["#/glossary", "Glossary", r.page === "glossary"]);
     $("topnav").innerHTML = items.map(function(i){ return '<a href="' + i[0] + '"' + (i[2] ? ' class="on"' : "") + '>' + esc(i[1]) + '</a>'; }).join("");
   }
   function renderSide(r){
@@ -46,6 +50,16 @@
       D.onepager.sections.forEach(function(sx){ h += '<a class="sub' + (r.page === "onepager" && r.sec === sx.id ? " on" : "") + '" href="#/onepager/' + sx.id + '">' + esc(sx.title.split(/ — |: /)[0]) + '</a>'; });
       h += '</div>';
     }
+    if (D.reading){
+      h += '<div class="grp"><span>Reading</span><a href="#/reading"' + (r.page === "reading" && !r.slug ? ' class="on"' : "") + '>The manager books</a>';
+      D.reading.books.forEach(function(b){
+        var on = r.page === "reading" && r.slug === b.slug;
+        h += '<a href="#/reading/' + b.slug + '"' + (on && !r.sec ? ' class="on"' : "") + '>' + esc(b.book) + '</a>';
+        if (on) b.sections.forEach(function(sx){ h += '<a class="sub' + (r.sec === sx.id ? " on" : "") + '" href="#/reading/' + b.slug + '/' + sx.id + '">' + esc(sx.title.split(/ — |: /)[0]) + '</a>'; });
+      });
+      h += '</div>';
+    }
+    h += '<div class="grp"><span>Glossary</span><a href="#/glossary"' + (r.page === "glossary" ? ' class="on"' : "") + '>Every term, one list</a></div>';
     $("side").innerHTML = h;
   }
 
@@ -71,6 +85,7 @@
   function bindCards(root){
     root.querySelectorAll(".card").forEach(function(el){
       var q = el.querySelector(".q"), a = el.querySelector(".a"), f = el.querySelector(".foot"), tog = el.querySelector(".tog");
+      if (!q) return;  // link cards (viz list, reading hub) have no question/answer parts
       function toggle(force){ var open = force != null ? force : a.hidden; a.hidden = !open; f.hidden = !open; tog.textContent = open ? "hide" : "show"; q.setAttribute("aria-expanded", open); }
       q.addEventListener("click", function(){ toggle(); });
       q.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); } });
@@ -98,8 +113,9 @@
   function pageHome(){
     var h = '<div class="hero"><span class="kicker">Designing Data-Intensive Applications · 2nd edition</span><h1>Study site</h1>' +
       '<p>One section per chapter: the jargon defined once, every question we worked through with the corrected answer hidden behind a click, and ten takeaways. Interactive visualizations live under their own tab.</p>' +
-      '<div class="chips">' + D.chapters.map(function(c){ return '<a class="chip" href="#/ch/' + c.n + '">Ch. ' + c.n + ' · ' + esc(c.title) + '</a>'; }).join("") + D.viz.map(function(v){ return '<a class="chip" href="#/viz/' + v.slug + '">▶ ' + esc(v.title) + '</a>'; }).join("") + '</div></div>';
-    h += '<section class="blk"><h2>How to use it</h2><ul><li>Read a question, answer it out loud, then click <b>show</b>. Mark it <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li><b>What I said first</b> boxes are the wrong turns from the live sessions. They are the cheapest thing on the site: each one is a mistake already made once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li></ul></section>';
+      '<div class="chips">' + D.chapters.map(function(c){ return '<a class="chip" href="#/ch/' + c.n + '">Ch. ' + c.n + ' · ' + esc(c.title) + '</a>'; }).join("") + D.viz.map(function(v){ return '<a class="chip" href="#/viz/' + v.slug + '">▶ ' + esc(v.title) + '</a>'; }).join("") +
+      (D.reading ? D.reading.books.map(function(b){ return '<a class="chip" href="#/reading/' + b.slug + '">📖 ' + esc(b.book) + '</a>'; }).join("") : "") + '<a class="chip" href="#/glossary">Glossary</a></div></div>';
+    h += '<section class="blk"><h2>How to use it</h2><ul><li>Read a question, answer it out loud, then click <b>show</b>. Mark it <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li><b>What I said first</b> boxes are the wrong turns from the live sessions. They are the cheapest thing on the site: each one is a mistake already made once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li><li><b>Reading</b> holds one page per manager book (the models and the vocabulary, not the worksheets), and <b>Glossary</b> merges the jargon from every chapter with those terms into one filterable list.</li></ul></section>';
     var g = got(), total = 0, done = 0;
     D.chapters.forEach(function(c){ c.sections.forEach(function(s){ s.items.forEach(function(_, i){ total++; if (g["ch" + c.n + "-" + s.id + "-" + (i+1)]) done++; }); }); });
     h += '<section class="blk"><h2>Progress</h2><p>' + done + ' of ' + total + ' cards marked got it.</p></section>';
@@ -136,21 +152,63 @@
     return h;
   }
 
+  function book(slug){ return (D.reading ? D.reading.books : []).filter(function(b){ return b.slug === slug; })[0]; }
+  function pageReading(r){
+    if (r.slug){
+      var b = book(r.slug); if (!b) return '<p>No such book.</p>';
+      var toc = b.sections.map(function(sx){ return '<a class="chip" href="#/reading/' + b.slug + '/' + sx.id + '">' + esc(sx.title.split(/ — |: /)[0]) + '</a>'; }).join("");
+      var h = '<div class="hero"><span class="kicker">' + esc(b.kind) + ' · ' + esc(b.author) + '</span><h1>' + esc(b.book) + '</h1>' + (b.intro ? b.intro : "") + '<div class="chips" style="margin-top:12px">' + toc + '</div></div><div class="sheet">';
+      b.sections.forEach(function(sx){ h += '<section class="blk" id="sec-' + sx.id + '"><h2>' + esc(sx.title) + '</h2>' + sx.html + '</section>'; });
+      return h + '</div>';
+    }
+    var hh = '<div class="hero"><span class="kicker">Reading · the manager books</span><h1>One page each</h1><p>The books around the design book, compressed to the part that gets used in a manager loop: the vocabulary, the models, the sentences. The fill-in worksheets that go with them live in Google Docs; this is the index and the notes.</p></div><div class="viz-list">';
+    D.reading.books.forEach(function(b){
+      hh += '<a class="card" href="#/reading/' + b.slug + '"><h3>' + esc(b.book) + '</h3><p class="muted" style="margin:0">' + esc(b.author) + ' · ' + esc(b.kind) + ' · ' + b.sections.length + ' sections · ' + b.glossary.length + ' terms</p></a>';
+    });
+    return hh + '</div>';
+  }
+  function glossaryRows(){
+    var rows = [];
+    D.chapters.forEach(function(c){ c.jargon.forEach(function(j){ rows.push({term:j[0], meaning:j[1], src:"Ch. " + c.n, href:"#/ch/" + c.n + "/jargon"}); }); });
+    if (D.reading) D.reading.books.forEach(function(b){ b.glossary.forEach(function(g){ rows.push({term:g.term, meaning:g.meaning, src:b.book, href:"#/reading/" + b.slug}); }); });
+    function key(t){ return t.replace(/<[^>]+>/g, "").replace(/^["'“‘]+/, "").toLowerCase(); }
+    rows.sort(function(a, b){ var x = key(a.term), y = key(b.term); return x < y ? -1 : x > y ? 1 : 0; });
+    return rows;
+  }
+  function pageGlossary(){
+    var rows = glossaryRows();
+    var h = '<div class="hero"><span class="kicker">Glossary</span><h1>Every term, one list</h1><p>The jargon tables from every chapter and the terms from the manager books, merged and sorted. Type to filter.</p>' +
+      '<p style="margin-top:12px"><input id="gfilter" type="search" placeholder="filter terms" aria-label="Filter terms" style="font:inherit;width:100%;max-width:420px;padding:7px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--ground);color:var(--ink)"> <span class="prog" id="gcount"></span></p></div>';
+    h += '<div class="sheet"><div class="tbl"><table id="gtable"><thead><tr><th>Term</th><th>Meaning</th><th>Source</th></tr></thead><tbody>' +
+      rows.map(function(r){ return '<tr><td>' + r.term + '</td><td>' + r.meaning + '</td><td><a href="' + r.href + '">' + esc(r.src) + '</a></td></tr>'; }).join("") + '</tbody></table></div></div>';
+    return h;
+  }
+  function bindGlossary(){
+    var inp = $("gfilter"); if (!inp) return;
+    var trs = Array.prototype.slice.call(document.querySelectorAll("#gtable tbody tr")), cnt = $("gcount");
+    function apply(){
+      var q = inp.value.trim().toLowerCase(), n = 0;
+      trs.forEach(function(tr){ var on = !q || tr.textContent.toLowerCase().indexOf(q) >= 0; tr.hidden = !on; if (on) n++; });
+      cnt.textContent = n + " of " + trs.length + " terms";
+    }
+    inp.addEventListener("input", apply); apply();
+  }
+
   /* ---------- render ---------- */
   function render(){
     var r = route(), main = $("main");
     renderNav(r); renderSide(r);
-    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : pageHome();
-    bindCards(main); updateProg();
+    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : r.page === "reading" && D.reading ? pageReading(r) : r.page === "glossary" ? pageGlossary() : pageHome();
+    bindCards(main); updateProg(); bindGlossary();
     main.querySelectorAll("[data-show],[data-hide]").forEach(function(b){
       b.addEventListener("click", function(){
         var sec = $("sec-" + (this.dataset.show || this.dataset.hide)), open = !!this.dataset.show;
         sec.querySelectorAll(".card").forEach(function(el){ if (el._toggle) el._toggle(open); });
       });
     });
-    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : "DDIA") + " · DDIA study site";
+    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : r.page === "reading" && r.slug && book(r.slug) ? book(r.slug).book : r.page === "reading" ? "Reading" : r.page === "glossary" ? "Glossary" : "DDIA") + " · DDIA study site";
     $("side").classList.remove("open");
-    if (r.page === "onepager" && r.sec){ var t2 = $("sec-" + r.sec); if (t2) setTimeout(function(){ t2.scrollIntoView({block:"start"}); }, 30); }
+    if ((r.page === "onepager" || r.page === "reading") && r.sec){ var t2 = $("sec-" + r.sec); if (t2) setTimeout(function(){ t2.scrollIntoView({block:"start"}); }, 30); }
     if (r.page === "ch" && r.sec){
       var target = r.item ? $("ch" + r.n + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
       if (target){
