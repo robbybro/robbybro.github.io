@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-14T06:51-07:00",
+ "generated_at": "2026-10-14T08:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -489,30 +489,30 @@ window.DIALIN = {
     "origin_country": "Colombia",
     "dialin_start_note": "light washed single origin prior 165–170 @ 1000; dial grind first, then bracket RPM"
    },
-   "shots": 3,
+   "shots": 4,
    "last_shot": {
-    "id": 38,
-    "shot_at": "2026-10-13T09:10:04.320685-07:00",
-    "burrs": null,
-    "microns": 175,
-    "rpm": 600,
-    "dose_g": 18,
-    "yield_g": 35.6,
-    "time_s": 19,
-    "ratio": 1.98,
-    "taste": "over-acidic note gone; held up better in the cappuccino; a bit under-extracted",
-    "verdict": "fast — 600 rpm took 13 s off at the same grind; RPM A/B: 600 wins on flavour, grind must follow",
-    "next_change": "→ 165 @ 600 (finer ~10); if still under 28 s go 155",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 39,
-    "shot_at": "2026-10-13T09:10:04.444013-07:00",
+    "id": 40,
+    "shot_at": "2026-10-14T08:32:16.33656-07:00",
     "burrs": null,
     "microns": 165,
     "rpm": 600,
+    "dose_g": 18,
+    "yield_g": 37.3,
+    "time_s": 19.9,
+    "ratio": 2.07,
+    "taste": null,
+    "verdict": "still way too fast; 10 µm finer moved time 0.9 s (19.0 → 19.9)",
+    "next_change": "→ 150 @ 600 (Robby's call, 15 µm step since 165 did nothing)",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 41,
+    "shot_at": "2026-10-14T08:32:16.461755-07:00",
+    "burrs": null,
+    "microns": 150,
+    "rpm": 600,
     "dose_g": null,
-    "next_change": "165 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 155, >35 s → 170"
+    "next_change": "150 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 140, >35 s → 155"
    }
   },
   {
@@ -750,13 +750,13 @@ window.DIALIN = {
  ],
  "shots": [
   {
-   "id": 39,
-   "shot_at": "2026-10-13 09:10:04.444013-07:00",
+   "id": 41,
+   "shot_at": "2026-10-14 08:32:16.461755-07:00",
    "bag": "Luna Victor Florez",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 165,
+   "microns": 150,
    "rpm": 600,
    "dose_g": null,
    "yield_g": null,
@@ -764,7 +764,26 @@ window.DIALIN = {
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "165 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 155, >35 s → 170",
+   "next_change": "150 µm @ 600, 18 g, cut 34; want 30–32 s total; <28 s → 140, >35 s → 155",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 40,
+   "shot_at": "2026-10-14 08:32:16.336560-07:00",
+   "bag": "Luna Victor Florez",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 165,
+   "rpm": 600,
+   "dose_g": "18",
+   "yield_g": "37.3",
+   "time_s": "19.9",
+   "ratio": "2.07",
+   "taste": null,
+   "verdict": "still way too fast; 10 µm finer moved time 0.9 s (19.0 → 19.9)",
+   "next_change": "→ 150 @ 600 (Robby's call, 15 µm step since 165 did nothing)",
    "by_whom": null,
    "data": {}
   },
@@ -1635,10 +1654,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-13 09:10:04.320685-07:00",
-  "shots_7d": 9,
-  "shots_30d": 9,
-  "shots_total": 31,
+  "last_shot_at": "2026-10-14 08:32:16.336560-07:00",
+  "shots_7d": 10,
+  "shots_30d": 10,
+  "shots_total": 32,
   "queued": 5,
   "bags_settled": 3,
   "bags_dialing": 5,
