@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-15T06:49-07:00",
+ "generated_at": "2026-10-15T09:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -546,7 +546,15 @@ window.DIALIN = {
    },
    "shots": 0,
    "last_shot": null,
-   "queued": null
+   "queued": {
+    "id": 45,
+    "shot_at": "2026-10-15T09:08:08.61681-07:00",
+    "burrs": null,
+    "microns": 168,
+    "rpm": 1000,
+    "dose_g": null,
+    "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600"
+   }
   },
   {
    "id": 5,
@@ -741,6 +749,25 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 45,
+   "shot_at": "2026-10-15 09:08:08.616810-07:00",
+   "bag": "Luna Kii AA",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 168,
+   "rpm": 1000,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 44,
    "shot_at": "2026-10-14 13:38:00-07:00",
@@ -1669,7 +1696,7 @@ window.DIALIN = {
   "shots_7d": 12,
   "shots_30d": 12,
   "shots_total": 34,
-  "queued": 4,
+  "queued": 5,
   "bags_settled": 3,
   "bags_dialing": 5,
   "backflush": {
