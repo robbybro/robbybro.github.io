@@ -7,6 +7,10 @@
   function got(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function setGot(id, v){ var g = got(); if (v) g[id] = 1; else delete g[id]; try{ localStorage.setItem(KEY, JSON.stringify(g)); }catch(e){} }
   function chapter(n){ return D.chapters.filter(function(c){ return String(c.n) === String(n); })[0]; }
+  function mock(slug){ return (D.mocks || []).filter(function(m){ return m.slug === slug; })[0]; }
+  /* card ids + links: chapters use ch<n>, mocks use mock-<slug> */
+  function idp(c){ return c.slug ? "mock-" + c.slug : "ch" + c.n; }
+  function base(c){ return c.slug ? "#/mock/" + c.slug : "#/ch/" + c.n; }
 
   /* ---------- route parsing ---------- */
   function route(){
@@ -17,6 +21,7 @@
     if (p[0] === "onepager") return {page:"onepager", sec:p[1] || null};
     if (p[0] === "reading") return {page:"reading", slug:p[1] || null, sec:p[2] || null};
     if (p[0] === "glossary") return {page:"glossary"};
+    if (p[0] === "mock") return {page:"mock", slug:p[1] || null, sec:p[2] || null, item:p[3] || null};
     return {page:"home"};
   }
 
@@ -27,6 +32,7 @@
     items.push(["#/viz", "Visualizations", r.page === "viz"]);
     if (D.onepager) items.push(["#/onepager", "One-pager", r.page === "onepager"]);
     if (D.reading) items.push(["#/reading", "Reading", r.page === "reading"]);
+    if (D.mocks && D.mocks.length) items.push(["#/mock", "Mocks", r.page === "mock"]);
     items.push(["#/glossary", "Glossary", r.page === "glossary"]);
     $("topnav").innerHTML = items.map(function(i){ return '<a href="' + i[0] + '"' + (i[2] ? ' class="on"' : "") + '>' + esc(i[1]) + '</a>'; }).join("");
   }
@@ -59,13 +65,25 @@
       });
       h += '</div>';
     }
+    if (D.mocks && D.mocks.length){
+      h += '<div class="grp"><span>Mock interviews</span><a href="#/mock"' + (r.page === "mock" && !r.slug ? ' class="on"' : "") + '>The queue</a>';
+      D.mocks.forEach(function(m){
+        var on = r.page === "mock" && r.slug === m.slug;
+        h += '<a href="#/mock/' + m.slug + '"' + (on && !r.sec ? ' class="on"' : "") + '>#' + m.n + ' ' + esc(m.title.split(/: /)[0]) + '</a>';
+        if (on){
+          m.sections.forEach(function(s){ h += '<a class="sub' + (r.sec === s.id ? " on" : "") + '" href="#/mock/' + m.slug + '/' + s.id + '">' + esc(s.title.split(/: /)[0]) + '</a>'; });
+          h += '<a class="sub' + (r.sec === "takeaways" ? " on" : "") + '" href="#/mock/' + m.slug + '/takeaways">Ten takeaways</a>';
+        }
+      });
+      h += '</div>';
+    }
     h += '<div class="grp"><span>Glossary</span><a href="#/glossary"' + (r.page === "glossary" ? ' class="on"' : "") + '>Every term, one list</a></div>';
     $("side").innerHTML = h;
   }
 
   /* ---------- cards ---------- */
   function card(c, sec, it, i){
-    var id = "ch" + c.n + "-" + sec.id + "-" + (i+1), g = got()[id];
+    var id = idp(c) + "-" + sec.id + "-" + (i+1), g = got()[id];
     var body = it.a || "";
     if (it.when || it.breaks){
       body += '<p><b>When you choose it.</b> ' + (it.when || "") + '</p>';
@@ -78,7 +96,7 @@
     return '<article class="card' + (g ? " got" : "") + '" id="' + id + '" data-id="' + id + '">' +
       '<div class="q"><span class="n">' + (i+1) + '</span><span class="t">' + it.q + '</span></div>' +
       '<div class="a">' + body + '</div>' +
-      '<div class="foot"><a href="#/ch/' + c.n + '/' + sec.id + '/' + (i+1) + '" class="prog">link</a><button type="button" class="got-btn' + (g ? " on" : "") + '">' + (g ? "✓ got it" : "mark got it") + '</button></div>' +
+      '<div class="foot"><a href="' + base(c) + '/' + sec.id + '/' + (i+1) + '" class="prog">link</a><button type="button" class="got-btn' + (g ? " on" : "") + '">' + (g ? "✓ got it" : "mark got it") + '</button></div>' +
     '</article>';
   }
   function bindCards(root){
@@ -98,7 +116,7 @@
     });
   }
   function sectionBlock(c, s){
-    var ids = s.items.map(function(_, i){ return "ch" + c.n + "-" + s.id + "-" + (i+1); }).join(",");
+    var ids = s.items.map(function(_, i){ return idp(c) + "-" + s.id + "-" + (i+1); }).join(",");
     return '<section class="blk" id="sec-' + s.id + '"><div class="blk-head"><div><h2>' + esc(s.title) + '</h2>' + (s.intro ? '<p class="muted" style="margin:4px 0 0;max-width:80ch">' + s.intro + '</p>' : "") + '</div>' +
       '<div class="tools"><span class="prog" data-prog="' + ids + '"></span></div></div>' +
       s.items.map(function(it, i){ return card(c, s, it, i); }).join("") + '</section>';
@@ -109,11 +127,29 @@
     var h = '<div class="hero"><span class="kicker">Designing Data-Intensive Applications · 2nd edition</span><h1>Study site</h1>' +
       '<p>One section per chapter: the jargon defined once, then the chapter worked as a design round on one real system, a messaging system for a billion daily users, with the follow-ups an interviewer would push on, and ten takeaways. Interactive visualizations live under their own tab.</p>' +
       '<div class="chips">' + D.chapters.map(function(c){ return '<a class="chip" href="#/ch/' + c.n + '">Ch. ' + c.n + ' · ' + esc(c.title) + '</a>'; }).join("") + D.viz.map(function(v){ return '<a class="chip" href="#/viz/' + v.slug + '">▶ ' + esc(v.title) + '</a>'; }).join("") +
-      (D.reading ? D.reading.books.map(function(b){ return '<a class="chip" href="#/reading/' + b.slug + '">📖 ' + esc(b.book) + '</a>'; }).join("") : "") + '<a class="chip" href="#/glossary">Glossary</a></div></div>';
+      (D.reading ? D.reading.books.map(function(b){ return '<a class="chip" href="#/reading/' + b.slug + '">📖 ' + esc(b.book) + '</a>'; }).join("") : "") +
+      (D.mocks || []).map(function(m){ return '<a class="chip" href="#/mock/' + m.slug + '">🎙 Mock #' + m.n + ' · ' + esc(m.title.split(/: /)[0]) + '</a>'; }).join("") + '<a class="chip" href="#/glossary">Glossary</a></div></div>';
     h += '<section class="blk"><h2>How to use it</h2><ul><li>Each chapter is one round of the same interview. Read the prompt, answer it out loud, then read the answer and the follow-ups. Mark a card <b>got it</b> once you can give the answer cold; the tick is stored in this browser.</li><li>Answers are concise on purpose: the mechanism, the number, the tradeoff, the sentence to say. The jargon table above each round defines the terms once.</li><li>Every question has a direct link, so a card can be sent to a phone or a future session.</li><li><b>Reading</b> holds one page per manager book (the models and the vocabulary, not the worksheets), and <b>Glossary</b> merges the jargon from every chapter with those terms into one filterable list.</li></ul></section>';
     var g = got(), total = 0, done = 0;
-    D.chapters.forEach(function(c){ c.sections.forEach(function(s){ s.items.forEach(function(_, i){ total++; if (g["ch" + c.n + "-" + s.id + "-" + (i+1)]) done++; }); }); });
+    D.chapters.concat(D.mocks || []).forEach(function(c){ c.sections.forEach(function(s){ s.items.forEach(function(_, i){ total++; if (g[idp(c) + "-" + s.id + "-" + (i+1)]) done++; }); }); });
     h += '<section class="blk"><h2>Progress</h2><p>' + done + ' of ' + total + ' cards marked got it.</p></section>';
+    return h;
+  }
+  function pageMock(r){
+    if (!r.slug){
+      var hh = '<div class="hero"><span class="kicker">Mock interviews · after the book</span><h1>The queue, one page per mock</h1><p>Each mock is a 45-minute design round on a non-messaging system, scored against the one-pager. The page is the round done right: the prompt, the questions in the order an interviewer asks them, the answer that earns the follow-up, and the mechanisms re-asked against the design. Answer out loud before reading.</p></div><div class="viz-list">';
+      (D.mocks || []).forEach(function(m){
+        var n = 0; m.sections.forEach(function(s){ n += s.items.length; });
+        hh += '<a class="card" href="#/mock/' + m.slug + '"><h3>#' + m.n + ' · ' + esc(m.title) + '</h3><p class="muted" style="margin:0">' + esc(m.date) + ' · chapters ' + m.chapters.join(", ") + ' · ' + n + ' cards</p></a>';
+      });
+      return hh + '</div>';
+    }
+    var m = mock(r.slug); if (!m) return '<p>No such mock.</p>';
+    var h = '<div class="hero"><span class="kicker">Mock design #' + m.n + ' · ' + esc(m.date) + ' · chapters ' + m.chapters.join(", ") + '</span><h1>' + esc(m.title) + '</h1><p>' + m.why + '</p>' +
+      '<div class="chips"><a class="chip" href="#/mock/' + m.slug + '/prompt">Prompt</a>' + m.sections.map(function(s){ return '<a class="chip" href="#/mock/' + m.slug + '/' + s.id + '">' + esc(s.title.split(/: /)[0]) + '</a>'; }).join("") + '<a class="chip" href="#/mock/' + m.slug + '/takeaways">Ten takeaways</a></div></div>';
+    h += '<section class="blk" id="sec-prompt"><h2>The prompt, as the interviewer gives it</h2><blockquote class="line" style="margin:0">' + esc(m.prompt) + '</blockquote></section>';
+    m.sections.forEach(function(s){ h += sectionBlock(m, s); });
+    h += '<section class="blk" id="sec-takeaways"><h2>Ten takeaways</h2><ol class="take">' + m.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") + '</ol></section>';
     return h;
   }
   function pageChapter(r){
@@ -193,13 +229,13 @@
   function render(){
     var r = route(), main = $("main");
     renderNav(r); renderSide(r);
-    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : r.page === "reading" && D.reading ? pageReading(r) : r.page === "glossary" ? pageGlossary() : pageHome();
+    main.innerHTML = r.page === "ch" ? pageChapter(r) : r.page === "viz" ? pageViz(r) : r.page === "onepager" && D.onepager ? pageOnepager() : r.page === "reading" && D.reading ? pageReading(r) : r.page === "glossary" ? pageGlossary() : r.page === "mock" ? pageMock(r) : pageHome();
     bindCards(main); updateProg(); bindGlossary();
-    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : r.page === "reading" && r.slug && book(r.slug) ? book(r.slug).book : r.page === "reading" ? "Reading" : r.page === "glossary" ? "Glossary" : "DDIA") + " · DDIA study site";
+    document.title = (r.page === "ch" && chapter(r.n) ? "Ch. " + r.n + " · " + chapter(r.n).title : r.page === "viz" ? "Visualizations" : r.page === "onepager" ? "System design one-pager" : r.page === "reading" && r.slug && book(r.slug) ? book(r.slug).book : r.page === "reading" ? "Reading" : r.page === "glossary" ? "Glossary" : r.page === "mock" && r.slug && mock(r.slug) ? "Mock #" + mock(r.slug).n + " · " + mock(r.slug).title : r.page === "mock" ? "Mock interviews" : "DDIA") + " · DDIA study site";
     $("side").classList.remove("open");
     if ((r.page === "onepager" || r.page === "reading") && r.sec){ var t2 = $("sec-" + r.sec); if (t2) setTimeout(function(){ t2.scrollIntoView({block:"start"}); }, 30); }
-    if (r.page === "ch" && r.sec){
-      var target = r.item ? $("ch" + r.n + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
+    if ((r.page === "ch" || r.page === "mock") && r.sec){
+      var target = r.item ? $((r.page === "ch" ? "ch" + r.n : "mock-" + r.slug) + "-" + r.sec + "-" + r.item) : $("sec-" + r.sec);
       if (target){
         setTimeout(function(){ target.scrollIntoView({block:"start"}); }, 30);
       }
