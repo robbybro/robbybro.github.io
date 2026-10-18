@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-18T06:50-07:00",
+ "generated_at": "2026-10-18T08:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -446,6 +446,66 @@ window.DIALIN = {
    }
   },
   {
+   "id": 13,
+   "short_name": "Creature Friend Blend",
+   "label": "Creature Coffee Co — Friend Blend (Guatemala, Costa Rica, Ethiopia)",
+   "verdict": null,
+   "noted_at": "2026-10-18 08:38:45.468623-07:00",
+   "offering_id": null,
+   "data": {
+    "use": "espresso + filter blend",
+    "burrs": "Core",
+    "grams": 309,
+    "notes": "chocolate torte, black cherry, harmonized",
+    "roast": "medium (3 of 5 on bag scale)",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 180
+     },
+     "settled": false
+    },
+    "logged": "2026-10-18",
+    "opened": "2026-10-18",
+    "origins": [
+     "Guatemala",
+     "Costa Rica",
+     "Ethiopia"
+    ],
+    "process": "blend; processes not stated on bag",
+    "roaster": "Creature Coffee Co",
+    "roast_date": null,
+    "roast_date_note": "not visible on front of bag — check the back/bottom",
+    "dialin_start_note": "espresso-blend prior 180 @ 1000 (Ghost Rider, the other medium espresso blend, settled at 180); dial grind first, then bracket RPM",
+    "roaster_in_untamped": false
+   },
+   "shots": 2,
+   "last_shot": {
+    "id": 49,
+    "shot_at": "2026-10-18T08:46:45.99898-07:00",
+    "burrs": null,
+    "microns": 172,
+    "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 37,
+    "time_s": 27.4,
+    "ratio": 2.06,
+    "taste": null,
+    "verdict": "a little fast",
+    "next_change": "→ 165 @ 1200",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 50,
+    "shot_at": "2026-10-18T08:46:46.119493-07:00",
+    "burrs": null,
+    "microns": 165,
+    "rpm": 1200,
+    "dose_g": null,
+    "next_change": "18 g in, cut at 34; aim 30–32 s total; hold 1200 so only one variable moves"
+   }
+  },
+  {
    "id": 12,
    "short_name": "Luna Victor Florez",
    "label": "Luna — Victor Florez Chiroso (Urrao, Colombia, washed)",
@@ -749,6 +809,66 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 50,
+   "shot_at": "2026-10-18 08:46:46.119493-07:00",
+   "bag": "Creature Friend Blend",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 165,
+   "rpm": 1200,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "18 g in, cut at 34; aim 30–32 s total; hold 1200 so only one variable moves",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 49,
+   "shot_at": "2026-10-18 08:46:45.998980-07:00",
+   "bag": "Creature Friend Blend",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 172,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "37",
+   "time_s": "27.4",
+   "ratio": "2.06",
+   "taste": null,
+   "verdict": "a little fast",
+   "next_change": "→ 165 @ 1200",
+   "by_whom": null,
+   "data": {
+    "note": "dial set at 172.5; --um is integer-only",
+    "microns_exact": 172.5
+   }
+  },
+  {
+   "id": 47,
+   "shot_at": "2026-10-18 08:43:08.987901-07:00",
+   "bag": "Creature Friend Blend",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 180,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "37.1",
+   "time_s": "19.7",
+   "ratio": "2.06",
+   "taste": null,
+   "verdict": "way fast",
+   "next_change": "→ 165",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 45,
    "shot_at": "2026-10-15 09:08:08.616810-07:00",
@@ -1692,13 +1812,13 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-14 13:38:00-07:00",
-  "shots_7d": 7,
-  "shots_30d": 12,
-  "shots_total": 34,
-  "queued": 5,
+  "last_shot_at": "2026-10-18 08:46:45.998980-07:00",
+  "shots_7d": 9,
+  "shots_30d": 14,
+  "shots_total": 36,
+  "queued": 6,
   "bags_settled": 3,
-  "bags_dialing": 5,
+  "bags_dialing": 6,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
@@ -1960,17 +2080,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Tim Wendelboe",
-    "city": "Oslo",
-    "country": "Norway",
-    "lat": 59.9227,
-    "lng": 10.7527,
-    "website": "https://timwendelboe.no",
-    "offerings": 24,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
     "name": "Bows & Arrows",
     "city": "Victoria, BC",
     "country": "Canada",
@@ -1979,6 +2088,17 @@ window.DIALIN = {
     "website": "https://bowsandarrowscoffee.com",
     "offerings": 24,
     "producers": 9,
+    "in_my_bags": false
+   },
+   {
+    "name": "Tim Wendelboe",
+    "city": "Oslo",
+    "country": "Norway",
+    "lat": 59.9227,
+    "lng": 10.7527,
+    "website": "https://timwendelboe.no",
+    "offerings": 24,
+    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -1993,17 +2113,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Friedhats",
-    "city": "Amsterdam",
-    "country": "Netherlands",
-    "lat": 52.3676,
-    "lng": 4.9041,
-    "website": "https://www.friedhats.com",
-    "offerings": 21,
-    "producers": 19,
-    "in_my_bags": false
-   },
-   {
     "name": "Devoción",
     "city": "Brooklyn, NY",
     "country": "USA",
@@ -2012,6 +2121,17 @@ window.DIALIN = {
     "website": "https://devocion.com",
     "offerings": 21,
     "producers": 11,
+    "in_my_bags": false
+   },
+   {
+    "name": "Friedhats",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "lat": 52.3676,
+    "lng": 4.9041,
+    "website": "https://www.friedhats.com",
+    "offerings": 21,
+    "producers": 19,
     "in_my_bags": false
    },
    {
@@ -2026,17 +2146,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "POMA Coffee Research Lab",
-    "city": "Copenhagen",
-    "country": "Denmark",
-    "lat": 55.6761,
-    "lng": 12.5683,
-    "website": "https://www.pomacoffee.com",
-    "offerings": 18,
-    "producers": 1,
-    "in_my_bags": false
-   },
-   {
     "name": "NATIVE Coffee Co.",
     "city": "Dallas, TX",
     "country": "USA",
@@ -2045,6 +2154,17 @@ window.DIALIN = {
     "website": "https://www.thenativecoffeecompany.com",
     "offerings": 18,
     "producers": 5,
+    "in_my_bags": false
+   },
+   {
+    "name": "POMA Coffee Research Lab",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6761,
+    "lng": 12.5683,
+    "website": "https://www.pomacoffee.com",
+    "offerings": 18,
+    "producers": 1,
     "in_my_bags": false
    },
    {
@@ -2059,17 +2179,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "La Cabra",
-    "city": "Copenhagen (HQ Aarhus) + NYC",
-    "country": "Denmark",
-    "lat": 56.1572,
-    "lng": 10.2107,
-    "website": "https://www.lacabra.dk",
-    "offerings": 12,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
     "name": "Prolog Coffee",
     "city": "Copenhagen",
     "country": "Denmark",
@@ -2078,6 +2187,17 @@ window.DIALIN = {
     "website": "https://prologcoffee.com",
     "offerings": 12,
     "producers": 11,
+    "in_my_bags": false
+   },
+   {
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "country": "Denmark",
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 12,
+    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -2092,17 +2212,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Sweven Coffee",
-    "city": "Bristol",
-    "country": "UK",
-    "lat": 51.4545,
-    "lng": -2.5879,
-    "website": "https://www.swevencoffee.co.uk",
-    "offerings": 10,
-    "producers": 9,
-    "in_my_bags": false
-   },
-   {
     "name": "SEY",
     "city": "Brooklyn, NY",
     "country": "USA",
@@ -2114,12 +2223,111 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Sweven Coffee",
+    "city": "Bristol",
+    "country": "UK",
+    "lat": 51.4545,
+    "lng": -2.5879,
+    "website": "https://www.swevencoffee.co.uk",
+    "offerings": 10,
+    "producers": 9,
+    "in_my_bags": false
+   },
+   {
     "name": "Coffee Project NY",
     "city": "New York, NY",
     "country": "USA",
     "lat": 40.7264,
     "lng": -73.9878,
     "website": "https://coffeeprojectny.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Estate Coffee Company",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": "https://www.estatecoffeecompany.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Weathered Hands Coffee",
+    "city": "Texas Hill Country",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Botz Coffee",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Barrett's Coffee",
+    "city": "Austin, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Mural Roasters",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Pulp Coffee Roasters",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Akhanay Coffee Roasters",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "NoFi Slow Bar",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2561,7 +2769,7 @@ window.DIALIN = {
    }
   ],
   "totals": {
-   "roasters": 26,
+   "roasters": 34,
    "producers": 1921,
    "offerings": 3817,
    "offerings_available": 759,
