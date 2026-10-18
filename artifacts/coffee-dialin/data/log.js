@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-18T08:49-07:00",
+ "generated_at": "2026-10-18T09:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -479,30 +479,30 @@ window.DIALIN = {
     "dialin_start_note": "espresso-blend prior 180 @ 1000 (Ghost Rider, the other medium espresso blend, settled at 180); dial grind first, then bracket RPM",
     "roaster_in_untamped": false
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 49,
-    "shot_at": "2026-10-18T08:46:45.99898-07:00",
+    "id": 51,
+    "shot_at": "2026-10-18T08:52:35.104143-07:00",
     "burrs": null,
-    "microns": 172,
+    "microns": 169,
     "rpm": 1200,
     "dose_g": 18,
-    "yield_g": 37,
-    "time_s": 27.4,
-    "ratio": 2.06,
+    "yield_g": 36.58,
+    "time_s": 27,
+    "ratio": 2.03,
     "taste": null,
-    "verdict": "a little fast",
-    "next_change": "→ 165 @ 1200",
+    "verdict": "still fast; 3.5 µm finer moved nothing",
+    "next_change": "→ 160 @ 1200",
     "by_whom": null
    },
    "queued": {
-    "id": 50,
-    "shot_at": "2026-10-18T08:46:46.119493-07:00",
+    "id": 52,
+    "shot_at": "2026-10-18T08:52:35.224046-07:00",
     "burrs": null,
-    "microns": 165,
+    "microns": 160,
     "rpm": 1200,
     "dose_g": null,
-    "next_change": "18 g in, cut at 34; aim 30–32 s total; hold 1200 so only one variable moves"
+    "next_change": "18 g in, cut at 34; aim 30–32 s total; a full 10 µm step this time"
    }
   },
   {
@@ -810,13 +810,13 @@ window.DIALIN = {
  ],
  "shots": [
   {
-   "id": 50,
-   "shot_at": "2026-10-18 08:46:46.119493-07:00",
+   "id": 52,
+   "shot_at": "2026-10-18 08:52:35.224046-07:00",
    "bag": "Creature Friend Blend",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 165,
+   "microns": 160,
    "rpm": 1200,
    "dose_g": null,
    "yield_g": null,
@@ -824,7 +824,26 @@ window.DIALIN = {
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34; aim 30–32 s total; hold 1200 so only one variable moves",
+   "next_change": "18 g in, cut at 34; aim 30–32 s total; a full 10 µm step this time",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 51,
+   "shot_at": "2026-10-18 08:52:35.104143-07:00",
+   "bag": "Creature Friend Blend",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 169,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "36.58",
+   "time_s": "27",
+   "ratio": "2.03",
+   "taste": null,
+   "verdict": "still fast; 3.5 µm finer moved nothing",
+   "next_change": "→ 160 @ 1200",
    "by_whom": null,
    "data": {}
   },
@@ -1812,10 +1831,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-18 08:46:45.998980-07:00",
-  "shots_7d": 9,
-  "shots_30d": 14,
-  "shots_total": 36,
+  "last_shot_at": "2026-10-18 08:52:35.104143-07:00",
+  "shots_7d": 10,
+  "shots_30d": 15,
+  "shots_total": 37,
   "queued": 6,
   "bags_settled": 3,
   "bags_dialing": 6,
