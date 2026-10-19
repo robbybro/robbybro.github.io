@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emily's Colors</title>
+<meta name="description" content="Dark-autumn complementary palette for Emily: anchors measured from photos, the colors to wear, the pairings, metals, and what to skip.">
+<meta property="og:title" content="Emily's Colors">
+<meta property="og:description" content="A personal color analysis: the palette that makes Emily look great.">
+<style>
+  :root { --bg: #F5F1E8; --ink: #2E2A24; --muted: #6E675C; --card: #FFFFFF; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; line-height: 1.5; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: clamp(34px, 7vw, 56px); margin: 0 0 8px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 17px; max-width: 62ch; margin: 0 0 12px; }
+  .season { display: inline-block; margin: 4px 0 8px; padding: 6px 14px; border-radius: 999px;
+    background: #3E2A22; color: #F5F1E8; font-weight: 600; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .runner { color: var(--muted); font-size: 13px; margin: 0 0 32px; }
+  h2 { font-size: 22px; margin: 44px 0 6px; }
+  .why { color: var(--muted); font-size: 15px; margin: 0 0 16px; max-width: 70ch; }
+  .anchors { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .anchor { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 999px;
+    padding: 6px 14px 6px 6px; font-size: 13px; box-shadow: 0 1px 3px rgba(46,42,36,.12); }
+  .anchor .dot { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(46,42,36,.12); }
+  .anchor .hex { font-family: ui-monospace, SFMono-Regular, monospace; color: var(--muted); font-size: 11px; }
+  .dims { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 14px 0 4px; }
+  .dim { background: var(--card); border-radius: 14px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(46,42,36,.14); }
+  .dim .k { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .dim .v { font-weight: 650; font-size: 18px; margin: 2px 0 8px; }
+  .dim .bar { height: 8px; border-radius: 999px; background: linear-gradient(to right, var(--l), var(--r)); position: relative; }
+  .dim .bar i { position: absolute; top: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink);
+    border: 2px solid var(--card); transform: translateX(-50%); }
+  .dim .ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .dim .n { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .swatch { border-radius: 14px; overflow: hidden; background: var(--card); cursor: pointer;
+    box-shadow: 0 1px 4px rgba(46,42,36,.14); border: none; padding: 0; text-align: left; font: inherit; color: inherit;
+    transition: transform .12s ease; }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch .color { height: 96px; }
+  .swatch .label { padding: 10px 12px 12px; }
+  .swatch .name { font-weight: 650; font-size: 14px; }
+  .swatch .hex { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--muted); }
+  .swatch .note { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .avoid .color { height: 56px; position: relative; }
+  .avoid .color::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top right, transparent calc(50% - 1px), rgba(255,255,255,.9) 50%, transparent calc(50% + 1px)); }
+  .pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .pair { background: var(--card); border-radius: 14px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(46,42,36,.14); }
+  .pair .chips { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+  .pair .chips span { flex: 1; }
+  .pair .t { font-weight: 650; font-size: 14px; }
+  .pair .n { font-size: 12px; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(46,42,36,.14); font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(46,42,36,.08); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  tr:last-child td { border-bottom: none; }
+  .mini { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; margin-right: 6px; border: 1px solid rgba(46,42,36,.12); }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink);
+    color: var(--bg); padding: 10px 18px; border-radius: 10px; font-size: 14px; opacity: 0; transition: all .25s ease; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Emily's Colors</h1>
+  <p class="sub">Dark chestnut hair that goes copper in sun, neutral skin that tans golden, grey-green hazel eyes
+  with a dark rim, a natural rosy lip, and a big jump in lightness between hair and skin. Rich, warm-leaning and
+  deep beats pale, icy or dusty.</p>
+  <span class="season">Dark Autumn</span>
+  <p class="runner">Runner-up: Dark Winter. One drape test settles it (bottom of page).</p>
+
+  <h2>The anchors</h2>
+  <p class="why">Measured, not eyeballed: median pixel colors from the overcast beach photo (the most neutral light),
+  cross-checked against the two sunny ones.</p>
+  <div class="anchors">
+    <span class="anchor"><span class="dot" style="background:#E9B29E"></span>Skin <span class="hex">#E9B29E</span></span>
+    <span class="anchor"><span class="dot" style="background:#A3765E"></span>Skin, tanned <span class="hex">#A3765E</span></span>
+    <span class="anchor"><span class="dot" style="background:#9F6354"></span>Flush <span class="hex">#9F6354</span></span>
+    <span class="anchor"><span class="dot" style="background:#B7646A"></span>Lip <span class="hex">#B7646A</span></span>
+    <span class="anchor"><span class="dot" style="background:#3A2A22"></span>Hair <span class="hex">#3A2A22</span></span>
+    <span class="anchor"><span class="dot" style="background:#64493A"></span>Hair, sunlit <span class="hex">#64493A</span></span>
+    <span class="anchor"><span class="dot" style="background:#34302D"></span>Eyes <span class="hex">#34302D</span></span>
+    <span class="anchor"><span class="dot" style="background:#AB8141"></span>Her gold hoops <span class="hex">#AB8141</span></span>
+  </div>
+
+  <h2>The three dials</h2>
+  <p class="why">Every season is a position on three dials. Hers are read off the anchors above.</p>
+  <div class="dims">
+    <div class="dim" style="--l:#F7EDE2; --r:#1A1210"><div class="k">Value · how dark</div><div class="v">Dark, high contrast</div>
+      <div class="bar"><i style="left:72%"></i></div><div class="ends"><span>light</span><span>dark</span></div>
+      <div class="n">Skin L* 77 against hair L* 27 in flat light: a 50-point jump. Colors need enough depth to hold their own next to the hair.</div></div>
+    <div class="dim" style="--l:#7FA7D9; --r:#E4A94F"><div class="k">Hue · cool to warm</div><div class="v">Neutral, warm-leaning</div>
+      <div class="bar"><i style="left:58%"></i></div><div class="ends"><span>cool</span><span>warm</span></div>
+      <div class="n">Skin a* and b* sit within two points of each other (true neutral); tanned skin and sunlit hair both tip yellow-warm.</div></div>
+    <div class="dim" style="--l:#A8A49E; --r:#E8362B"><div class="k">Chroma · muted to clear</div><div class="v">Medium, rich not bright</div>
+      <div class="bar"><i style="left:52%"></i></div><div class="ends"><span>muted</span><span>clear</span></div>
+      <div class="n">Eyes and hair carry very little chroma; the contrast comes from lightness, not saturation. Rich and saturated-dark works, neon and icy do not.</div></div>
+  </div>
+
+  <h2>Wear these</h2>
+  <p class="why">Teals and greens sit opposite the flush and echo the grey-green in her eyes. Rust, terracotta and the deep
+  wine tones are the hair's sunlit copper turned up, and they are the color-wheel complement of green, so they make the
+  eyes read greener. Everything is deep enough to stand next to dark hair. Tap a swatch to copy its hex.</p>
+  <div class="grid">
+    <button class="swatch" data-hex="#1F5F63"><div class="color" style="background:#1F5F63"></div>
+      <div class="label"><div class="name">Deep Teal</div><div class="hex">#1F5F63</div><div class="note">the #1 — calms the flush, finds the eyes</div></div></button>
+    <button class="swatch" data-hex="#2F4F3A"><div class="color" style="background:#2F4F3A"></div>
+      <div class="label"><div class="name">Forest Green</div><div class="hex">#2F4F3A</div><div class="note">amplifies the green in hazel</div></div></button>
+    <button class="swatch" data-hex="#6F6A3C"><div class="color" style="background:#6F6A3C"></div>
+      <div class="label"><div class="name">Olive</div><div class="hex">#6F6A3C</div><div class="note">neutral that still reads as color</div></div></button>
+    <button class="swatch" data-hex="#A6502C"><div class="color" style="background:#A6502C"></div>
+      <div class="label"><div class="name">Rust</div><div class="hex">#A6502C</div><div class="note">sunlit hair, louder; complement of the eyes</div></div></button>
+    <button class="swatch" data-hex="#B8674A"><div class="color" style="background:#B8674A"></div>
+      <div class="label"><div class="name">Terracotta</div><div class="hex">#B8674A</div><div class="note">rust for daytime; great lip too</div></div></button>
+    <button class="swatch" data-hex="#B5332A"><div class="color" style="background:#B5332A"></div>
+      <div class="label"><div class="name">Tomato Red</div><div class="hex">#B5332A</div><div class="note">her red — warm, deep, no blue in it</div></div></button>
+    <button class="swatch" data-hex="#D99A2B"><div class="color" style="background:#D99A2B"></div>
+      <div class="label"><div class="name">Marigold</div><div class="hex">#D99A2B</div><div class="note">mustard side of yellow; pairs with chocolate</div></div></button>
+    <button class="swatch" data-hex="#4B2840"><div class="color" style="background:#4B2840"></div>
+      <div class="label"><div class="name">Aubergine</div><div class="hex">#4B2840</div><div class="note">red-violet opposite green: eyes pop</div></div></button>
+    <button class="swatch" data-hex="#6E2A33"><div class="color" style="background:#6E2A33"></div>
+      <div class="label"><div class="name">Oxblood</div><div class="hex">#6E2A33</div><div class="note">evening red; works with gold</div></div></button>
+    <button class="swatch" data-hex="#1C3A4A"><div class="color" style="background:#1C3A4A"></div>
+      <div class="label"><div class="name">Teal Navy</div><div class="hex">#1C3A4A</div><div class="note">the better navy — green in it, not purple</div></div></button>
+    <button class="swatch" data-hex="#3E2A22"><div class="color" style="background:#3E2A22"></div>
+      <div class="label"><div class="name">Dark Chocolate</div><div class="hex">#3E2A22</div><div class="note">her "black" — the hair color, as a coat</div></div></button>
+    <button class="swatch" data-hex="#3B3835"><div class="color" style="background:#3B3835"></div>
+      <div class="label"><div class="name">Warm Charcoal</div><div class="hex">#3B3835</div><div class="note">when it has to be grey-black</div></div></button>
+    <button class="swatch" data-hex="#B8915A"><div class="color" style="background:#B8915A"></div>
+      <div class="label"><div class="name">Camel</div><div class="hex">#B8915A</div><div class="note">bridges hair and tanned skin</div></div></button>
+    <button class="swatch" data-hex="#F2E6D0"><div class="color" style="background:#F2E6D0"></div>
+      <div class="label"><div class="name">Cream</div><div class="hex">#F2E6D0</div><div class="note">instead of white; the fleece collar in photo 1</div></div></button>
+    <button class="swatch" data-hex="#D8C49E"><div class="color" style="background:#D8C49E"></div>
+      <div class="label"><div class="name">Butter Khaki</div><div class="hex">#D8C49E</div><div class="note">the Copenhagen top — already right</div></div></button>
+  </div>
+
+  <h2>Pairings that do the work</h2>
+  <p class="why">Her contrast is high, so outfits should carry one deep color and one lighter or brighter one. Two mid-tones
+  together look flat on her.</p>
+  <div class="pairs">
+    <div class="pair"><div class="chips"><span style="background:#3E2A22"></span><span style="background:#A6502C"></span><span style="background:#F2E6D0"></span></div>
+      <div class="t">Chocolate · Rust · Cream</div><div class="n">the everyday uniform; all three are her own colors</div></div>
+    <div class="pair"><div class="chips"><span style="background:#2F4F3A"></span><span style="background:#B8915A"></span><span style="background:#AB8141"></span></div>
+      <div class="t">Forest · Camel · Gold</div><div class="n">eyes forward, jewelry does the shine</div></div>
+    <div class="pair"><div class="chips"><span style="background:#1C3A4A"></span><span style="background:#B8674A"></span></div>
+      <div class="t">Teal Navy · Terracotta</div><div class="n">true complements, both deep enough</div></div>
+    <div class="pair"><div class="chips"><span style="background:#6E2A33"></span><span style="background:#6F6A3C"></span></div>
+      <div class="t">Oxblood · Olive</div><div class="n">fall dinner out</div></div>
+    <div class="pair"><div class="chips"><span style="background:#D99A2B"></span><span style="background:#3E2A22"></span></div>
+      <div class="t">Marigold · Chocolate</div><div class="n">the high-contrast one; a marigold knit over dark pants</div></div>
+    <div class="pair"><div class="chips"><span style="background:#4B2840"></span><span style="background:#F2E6D0"></span><span style="background:#AB8141"></span></div>
+      <div class="t">Aubergine · Cream · Gold</div><div class="n">dressed up; aubergine is the eyes' opposite</div></div>
+  </div>
+
+  <h2>Metals, hair, lips</h2>
+  <table>
+    <tr><th>Where</th><th>Yes</th><th>Not as the only one</th></tr>
+    <tr><td>Metal</td><td><span class="mini" style="background:#AB8141"></span>Yellow gold (what she wears), bronze, brass, antiqued gold. Rose gold is fine.</td>
+      <td>Bright silver and platinum read cold next to the chestnut; mix them with gold rather than wearing them alone.</td></tr>
+    <tr><td>Hair</td><td>Keep the natural chestnut. If coloring: warm chocolate or auburn gloss, copper lowlights.</td>
+      <td>Ash, blue-black, and light blonde balayage. Blonde collapses the hair-to-skin contrast the whole palette relies on.</td></tr>
+    <tr><td>Lips</td><td><span class="mini" style="background:#B8674A"></span>Terracotta, brick, warm berry, and a rose one step warmer than her natural lip.</td>
+      <td>Cool fuchsia, bubblegum pink, anything with a blue cast. (If fuchsia secretly looks great, see the drape test.)</td></tr>
+    <tr><td>Eyes</td><td>Bronze, copper, olive, warm taupe; brown liner reads softer than black and still holds against dark lashes.</td>
+      <td>Silver or icy-lilac shimmer.</td></tr>
+  </table>
+
+  <h2>Skip these</h2>
+  <p class="why">Pale and icy colors are too light to hold up next to dark hair and drain the skin; dusty or greyed tones
+  cancel her contrast; cool-grey and blue-white fight the warm hair. Neon overwhelms low-chroma eyes.</p>
+  <div class="grid">
+    <div class="swatch avoid"><div class="color" style="background:#FFFFFF"></div>
+      <div class="label"><div class="name">Stark White</div><div class="note">cream does the same job without the glare</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#CDE7F0"></div>
+      <div class="label"><div class="name">Icy Pastels</div><div class="note">too light, too cool</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#C9B8E8"></div>
+      <div class="label"><div class="name">Lavender</div><div class="note">cool and pale: the worst of both</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#B8A9A9"></div>
+      <div class="label"><div class="name">Dusty Mauve</div><div class="note">greyed tones flatten her</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#9EA3AB"></div>
+      <div class="label"><div class="name">Cool Grey</div><div class="note">argues with the chestnut</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#39FF14"></div>
+      <div class="label"><div class="name">Neon Anything</div><div class="note">louder than her eyes</div></div></div>
+    <div class="swatch avoid"><div class="color" style="background:#000000"></div>
+      <div class="label"><div class="name">Pure Black at the face</div><div class="note">wearable, but chocolate and charcoal flatter; keep black below the neck</div></div></div>
+  </div>
+
+  <h2>With Robby</h2>
+  <p class="why">Robby is a Light Spring, so the two palettes share warmth and differ in depth. The move for photos is the
+  same hue family, two depths apart: never the same color, never a clash.</p>
+  <table>
+    <tr><th>Family</th><th>Robby</th><th>Emily</th></tr>
+    <tr><td>Teal</td><td><span class="mini" style="background:#7FD3D1"></span>light warm aqua</td><td><span class="mini" style="background:#1F5F63"></span>deep teal</td></tr>
+    <tr><td>Orange-red</td><td><span class="mini" style="background:#F39C86"></span>coral, peach</td><td><span class="mini" style="background:#A6502C"></span>rust, terracotta</td></tr>
+    <tr><td>Yellow</td><td><span class="mini" style="background:#F3DC8A"></span>buttery yellow</td><td><span class="mini" style="background:#D99A2B"></span>marigold</td></tr>
+    <tr><td>Neutrals</td><td><span class="mini" style="background:#F2E6D0"></span>cream, light camel</td><td><span class="mini" style="background:#B8915A"></span>cream, camel, chocolate</td></tr>
+    <tr><td>Metal</td><td>gold</td><td>gold</td></tr>
+  </table>
+
+  <h2>The one test that settles Autumn vs Winter</h2>
+  <p class="why">Photos cannot resolve this, only fabric at the face in daylight can. Hold these in pairs and see which one
+  makes the skin look even and the eyes lighter: <strong>tomato red vs fuchsia</strong>, <strong>dark chocolate vs pure black</strong>,
+  <strong>cream vs stark white</strong>. If the first of each pair wins, this page stands. If fuchsia, black and white win,
+  she is a Dark Winter: keep the depth, drop the rust and marigold, and swap in true red, emerald, royal purple and black.</p>
+
+  <footer>Anchors measured from three photos (overcast beach, Seattle sun, Copenhagen sun) · 2026-10-18 · robbybro.com</footer>
+</div>
+<div class="toast" id="toast">Copied</div>
+<script>
+  const toast = document.getElementById('toast');
+  let t;
+  document.querySelectorAll('.swatch[data-hex]').forEach(el => {
+    el.addEventListener('click', () => {
+      navigator.clipboard.writeText(el.dataset.hex).then(() => {
+        toast.textContent = el.dataset.hex + ' copied';
+        toast.classList.add('show');
+        clearTimeout(t);
+        t = setTimeout(() => toast.classList.remove('show'), 1400);
+      });
+    });
+  });
+</script>
+</body>
+</html>
