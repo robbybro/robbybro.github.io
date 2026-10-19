@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-19T11:50-07:00",
+ "generated_at": "2026-10-19T13:51-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -464,23 +464,31 @@
     "opened": "2026-10-19",
     "roaster": "Kuma Coffee"
    },
-   "shots": 1,
+   "shots": 2,
    "last_shot": {
-    "id": 53,
-    "shot_at": "2026-10-19T11:35:02.894286-07:00",
+    "id": 54,
+    "shot_at": "2026-10-19T12:59:42.167376-07:00",
     "burrs": null,
-    "microns": 180,
+    "microns": 190,
     "rpm": 1000,
     "dose_g": 18,
-    "yield_g": 36.2,
-    "time_s": 44.6,
-    "ratio": 2.01,
-    "taste": null,
-    "verdict": "slow (target 30–35 s total)",
-    "next_change": "→ 190 @ 1000",
+    "yield_g": 37.24,
+    "time_s": 29.4,
+    "ratio": 2.07,
+    "taste": "not far off, a little bitter",
+    "verdict": "in window, fast edge",
+    "next_change": "→ 185 (Robby's call; bitter rule says coarser)",
     "by_whom": null
    },
-   "queued": null
+   "queued": {
+    "id": 55,
+    "shot_at": "2026-10-19T12:59:42.295226-07:00",
+    "burrs": null,
+    "microns": 185,
+    "rpm": 1000,
+    "dose_g": null,
+    "next_change": "longer time"
+   }
   },
   {
    "id": 13,
@@ -846,6 +854,44 @@
   }
  ],
  "shots": [
+  {
+   "id": 55,
+   "shot_at": "2026-10-19 12:59:42.295226-07:00",
+   "bag": "Kuma Gotiti",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 185,
+   "rpm": 1000,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "longer time",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 54,
+   "shot_at": "2026-10-19 12:59:42.167376-07:00",
+   "bag": "Kuma Gotiti",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 190,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "37.24",
+   "time_s": "29.4",
+   "ratio": "2.07",
+   "taste": "not far off, a little bitter",
+   "verdict": "in window, fast edge",
+   "next_change": "→ 185 (Robby's call; bitter rule says coarser)",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 53,
    "shot_at": "2026-10-19 11:35:02.894286-07:00",
@@ -1887,11 +1933,11 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-19 11:35:02.894286-07:00",
-  "shots_7d": 10,
-  "shots_30d": 16,
-  "shots_total": 38,
-  "queued": 6,
+  "last_shot_at": "2026-10-19 12:59:42.167376-07:00",
+  "shots_7d": 11,
+  "shots_30d": 17,
+  "shots_total": 39,
+  "queued": 7,
   "bags_settled": 3,
   "bags_dialing": 7,
   "backflush": {
