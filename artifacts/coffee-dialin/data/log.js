@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-19T06:47-07:00",
+ "generated_at": "2026-10-19T11:50-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -446,6 +446,43 @@ window.DIALIN = {
    }
   },
   {
+   "id": 14,
+   "short_name": "Kuma Gotiti",
+   "label": "Kuma — Gotiti, Ethiopia",
+   "verdict": null,
+   "noted_at": "2026-10-19 11:34:55.149839-07:00",
+   "offering_id": null,
+   "data": {
+    "roast": "2026-10-05",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 180
+     },
+     "settled": false
+    },
+    "opened": "2026-10-19",
+    "roaster": "Kuma Coffee"
+   },
+   "shots": 1,
+   "last_shot": {
+    "id": 53,
+    "shot_at": "2026-10-19T11:35:02.894286-07:00",
+    "burrs": null,
+    "microns": 180,
+    "rpm": 1000,
+    "dose_g": 18,
+    "yield_g": 36.2,
+    "time_s": 44.6,
+    "ratio": 2.01,
+    "taste": null,
+    "verdict": "slow (target 30–35 s total)",
+    "next_change": "→ 190 @ 1000",
+    "by_whom": null
+   },
+   "queued": null
+  },
+  {
    "id": 13,
    "short_name": "Creature Friend Blend",
    "label": "Creature Coffee Co — Friend Blend (Guatemala, Costa Rica, Ethiopia)",
@@ -809,6 +846,25 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 53,
+   "shot_at": "2026-10-19 11:35:02.894286-07:00",
+   "bag": "Kuma Gotiti",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 180,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "36.2",
+   "time_s": "44.6",
+   "ratio": "2.01",
+   "taste": null,
+   "verdict": "slow (target 30–35 s total)",
+   "next_change": "→ 190 @ 1000",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 52,
    "shot_at": "2026-10-18 08:52:35.224046-07:00",
@@ -1831,13 +1887,13 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-18 08:52:35.104143-07:00",
-  "shots_7d": 9,
-  "shots_30d": 15,
-  "shots_total": 37,
+  "last_shot_at": "2026-10-19 11:35:02.894286-07:00",
+  "shots_7d": 10,
+  "shots_30d": 16,
+  "shots_total": 38,
   "queued": 6,
   "bags_settled": 3,
-  "bags_dialing": 6,
+  "bags_dialing": 7,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
