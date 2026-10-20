@@ -148,6 +148,7 @@
     var h = '<div class="hero"><span class="kicker">Mock design #' + m.n + ' · ' + esc(m.date) + ' · chapters ' + m.chapters.join(", ") + '</span><h1>' + esc(m.title) + '</h1><p>' + m.why + '</p>' +
       '<div class="chips"><a class="chip" href="#/mock/' + m.slug + '/prompt">Prompt</a>' + m.sections.map(function(s){ return '<a class="chip" href="#/mock/' + m.slug + '/' + s.id + '">' + esc(s.title.split(/: /)[0]) + '</a>'; }).join("") + '<a class="chip" href="#/mock/' + m.slug + '/takeaways">Ten takeaways</a></div></div>';
     h += '<section class="blk" id="sec-prompt"><h2>The prompt, as the interviewer gives it</h2><blockquote class="line" style="margin:0">' + esc(m.prompt) + '</blockquote></section>';
+    if (m.diagram) h += '<section class="blk" id="sec-diagram"><h2>The reference design</h2><div style="overflow-x:auto">' + m.diagram + '</div></section>';
     m.sections.forEach(function(s){ h += sectionBlock(m, s); });
     h += '<section class="blk" id="sec-takeaways"><h2>Ten takeaways</h2><ol class="take">' + m.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") + '</ol></section>';
     return h;
