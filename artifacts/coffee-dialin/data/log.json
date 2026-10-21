@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-21T08:49-07:00",
+ "generated_at": "2026-10-21T13:54-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -464,31 +464,23 @@
     "opened": "2026-10-19",
     "roaster": "Kuma Coffee"
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 54,
-    "shot_at": "2026-10-19T12:59:42.167376-07:00",
-    "burrs": null,
-    "microns": 190,
-    "rpm": 1000,
-    "dose_g": 18,
-    "yield_g": 37.24,
-    "time_s": 29.4,
-    "ratio": 2.07,
-    "taste": "not far off, a little bitter",
-    "verdict": "in window, fast edge",
-    "next_change": "→ 185 (Robby's call; bitter rule says coarser)",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 55,
-    "shot_at": "2026-10-19T12:59:42.295226-07:00",
+    "id": 56,
+    "shot_at": "2026-10-21T12:51:46.380959-07:00",
     "burrs": null,
     "microns": 185,
-    "rpm": 1000,
-    "dose_g": null,
-    "next_change": "longer time"
-   }
+    "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 36,
+    "time_s": 37,
+    "ratio": 2.0,
+    "taste": null,
+    "verdict": null,
+    "next_change": null,
+    "by_whom": null
+   },
+   "queued": null
   },
   {
    "id": 13,
@@ -855,21 +847,21 @@
  ],
  "shots": [
   {
-   "id": 55,
-   "shot_at": "2026-10-19 12:59:42.295226-07:00",
+   "id": 56,
+   "shot_at": "2026-10-21 12:51:46.380959-07:00",
    "bag": "Kuma Gotiti",
    "method": "espresso",
-   "status": "queued",
+   "status": "pulled",
    "burrs": null,
    "microns": 185,
-   "rpm": 1000,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "36",
+   "time_s": "37",
+   "ratio": "2.00",
    "taste": null,
    "verdict": null,
-   "next_change": "longer time",
+   "next_change": null,
    "by_whom": null,
    "data": {}
   },
@@ -1933,11 +1925,11 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-19 12:59:42.167376-07:00",
-  "shots_7d": 7,
-  "shots_30d": 17,
-  "shots_total": 39,
-  "queued": 7,
+  "last_shot_at": "2026-10-21 12:51:46.380959-07:00",
+  "shots_7d": 6,
+  "shots_30d": 18,
+  "shots_total": 40,
+  "queued": 6,
   "bags_settled": 3,
   "bags_dialing": 7,
   "backflush": {
@@ -2452,6 +2444,17 @@
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
+   },
+   {
+    "name": "Merit Coffee",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": "https://meritcoffee.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
    }
   ],
   "countries": [
@@ -2890,7 +2893,7 @@
    }
   ],
   "totals": {
-   "roasters": 34,
+   "roasters": 35,
    "producers": 1921,
    "offerings": 3817,
    "offerings_available": 759,
