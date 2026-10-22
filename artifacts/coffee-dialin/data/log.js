@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-22T09:41-07:00",
+ "generated_at": "2026-10-22T09:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -489,40 +489,40 @@ window.DIALIN = {
     "opened": "2026-10-19",
     "roaster": "Kuma Coffee"
    },
-   "shots": 3,
+   "shots": 4,
    "last_shot": {
-    "id": 56,
-    "shot_at": "2026-10-21T12:51:46.380959-07:00",
-    "burrs": null,
-    "microns": 185,
-    "rpm": 1200,
-    "dose_g": 18,
-    "yield_g": 36,
-    "time_s": 37,
-    "ratio": 2.0,
-    "taste": null,
-    "verdict": null,
-    "next_change": null,
-    "by_whom": null
-   },
-   "queued": {
-    "id": 57,
-    "shot_at": "2026-10-22T09:37:19.836857-07:00",
+    "id": 58,
+    "shot_at": "2026-10-22T09:43:24.709608-07:00",
     "burrs": null,
     "microns": 190,
     "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 36,
+    "time_s": 37.8,
+    "ratio": 2.0,
+    "taste": null,
+    "verdict": "slow; puck wobbly, two streams off the portafilter that never converged (channeling)",
+    "next_change": "→ 190 @ 1000 (lower RPM, same grind; 10/19 at this setting = 29.4 s)",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 59,
+    "shot_at": "2026-10-22T09:43:24.831587-07:00",
+    "burrs": null,
+    "microns": 190,
+    "rpm": 1000,
     "dose_g": null,
-    "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200."
+    "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000."
    },
    "queue": [
     {
-     "id": 57,
-     "shot_at": "2026-10-22T09:37:19.836857-07:00",
+     "id": 59,
+     "shot_at": "2026-10-22T09:43:24.831587-07:00",
      "burrs": null,
      "microns": 190,
-     "rpm": 1200,
+     "rpm": 1000,
      "dose_g": null,
-     "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200."
+     "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000."
     }
    ]
   },
@@ -938,21 +938,40 @@ window.DIALIN = {
  ],
  "shots": [
   {
-   "id": 57,
-   "shot_at": "2026-10-22 09:37:19.836857-07:00",
+   "id": 59,
+   "shot_at": "2026-10-22 09:43:24.831587-07:00",
    "bag": "Kuma Gotiti",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
    "microns": 190,
-   "rpm": 1200,
+   "rpm": 1000,
    "dose_g": null,
    "yield_g": null,
    "time_s": null,
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200.",
+   "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 58,
+   "shot_at": "2026-10-22 09:43:24.709608-07:00",
+   "bag": "Kuma Gotiti",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 190,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "36",
+   "time_s": "37.8",
+   "ratio": "2.00",
+   "taste": null,
+   "verdict": "slow; puck wobbly, two streams off the portafilter that never converged (channeling)",
+   "next_change": "→ 190 @ 1000 (lower RPM, same grind; 10/19 at this setting = 29.4 s)",
    "by_whom": null,
    "data": {}
   },
@@ -2035,10 +2054,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-21 12:51:46.380959-07:00",
-  "shots_7d": 6,
-  "shots_30d": 18,
-  "shots_total": 40,
+  "last_shot_at": "2026-10-22 09:43:24.709608-07:00",
+  "shots_7d": 7,
+  "shots_30d": 19,
+  "shots_total": 41,
   "queued": 7,
   "bags_settled": 3,
   "bags_dialing": 7,
