@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-22T06:49-07:00",
+ "generated_at": "2026-10-22T09:41-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -63,6 +63,10 @@ window.DIALIN = {
   "grinder": "Zerno Z2",
   "machine": "Linea Mini R (Balthamos)",
   "glossary": [
+   [
+    "Next up",
+    "the queue of shots planned for this bag, newest plan first — grind, motor speed and grams in. Pull the top one; logging that shot clears it. When a bag runs out, tell Robby and the whole queue is cleared."
+   ],
    [
     "µm",
     "grind size on the Zerno Z2 dial, in microns (real microns, 0–2000; lower = finer)"
@@ -396,7 +400,8 @@ window.DIALIN = {
     "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
     "by_whom": "Robby"
    },
-   "queued": null
+   "queued": null,
+   "queue": []
   },
   {
    "id": 7,
@@ -443,7 +448,27 @@ window.DIALIN = {
     "rpm": 1000,
     "dose_g": 18,
     "next_change": "A/B shot A: 180 µm at 1000 rpm, 18 g in, cut at 34 — then shot B at 1200 rpm, same grind; expect A a few seconds faster"
-   }
+   },
+   "queue": [
+    {
+     "id": 31,
+     "shot_at": "2026-10-10T17:39:21.004309-07:00",
+     "burrs": "Core",
+     "microns": 180,
+     "rpm": 1000,
+     "dose_g": 18,
+     "next_change": "A/B shot A: 180 µm at 1000 rpm, 18 g in, cut at 34 — then shot B at 1200 rpm, same grind; expect A a few seconds faster"
+    },
+    {
+     "id": 30,
+     "shot_at": "2026-10-10T17:39:20.887536-07:00",
+     "burrs": "Core",
+     "microns": 180,
+     "rpm": 1200,
+     "dose_g": 18,
+     "next_change": "A/B shot B: 180 µm at 1200 rpm, 18 g in, cut at 34 — pull right after shot A, taste both straight (and with milk)"
+    }
+   ]
   },
   {
    "id": 14,
@@ -480,7 +505,26 @@ window.DIALIN = {
     "next_change": null,
     "by_whom": null
    },
-   "queued": null
+   "queued": {
+    "id": 57,
+    "shot_at": "2026-10-22T09:37:19.836857-07:00",
+    "burrs": null,
+    "microns": 190,
+    "rpm": 1200,
+    "dose_g": null,
+    "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200."
+   },
+   "queue": [
+    {
+     "id": 57,
+     "shot_at": "2026-10-22T09:37:19.836857-07:00",
+     "burrs": null,
+     "microns": 190,
+     "rpm": 1200,
+     "dose_g": null,
+     "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200."
+    }
+   ]
   },
   {
    "id": 13,
@@ -540,7 +584,18 @@ window.DIALIN = {
     "rpm": 1200,
     "dose_g": null,
     "next_change": "18 g in, cut at 34; aim 30–32 s total; a full 10 µm step this time"
-   }
+   },
+   "queue": [
+    {
+     "id": 52,
+     "shot_at": "2026-10-18T08:52:35.224046-07:00",
+     "burrs": null,
+     "microns": 160,
+     "rpm": 1200,
+     "dose_g": null,
+     "next_change": "18 g in, cut at 34; aim 30–32 s total; a full 10 µm step this time"
+    }
+   ]
   },
   {
    "id": 12,
@@ -602,7 +657,8 @@ window.DIALIN = {
     "next_change": "hold 140 @ 600; settle candidate",
     "by_whom": null
    },
-   "queued": null
+   "queued": null,
+   "queue": []
   },
   {
    "id": 11,
@@ -651,7 +707,18 @@ window.DIALIN = {
     "rpm": 1000,
     "dose_g": null,
     "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600"
-   }
+   },
+   "queue": [
+    {
+     "id": 45,
+     "shot_at": "2026-10-15T09:08:08.61681-07:00",
+     "burrs": null,
+     "microns": 168,
+     "rpm": 1000,
+     "dose_g": null,
+     "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600"
+    }
+   ]
   },
   {
    "id": 5,
@@ -715,7 +782,18 @@ window.DIALIN = {
     "rpm": 600,
     "dose_g": null,
     "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180"
-   }
+   },
+   "queue": [
+    {
+     "id": 33,
+     "shot_at": "2026-10-11T12:40:01.24135-07:00",
+     "burrs": null,
+     "microns": 190,
+     "rpm": 600,
+     "dose_g": null,
+     "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180"
+    }
+   ]
   },
   {
    "id": 10,
@@ -764,7 +842,18 @@ window.DIALIN = {
     "rpm": 1200,
     "dose_g": 18,
     "next_change": "aim 33–36s, cut 34"
-   }
+   },
+   "queue": [
+    {
+     "id": 21,
+     "shot_at": "2026-09-13T12:20:00-07:00",
+     "burrs": "Core",
+     "microns": 167,
+     "rpm": 1200,
+     "dose_g": 18,
+     "next_change": "aim 33–36s, cut 34"
+    }
+   ]
   },
   {
    "id": 9,
@@ -805,7 +894,8 @@ window.DIALIN = {
     "next_change": "optional: 172 next to shave the decaf bitterness",
     "by_whom": null
    },
-   "queued": null
+   "queued": null,
+   "queue": []
   },
   {
    "id": 8,
@@ -842,10 +932,30 @@ window.DIALIN = {
     "next_change": "per-bean RPM confirmed",
     "by_whom": null
    },
-   "queued": null
+   "queued": null,
+   "queue": []
   }
  ],
  "shots": [
+  {
+   "id": 57,
+   "shot_at": "2026-10-22 09:37:19.836857-07:00",
+   "bag": "Kuma Gotiti",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 190,
+   "rpm": 1200,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "18 g in, cut at 34, hold 1200 RPM; aim 30–32 s total (10/21: 185 @ 1200 = 37 s, slow; 10/19: 190 @ 1000 = 29.4 s, bitter/fast edge). Still >34 s → 195 @ 1200.",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 56,
    "shot_at": "2026-10-21 12:51:46.380959-07:00",
@@ -1929,7 +2039,7 @@ window.DIALIN = {
   "shots_7d": 6,
   "shots_30d": 18,
   "shots_total": 40,
-  "queued": 6,
+  "queued": 7,
   "bags_settled": 3,
   "bags_dialing": 7,
   "backflush": {
