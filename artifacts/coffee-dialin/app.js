@@ -166,29 +166,50 @@
       if (d.house) { card.classList.add('house'); pills.appendChild(el('span', 'pill house', 'House bean')); }
       pills.appendChild(el('span', 'pill ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
       card.appendChild(pills);
-      // The hero number means ONE thing per card, and says which: the setting to use (settled recipe or planned
-      // next shot), or the last shot pulled (untested beyond that), or the intake start point (no shots yet).
-      var src = di.settled ? 'settled' : b.queued ? 'planned' : b.last_shot && b.last_shot.microns ? 'last' : di.start ? 'start' : null;
-      var um = { settled: di.microns, planned: b.queued && b.queued.microns, last: b.last_shot && b.last_shot.microns, start: di.start && di.start.microns }[src];
-      var rpm = { settled: di.rpm, planned: b.queued && b.queued.rpm, last: b.last_shot && b.last_shot.rpm, start: di.start && di.start.rpm }[src];
-      var eyebrow = { settled: 'Set the grinder to', planned: 'Next shot planned at', last: 'Last shot was pulled at', start: 'Start point, no shot yet' }[src];
+      // The hero number means ONE thing per card, and says which: the setting to use (settled recipe, or the
+      // newest plan in the bag's next-up queue), or the last shot pulled (nothing queued), or the intake start
+      // point (no shots yet). The queue (every planned shot, newest plan first) is what to try next; a pulled
+      // shot at that grind clears its entry and "X is out" clears the whole queue (Robby 2026-10-22).
+      var Q = b.queue || (b.queued ? [b.queued] : []), houseDose = +((D.rules.laws || {}).espresso_dose_g) || 18;
+      var doseOf = function (s) { return s && s.dose_g != null && s.dose_g !== '' ? +s.dose_g : houseDose; };
+      var src = di.settled ? 'settled' : Q.length ? 'planned' : b.last_shot && b.last_shot.microns ? 'last' : di.start ? 'start' : null;
+      var pick = { settled: { um: di.microns, rpm: di.rpm, dose: di.dose_g || houseDose }, planned: Q[0] && { um: Q[0].microns, rpm: Q[0].rpm, dose: doseOf(Q[0]) },
+                   last: b.last_shot && { um: b.last_shot.microns, rpm: b.last_shot.rpm, dose: doseOf(b.last_shot) }, start: di.start && { um: di.start.microns, rpm: di.start.rpm, dose: houseDose } }[src] || {};
+      var eyebrow = { settled: 'Set the grinder to', planned: 'Next up · set the grinder to', last: 'Nothing queued · last shot was pulled at', start: 'Start point, no shot yet' }[src];
       if (src) card.appendChild(el('div', 'eyebrow', eyebrow));
       var dial = el('div', 'dial');
-      if (um) { var a = el('div'); a.appendChild(el('span', 'big', n(um))); a.appendChild(el('span', 'unit', 'µm')); dial.appendChild(a); }
-      if (rpm) { var r = el('div'); r.appendChild(el('span', 'big', n(rpm))); r.appendChild(el('span', 'unit', 'rpm')); dial.appendChild(r); }
+      [[pick.um, 'µm'], [pick.rpm, 'rpm'], [pick.dose, 'g in']].forEach(function (x) {
+        if (!x[0]) return; var w = el('div'); w.appendChild(el('span', 'big', n(x[0]))); w.appendChild(el('span', 'unit', x[1])); dial.appendChild(w);
+      });
       if (dial.children.length) card.appendChild(dial);
+      // The queue, newest plan first. For a dialing-in bag the first plan IS the hero above, so the list starts at the second.
+      function queueList(plans, startAt) {
+        var ol = el('ol', 'queue'); ol.start = startAt;
+        plans.forEach(function (q) {
+          var li = el('li'); li.appendChild(el('b', null, n(q.microns) + ' µm · ' + n(q.rpm) + ' rpm · ' + n(doseOf(q)) + ' g'));
+          if (q.next_change) li.appendChild(document.createTextNode(' — ' + q.next_change));
+          li.appendChild(el('span', 'small muted', ' · planned ' + fmtDate(q.shot_at)));
+          ol.appendChild(li);
+        });
+        return ol;
+      }
       if (src === 'settled') {
         if (di.recipe) card.appendChild(el('p', 'line', di.recipe));
-        if (b.queued) card.appendChild(el('p', 'line small', 'Test queued: ' + (b.queued.next_change || n(b.queued.microns) + ' µm at ' + n(b.queued.rpm) + ' rpm')));
+        if (Q.length) { card.appendChild(el('div', 'eyebrow', 'Next up · test' + (Q.length > 1 ? 's' : '') + ' queued, recipe above still stands')); card.appendChild(queueList(Q, 1)); }
       } else {
-        if (src === 'planned' && b.queued.next_change) card.appendChild(el('p', 'line', b.queued.next_change));
+        if (src === 'planned') {
+          var q0 = Q[0];
+          card.appendChild(el('p', 'line', (q0.next_change || 'cut at 34 g, aim 30–35 s total') + ' '));
+          card.lastChild.appendChild(el('span', 'small muted', '· planned ' + fmtDate(q0.shot_at)));
+          if (Q.length > 1) { card.appendChild(el('div', 'eyebrow', 'Also queued')); card.appendChild(queueList(Q.slice(1), 2)); }
+        }
         if (src === 'start' && di.start_note) card.appendChild(el('p', 'line', di.start_note));
         if (b.last_shot) {
           var l = b.last_shot, bits = [];
           if (l.dose_g && l.yield_g) bits.push(n(l.dose_g) + ' g → ' + n(l.yield_g) + ' g');
           if (l.time_s) bits.push(n(l.time_s) + ' s');
           card.appendChild(el('p', 'line small ink2', (src === 'last' ? fmtDate(l.shot_at) + ': ' : 'Last shot ' + fmtDate(l.shot_at) + ': ' + n(l.microns) + ' µm at ' + n(l.rpm) + ' rpm, ') + bits.join(', ') + (l.verdict ? '. ' + l.verdict : '')));
-          if (l.next_change && src === 'last') card.appendChild(el('p', 'line small', 'Suggested next: ' + l.next_change));
+          if (src === 'last') card.appendChild(el('p', 'line small', l.next_change ? 'Suggested next: ' + l.next_change : 'No plan queued yet — ask Robby what to try next.'));
         } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
       }
       if (di.pourover && di.pourover.setting != null) {
