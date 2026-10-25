@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-25T08:51-07:00",
+ "generated_at": "2026-10-25T09:52-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -2055,7 +2055,7 @@
  ],
  "health": {
   "last_shot_at": "2026-10-22 09:43:24.709608-07:00",
-  "shots_7d": 5,
+  "shots_7d": 4,
   "shots_30d": 19,
   "shots_total": 41,
   "queued": 7,
@@ -2553,12 +2553,12 @@
     "in_my_bags": false
    },
    {
-    "name": "What's Brewing Coffee Roasters",
+    "name": "Perdido Coffee",
     "city": "San Antonio, TX",
     "country": "USA",
     "lat": null,
     "lng": null,
-    "website": "https://www.sacoffeeroasters.com",
+    "website": null,
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2581,6 +2581,17 @@
     "lat": null,
     "lng": null,
     "website": null,
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "What's Brewing Coffee Roasters",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": "https://www.sacoffeeroasters.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -3068,7 +3079,7 @@
    }
   ],
   "totals": {
-   "roasters": 39,
+   "roasters": 40,
    "producers": 1923,
    "offerings": 3880,
    "offerings_available": 821,
