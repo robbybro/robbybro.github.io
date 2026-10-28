@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-28T00:48-07:00",
+ "generated_at": "2026-10-28T06:51-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -471,6 +471,123 @@ window.DIALIN = {
    ]
   },
   {
+   "id": 16,
+   "short_name": "DAC Booze Cruise",
+   "label": "DAC — Booze Cruise (Turrialba, Costa Rica, anaerobic natural Centroamericano)",
+   "verdict": null,
+   "noted_at": "2026-10-28 06:20:35.933985-07:00",
+   "offering_id": null,
+   "data": {
+    "trip": "San Antonio Oct 23–27 2026",
+    "notes": "purple grapes, cherry praline, brown sugar",
+    "roast": "filter",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 168
+     },
+     "settled": false
+    },
+    "logged": "2026-10-28",
+    "opened": "2026-10-28",
+    "region": "Turrialba",
+    "process": "anaerobic natural",
+    "roaster": "DAC",
+    "variety": "Centroamericano",
+    "roast_date": "2026-10-02",
+    "roaster_note": "roaster name per Robby (box shows only the coffee name); not in untamped",
+    "origin_country": "Costa Rica",
+    "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
+    "roaster_in_untamped": false
+   },
+   "shots": 0,
+   "last_shot": null,
+   "queued": {
+    "id": 61,
+    "shot_at": "2026-10-28T06:20:44.912563-07:00",
+    "burrs": null,
+    "microns": 168,
+    "rpm": 1000,
+    "dose_g": null,
+    "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested"
+   },
+   "queue": [
+    {
+     "id": 61,
+     "shot_at": "2026-10-28T06:20:44.912563-07:00",
+     "burrs": null,
+     "microns": 168,
+     "rpm": 1000,
+     "dose_g": null,
+     "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested"
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "short_name": "Perdido Felipe Estela",
+   "label": "Perdido — Felipe Estela (Cajamarca, Peru, washed Yellow Caturra)",
+   "verdict": null,
+   "noted_at": "2026-10-28 06:20:35.790734-07:00",
+   "offering_id": null,
+   "data": {
+    "trip": "San Antonio Oct 23–27 2026",
+    "grams": 250,
+    "notes": "peaches, manuka honey, lime leaf",
+    "roast": "light (filter-leaning single origin; roast level not printed on bag)",
+    "dialin": {
+     "start": {
+      "rpm": 1000,
+      "microns": 168
+     },
+     "settled": false,
+     "pourover": {
+      "why": "2,000–2,100 masl washed Caturra, dense; same band as Makeworth Danche (2,200 masl → 5)",
+      "grinder": "Fellow Ode Gen 2",
+      "setting": 5.0
+     }
+    },
+    "logged": "2026-10-28",
+    "opened": "2026-10-28",
+    "region": "Cajamarca",
+    "process": "washed",
+    "roaster": "Perdido Coffee",
+    "variety": "Yellow Caturra",
+    "producer": "Felipe Estela",
+    "elevation": "2000-2100 masl",
+    "roast_date": "2026-10-07",
+    "roaster_id": 295,
+    "roaster_city": "San Antonio, TX",
+    "elevation_masl": "2000-2100",
+    "origin_country": "Peru",
+    "dialin_start_note": "light washed single origin prior 165–170 @ 1000; dial grind first, then bracket RPM",
+    "roaster_in_untamped": true,
+    "offering_in_untamped": false
+   },
+   "shots": 0,
+   "last_shot": null,
+   "queued": {
+    "id": 60,
+    "shot_at": "2026-10-28T06:20:44.779563-07:00",
+    "burrs": null,
+    "microns": 168,
+    "rpm": 1000,
+    "dose_g": null,
+    "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175"
+   },
+   "queue": [
+    {
+     "id": 60,
+     "shot_at": "2026-10-28T06:20:44.779563-07:00",
+     "burrs": null,
+     "microns": 168,
+     "rpm": 1000,
+     "dose_g": null,
+     "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175"
+    }
+   ]
+  },
+  {
    "id": 14,
    "short_name": "Kuma Gotiti",
    "label": "Kuma — Gotiti, Ethiopia",
@@ -937,6 +1054,44 @@ window.DIALIN = {
   }
  ],
  "shots": [
+  {
+   "id": 61,
+   "shot_at": "2026-10-28 06:20:44.912563-07:00",
+   "bag": "DAC Booze Cruise",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 168,
+   "rpm": 1000,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 60,
+   "shot_at": "2026-10-28 06:20:44.779563-07:00",
+   "bag": "Perdido Felipe Estela",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 168,
+   "rpm": 1000,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175",
+   "by_whom": null,
+   "data": {}
+  },
   {
    "id": 59,
    "shot_at": "2026-10-22 09:43:24.831587-07:00",
@@ -2058,16 +2213,16 @@ window.DIALIN = {
   "shots_7d": 2,
   "shots_30d": 19,
   "shots_total": 41,
-  "queued": 7,
+  "queued": 9,
   "bags_settled": 3,
-  "bags_dialing": 7,
+  "bags_dialing": 9,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
    "days_ago": 43
   },
-  "machine_shots_7d": 13,
-  "machine_telemetry_at": "2026-10-27T20:10:01+00:00"
+  "machine_shots_7d": 12,
+  "machine_telemetry_at": "2026-10-28T13:19:08+00:00"
  },
  "origin": {
   "provenance": [
