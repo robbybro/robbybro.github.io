@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-28T06:51-07:00",
+ "generated_at": "2026-10-28T08:51-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -500,26 +500,40 @@ window.DIALIN = {
     "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
     "roaster_in_untamped": false
    },
-   "shots": 0,
-   "last_shot": null,
-   "queued": {
-    "id": 61,
-    "shot_at": "2026-10-28T06:20:44.912563-07:00",
+   "shots": 1,
+   "last_shot": {
+    "id": 62,
+    "shot_at": "2026-10-28T08:35:39.380766-07:00",
     "burrs": null,
-    "microns": 168,
-    "rpm": 1000,
+    "microns": 180,
+    "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 38.3,
+    "time_s": 15.6,
+    "ratio": 2.13,
+    "taste": null,
+    "verdict": "gusher — 15.6 s total (~10 s flow), way too fast",
+    "next_change": "→ 155 @ 1200",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 63,
+    "shot_at": "2026-10-28T08:35:39.505413-07:00",
+    "burrs": null,
+    "microns": 155,
+    "rpm": 1200,
     "dose_g": null,
-    "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested"
+    "next_change": "18 g in, cut at 34, aim 30–32 s total. 25 µm finer: Oaxaca gushed at 19.7 s from 180 and needed ~13 µm; this was 4 s faster still. Hold 1200 so grind is the only variable. If still under 26 s → 145; if it chokes → 162"
    },
    "queue": [
     {
-     "id": 61,
-     "shot_at": "2026-10-28T06:20:44.912563-07:00",
+     "id": 63,
+     "shot_at": "2026-10-28T08:35:39.505413-07:00",
      "burrs": null,
-     "microns": 168,
-     "rpm": 1000,
+     "microns": 155,
+     "rpm": 1200,
      "dose_g": null,
-     "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested"
+     "next_change": "18 g in, cut at 34, aim 30–32 s total. 25 µm finer: Oaxaca gushed at 19.7 s from 180 and needed ~13 µm; this was 4 s faster still. Hold 1200 so grind is the only variable. If still under 26 s → 145; if it chokes → 162"
     }
    ]
   },
@@ -1055,21 +1069,40 @@ window.DIALIN = {
  ],
  "shots": [
   {
-   "id": 61,
-   "shot_at": "2026-10-28 06:20:44.912563-07:00",
+   "id": 63,
+   "shot_at": "2026-10-28 08:35:39.505413-07:00",
    "bag": "DAC Booze Cruise",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 168,
-   "rpm": 1000,
+   "microns": 155,
+   "rpm": 1200,
    "dose_g": null,
    "yield_g": null,
    "time_s": null,
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Filter-roast anaerobic natural: expect it to run fast and soluble; if under 28 s go 158; if sour at 30 s go finer not coarser. 26 days off roast so it should be rested",
+   "next_change": "18 g in, cut at 34, aim 30–32 s total. 25 µm finer: Oaxaca gushed at 19.7 s from 180 and needed ~13 µm; this was 4 s faster still. Hold 1200 so grind is the only variable. If still under 26 s → 145; if it chokes → 162",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 62,
+   "shot_at": "2026-10-28 08:35:39.380766-07:00",
+   "bag": "DAC Booze Cruise",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 180,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "38.3",
+   "time_s": "15.6",
+   "ratio": "2.13",
+   "taste": null,
+   "verdict": "gusher — 15.6 s total (~10 s flow), way too fast",
+   "next_change": "→ 155 @ 1200",
    "by_whom": null,
    "data": {}
   },
@@ -2209,10 +2242,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-22 09:43:24.709608-07:00",
-  "shots_7d": 2,
-  "shots_30d": 19,
-  "shots_total": 41,
+  "last_shot_at": "2026-10-28 08:35:39.380766-07:00",
+  "shots_7d": 3,
+  "shots_30d": 20,
+  "shots_total": 42,
   "queued": 9,
   "bags_settled": 3,
   "bags_dialing": 9,
