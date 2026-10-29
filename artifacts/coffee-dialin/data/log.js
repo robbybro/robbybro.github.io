@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-29T10:49-07:00",
+ "generated_at": "2026-10-29T12:52-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -2337,6 +2337,7 @@ window.DIALIN = {
     "producer_country": "Kenya",
     "producer_region": "Kirinyaga",
     "also_roasted_by": [
+     "Botz Coffee",
      "Friedhats",
      "Sweven Coffee"
     ],
@@ -2433,19 +2434,8 @@ window.DIALIN = {
     "lat": 45.5202,
     "lng": -122.6742,
     "website": "https://proudmarycoffee.com",
-    "offerings": 35,
-    "producers": 16,
-    "in_my_bags": true
-   },
-   {
-    "name": "Makeworth Coffee",
-    "city": "Bellingham, WA",
-    "country": "USA",
-    "lat": 48.7519,
-    "lng": -122.4787,
-    "website": "https://makeworthcoffee.com",
-    "offerings": 15,
-    "producers": 3,
+    "offerings": 36,
+    "producers": 19,
     "in_my_bags": true
    },
    {
@@ -2456,7 +2446,18 @@ window.DIALIN = {
     "lng": -122.3321,
     "website": "https://www.pushxpullcoffee.com",
     "offerings": 13,
-    "producers": 12,
+    "producers": 11,
+    "in_my_bags": true
+   },
+   {
+    "name": "Makeworth Coffee",
+    "city": "Bellingham, WA",
+    "country": "USA",
+    "lat": 48.7519,
+    "lng": -122.4787,
+    "website": "https://makeworthcoffee.com",
+    "offerings": 12,
+    "producers": 3,
     "in_my_bags": true
    },
    {
@@ -2466,8 +2467,8 @@ window.DIALIN = {
     "lat": null,
     "lng": null,
     "website": "https://enjoylunacoffee.com",
-    "offerings": 2,
-    "producers": 2,
+    "offerings": 1,
+    "producers": 1,
     "in_my_bags": true
    },
    {
@@ -2477,8 +2478,8 @@ window.DIALIN = {
     "lat": 25.2048,
     "lng": 55.2708,
     "website": "https://archerscoffee.com",
-    "offerings": 221,
-    "producers": 103,
+    "offerings": 215,
+    "producers": 101,
     "in_my_bags": false
    },
    {
@@ -2488,8 +2489,8 @@ window.DIALIN = {
     "lat": 55.6828,
     "lng": 12.5357,
     "website": "https://coffeecollective.dk",
-    "offerings": 53,
-    "producers": 30,
+    "offerings": 61,
+    "producers": 28,
     "in_my_bags": false
    },
    {
@@ -2499,8 +2500,8 @@ window.DIALIN = {
     "lat": 36.332,
     "lng": -94.1185,
     "website": "https://onyxcoffeelab.com",
-    "offerings": 48,
-    "producers": 24,
+    "offerings": 54,
+    "producers": 23,
     "in_my_bags": false
    },
    {
@@ -2510,8 +2511,8 @@ window.DIALIN = {
     "lat": 51.4613,
     "lng": -0.1156,
     "website": "https://assemblycoffee.co.uk",
-    "offerings": 43,
-    "producers": 34,
+    "offerings": 44,
+    "producers": 35,
     "in_my_bags": false
    },
    {
@@ -2533,7 +2534,7 @@ window.DIALIN = {
     "lng": 144.9631,
     "website": "https://www.offshootcoffee.com.au",
     "offerings": 37,
-    "producers": 17,
+    "producers": 18,
     "in_my_bags": false
    },
    {
@@ -2548,14 +2549,25 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Hydrangea Coffee Roasters",
-    "city": "Petaluma, CA",
-    "country": "USA",
-    "lat": 38.2324,
-    "lng": -122.6367,
-    "website": "https://hydrangea.coffee",
+    "name": "Bows & Arrows",
+    "city": "Victoria, BC",
+    "country": "Canada",
+    "lat": 48.4284,
+    "lng": -123.3656,
+    "website": "https://bowsandarrowscoffee.com",
     "offerings": 25,
-    "producers": 12,
+    "producers": 10,
+    "in_my_bags": false
+   },
+   {
+    "name": "Devoción",
+    "city": "Brooklyn, NY",
+    "country": "USA",
+    "lat": 40.7176,
+    "lng": -73.9629,
+    "website": "https://devocion.com",
+    "offerings": 24,
+    "producers": 17,
     "in_my_bags": false
    },
    {
@@ -2570,36 +2582,14 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Bows & Arrows",
-    "city": "Victoria, BC",
-    "country": "Canada",
-    "lat": 48.4284,
-    "lng": -123.3656,
-    "website": "https://bowsandarrowscoffee.com",
-    "offerings": 24,
-    "producers": 9,
-    "in_my_bags": false
-   },
-   {
-    "name": "September Coffee",
-    "city": "Stittsville (Ottawa), ON",
-    "country": "Canada",
-    "lat": 45.2743576,
-    "lng": -75.9019097,
-    "website": "https://september.coffee",
-    "offerings": 22,
-    "producers": 8,
-    "in_my_bags": false
-   },
-   {
-    "name": "Devoción",
-    "city": "Brooklyn, NY",
+    "name": "Hydrangea Coffee Roasters",
+    "city": "Petaluma, CA",
     "country": "USA",
-    "lat": 40.7176,
-    "lng": -73.9629,
-    "website": "https://devocion.com",
-    "offerings": 21,
-    "producers": 11,
+    "lat": 38.2324,
+    "lng": -122.6367,
+    "website": "https://hydrangea.coffee",
+    "offerings": 23,
+    "producers": 10,
     "in_my_bags": false
    },
    {
@@ -2609,7 +2599,7 @@ window.DIALIN = {
     "lat": 52.3676,
     "lng": 4.9041,
     "website": "https://www.friedhats.com",
-    "offerings": 21,
+    "offerings": 20,
     "producers": 19,
     "in_my_bags": false
    },
@@ -2620,8 +2610,8 @@ window.DIALIN = {
     "lat": 35.9799,
     "lng": -78.5097,
     "website": "https://www.blackwhiteroasters.com",
-    "offerings": 19,
-    "producers": 15,
+    "offerings": 18,
+    "producers": 14,
     "in_my_bags": false
    },
    {
@@ -2647,58 +2637,36 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "POMA Coffee Research Lab",
-    "city": "Copenhagen",
-    "country": "Denmark",
-    "lat": 55.6761,
-    "lng": 12.5683,
-    "website": "https://www.pomacoffee.com",
-    "offerings": 18,
-    "producers": 1,
-    "in_my_bags": false
-   },
-   {
     "name": "Prolog Coffee",
     "city": "Copenhagen",
     "country": "Denmark",
     "lat": 55.669,
     "lng": 12.5586,
     "website": "https://prologcoffee.com",
-    "offerings": 12,
-    "producers": 11,
+    "offerings": 16,
+    "producers": 14,
     "in_my_bags": false
    },
    {
-    "name": "La Cabra",
-    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "name": "POMA Coffee Research Lab",
+    "city": "Copenhagen",
     "country": "Denmark",
-    "lat": 56.1572,
-    "lng": 10.2107,
-    "website": "https://www.lacabra.dk",
-    "offerings": 12,
-    "producers": 0,
+    "lat": 55.6761,
+    "lng": 12.5683,
+    "website": "https://www.pomacoffee.com",
+    "offerings": 16,
+    "producers": 1,
     "in_my_bags": false
    },
    {
-    "name": "Heart Coffee Roasters",
-    "city": "Portland, OR",
-    "country": "USA",
-    "lat": 45.5231,
-    "lng": -122.6765,
-    "website": "https://www.heartroasters.com",
-    "offerings": 11,
-    "producers": 6,
-    "in_my_bags": false
-   },
-   {
-    "name": "SEY",
-    "city": "Brooklyn, NY",
-    "country": "USA",
-    "lat": 40.7057,
-    "lng": -73.9204,
-    "website": "https://www.seycoffee.com",
-    "offerings": 10,
-    "producers": 9,
+    "name": "September Coffee",
+    "city": "Stittsville (Ottawa), ON",
+    "country": "Canada",
+    "lat": 45.2743576,
+    "lng": -75.9019097,
+    "website": "https://september.coffee",
+    "offerings": 16,
+    "producers": 8,
     "in_my_bags": false
    },
    {
@@ -2708,8 +2676,8 @@ window.DIALIN = {
     "lat": 51.4545,
     "lng": -2.5879,
     "website": "https://www.swevencoffee.co.uk",
-    "offerings": 10,
-    "producers": 9,
+    "offerings": 11,
+    "producers": 10,
     "in_my_bags": false
    },
    {
@@ -2721,6 +2689,39 @@ window.DIALIN = {
     "website": "https://meritcoffee.com",
     "offerings": 10,
     "producers": 4,
+    "in_my_bags": false
+   },
+   {
+    "name": "Heart Coffee Roasters",
+    "city": "Portland, OR",
+    "country": "USA",
+    "lat": 45.5231,
+    "lng": -122.6765,
+    "website": "https://www.heartroasters.com",
+    "offerings": 9,
+    "producers": 4,
+    "in_my_bags": false
+   },
+   {
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "country": "Denmark",
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 8,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "SEY",
+    "city": "Brooklyn, NY",
+    "country": "USA",
+    "lat": 40.7057,
+    "lng": -73.9204,
+    "website": "https://www.seycoffee.com",
+    "offerings": 7,
+    "producers": 6,
     "in_my_bags": false
    },
    {
@@ -2746,6 +2747,17 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Mural Roasters",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": 29.4241,
+    "lng": -98.5193,
+    "website": "https://www.muralroasters.com",
+    "offerings": 3,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
     "name": "Weathered Hands Coffee",
     "city": "Texas Hill Country",
     "country": "USA",
@@ -2754,17 +2766,6 @@ window.DIALIN = {
     "website": "https://www.weatheredhandscoffee.com",
     "offerings": 3,
     "producers": 3,
-    "in_my_bags": false
-   },
-   {
-    "name": "Mural Roasters",
-    "city": "San Antonio, TX",
-    "country": "USA",
-    "lat": 29.4241,
-    "lng": -98.5193,
-    "website": "https://www.muralroasters.com",
-    "offerings": 1,
-    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -2779,12 +2780,12 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Perdido Coffee",
-    "city": "San Antonio, TX",
+    "name": "Coffee Project NY",
+    "city": "New York, NY",
     "country": "USA",
-    "lat": null,
-    "lng": null,
-    "website": null,
+    "lat": 40.7264,
+    "lng": -73.9878,
+    "website": "https://coffeeprojectny.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2823,12 +2824,12 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Estate Coffee Company",
+    "name": "Perdido Coffee",
     "city": "San Antonio, TX",
     "country": "USA",
     "lat": null,
     "lng": null,
-    "website": "https://www.estatecoffeecompany.com",
+    "website": null,
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2845,12 +2846,12 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Coffee Project NY",
-    "city": "New York, NY",
+    "name": "Estate Coffee Company",
+    "city": "San Antonio, TX",
     "country": "USA",
-    "lat": 40.7264,
-    "lng": -73.9878,
-    "website": "https://coffeeprojectny.com",
+    "lat": null,
+    "lng": null,
+    "website": "https://www.estatecoffeecompany.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2870,106 +2871,99 @@ window.DIALIN = {
   "countries": [
    {
     "country": "Colombia",
-    "producers": 92,
+    "producers": 94,
     "roasters": 19,
-    "offerings": 122,
+    "offerings": 124,
     "my_bags": 1
    },
    {
     "country": "Panama",
-    "producers": 66,
+    "producers": 64,
     "roasters": 7,
-    "offerings": 141,
+    "offerings": 134,
     "my_bags": 0
    },
    {
     "country": "Ethiopia",
-    "producers": 53,
+    "producers": 59,
     "roasters": 19,
-    "offerings": 91,
+    "offerings": 105,
     "my_bags": 1
    },
    {
-    "country": "Peru",
-    "producers": 23,
-    "roasters": 8,
-    "offerings": 29,
+    "country": "Guatemala",
+    "producers": 25,
+    "roasters": 12,
+    "offerings": 31,
     "my_bags": 0
    },
    {
     "country": "Kenya",
-    "producers": 20,
-    "roasters": 13,
-    "offerings": 30,
+    "producers": 21,
+    "roasters": 12,
+    "offerings": 32,
     "my_bags": 0
    },
    {
-    "country": "Guatemala",
+    "country": "Peru",
     "producers": 18,
-    "roasters": 10,
-    "offerings": 18,
+    "roasters": 9,
+    "offerings": 22,
     "my_bags": 0
    },
    {
     "country": "Costa Rica",
-    "producers": 11,
-    "roasters": 8,
-    "offerings": 17,
-    "my_bags": 0
-   },
-   {
-    "country": "Brazil",
-    "producers": 11,
-    "roasters": 5,
-    "offerings": 16,
-    "my_bags": 0
-   },
-   {
-    "country": "Ecuador",
-    "producers": 10,
-    "roasters": 6,
-    "offerings": 11,
-    "my_bags": 0
-   },
-   {
-    "country": "Honduras",
-    "producers": 9,
-    "roasters": 6,
-    "offerings": 11,
+    "producers": 15,
+    "roasters": 11,
+    "offerings": 19,
     "my_bags": 0
    },
    {
     "country": "Mexico",
-    "producers": 7,
+    "producers": 10,
     "roasters": 6,
-    "offerings": 8,
+    "offerings": 10,
     "my_bags": 0
    },
    {
-    "country": "Bolivia",
+    "country": "Honduras",
+    "producers": 10,
+    "roasters": 6,
+    "offerings": 12,
+    "my_bags": 0
+   },
+   {
+    "country": "Ecuador",
     "producers": 7,
-    "roasters": 3,
-    "offerings": 7,
+    "roasters": 5,
+    "offerings": 9,
     "my_bags": 0
    },
    {
     "country": "El Salvador",
     "producers": 6,
-    "roasters": 5,
-    "offerings": 6,
-    "my_bags": 0
-   },
-   {
-    "country": "Nicaragua",
-    "producers": 5,
-    "roasters": 2,
+    "roasters": 6,
     "offerings": 7,
     "my_bags": 0
    },
    {
-    "country": "Burundi",
-    "producers": 3,
+    "country": "Brazil",
+    "producers": 6,
     "roasters": 2,
+    "offerings": 8,
+    "my_bags": 0
+   },
+   {
+    "country": "Nicaragua",
+    "producers": 4,
+    "roasters": 2,
+    "offerings": 5,
+    "my_bags": 0
+   },
+   {
+    "country": "Uganda",
+    "producers": 3,
+    "roasters": 3,
     "offerings": 3,
     "my_bags": 0
    },
@@ -2981,7 +2975,7 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
-    "country": "Rwanda",
+    "country": "China",
     "producers": 2,
     "roasters": 2,
     "offerings": 2,
@@ -2995,21 +2989,28 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
-    "country": "Uganda",
+    "country": "Burundi",
+    "producers": 2,
+    "roasters": 1,
+    "offerings": 2,
+    "my_bags": 0
+   },
+   {
+    "country": "Rwanda",
     "producers": 2,
     "roasters": 2,
     "offerings": 2,
     "my_bags": 0
    },
    {
-    "country": "Zambia",
-    "producers": 1,
-    "roasters": 1,
-    "offerings": 1,
+    "country": "Bolivia",
+    "producers": 2,
+    "roasters": 2,
+    "offerings": 2,
     "my_bags": 0
    },
    {
-    "country": "China",
+    "country": "Yemen",
     "producers": 1,
     "roasters": 1,
     "offerings": 1,
@@ -3026,7 +3027,7 @@ window.DIALIN = {
     "country": "Denmark",
     "producers": 1,
     "roasters": 1,
-    "offerings": 4,
+    "offerings": 1,
     "my_bags": 0
    },
    {
@@ -3058,14 +3059,28 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
-    "country": "Timor-Leste",
+    "country": "Panama + Guatemala",
     "producers": 1,
     "roasters": 1,
     "offerings": 1,
     "my_bags": 0
    },
    {
-    "country": "Yemen",
+    "country": "Piedra candela",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Sumatra",
+    "producers": 1,
+    "roasters": 1,
+    "offerings": 1,
+    "my_bags": 0
+   },
+   {
+    "country": "Timor-Leste",
     "producers": 1,
     "roasters": 1,
     "offerings": 1,
@@ -3091,11 +3106,12 @@ window.DIALIN = {
     "name": "Finca El Paraíso (Bermúdez)",
     "country": "Colombia",
     "region": null,
-    "roasters": 7,
-    "offerings": 49,
+    "roasters": 8,
+    "offerings": 51,
     "roasted_by": [
      "Archers Coffee",
      "Black & White Coffee Roasters",
+     "Botz Coffee",
      "Hydrangea Coffee Roasters",
      "NATIVE Coffee Co.",
      "Offshoot Coffee",
@@ -3141,7 +3157,7 @@ window.DIALIN = {
     "country": "Ecuador",
     "region": "Imababura",
     "roasters": 5,
-    "offerings": 26,
+    "offerings": 27,
     "roasted_by": [
      "Archers Coffee",
      "Black & White Coffee Roasters",
@@ -3182,6 +3198,21 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Chelbesa",
+    "country": "Ethiopia",
+    "region": "Gedeb",
+    "roasters": 5,
+    "offerings": 10,
+    "roasted_by": [
+     "Friedhats",
+     "Hydrangea Coffee Roasters",
+     "Luna Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
     "name": "El Vergel",
     "country": "Colombia",
     "region": "Tolima",
@@ -3211,16 +3242,30 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Chelbesa",
-    "country": "Ethiopia",
-    "region": "Gedeb",
+    "name": "Kii",
+    "country": "Kenya",
+    "region": "Kirinyaga",
     "roasters": 4,
     "offerings": 6,
     "roasted_by": [
+     "Botz Coffee",
      "Friedhats",
      "Luna Coffee",
-     "September Coffee",
-     "SEY"
+     "Sweven Coffee"
+    ],
+    "in_my_bags": true
+   },
+   {
+    "name": "Habtamu Fikadu",
+    "country": "Ethiopia",
+    "region": "Gedeb",
+    "roasters": 4,
+    "offerings": 5,
+    "roasted_by": [
+     "Botz Coffee",
+     "Heart Coffee Roasters",
+     "Luna Coffee",
+     "September Coffee"
     ],
     "in_my_bags": false
    },
@@ -3243,7 +3288,7 @@ window.DIALIN = {
     "country": "Panama",
     "region": "Santa Clara, Renacimiento, Chiriquí",
     "roasters": 3,
-    "offerings": 41,
+    "offerings": 44,
     "roasted_by": [
      "Archers Coffee",
      "Hydrangea Coffee Roasters",
@@ -3256,7 +3301,7 @@ window.DIALIN = {
     "country": "Colombia",
     "region": "Palestina, Huila",
     "roasters": 3,
-    "offerings": 16,
+    "offerings": 17,
     "roasted_by": [
      "Offshoot Coffee",
      "Push x Pull",
@@ -3276,49 +3321,20 @@ window.DIALIN = {
      "SEY"
     ],
     "in_my_bags": false
-   },
-   {
-    "name": "La Esperanza",
-    "country": "Colombia",
-    "region": "Valle del Cauca",
-    "roasters": 3,
-    "offerings": 12,
-    "roasted_by": [
-     "Archers Coffee",
-     "Hydrangea Coffee Roasters",
-     "SEY"
-    ],
-    "in_my_bags": false
-   },
-   {
-    "name": "Diego Horta",
-    "country": "Colombia",
-    "region": null,
-    "roasters": 3,
-    "offerings": 11,
-    "roasted_by": [
-     "Black & White Coffee Roasters",
-     "Friedhats",
-     "Onyx Coffee Lab"
-    ],
-    "in_my_bags": false
    }
   ],
   "totals": {
    "roasters": 40,
-   "producers": 1923,
-   "offerings": 3880,
-   "offerings_available": 821,
-   "offerings_with_producer": 541,
-   "last_release": "2026-10-23 17:00:00-07:00"
+   "producers": 2059,
+   "offerings": 4217,
+   "offerings_available": 817,
+   "offerings_with_producer": 547,
+   "last_release": "2026-10-29 08:49:42-07:00"
   },
   "last_scrape": {
-   "fired_at": "2026-10-01 14:34:55.884683-07:00",
-   "status": "error",
-   "summary": "RuntimeError: unparseable response from https://aprilcoffeeroasters.com/products.json?limit=250&page=1: Expecting value: line 1 column 1 (char 0)",
-   "failing_runs": 6,
-   "failing_since": "2026-10-01 06:40:39.488990-07:00",
-   "last_ok": null
+   "fired_at": "2026-10-29 12:36:31.764423-07:00",
+   "status": "ok",
+   "summary": "refresh complete 2026-10-29T12:38"
   }
  }
 };
