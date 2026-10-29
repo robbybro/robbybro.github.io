@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-29T09:49-07:00",
+ "generated_at": "2026-10-29T10:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -500,40 +500,40 @@ window.DIALIN = {
     "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
     "roaster_in_untamped": false
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 64,
-    "shot_at": "2026-10-28T13:45:59.021307-07:00",
-    "burrs": null,
-    "microns": 155,
-    "rpm": 1200,
-    "dose_g": 18,
-    "yield_g": 38.1,
-    "time_s": 23.5,
-    "ratio": 2.12,
-    "taste": null,
-    "verdict": "still fast (23.5 s total); 25 µm bought ~8 s",
-    "next_change": "→ 140 @ 1000 (Robby: wants more clarity, drop RPM)",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 65,
-    "shot_at": "2026-10-28T13:45:59.149213-07:00",
+    "id": 66,
+    "shot_at": "2026-10-29T10:10:05.366009-07:00",
     "burrs": null,
     "microns": 140,
     "rpm": 1000,
+    "dose_g": 18,
+    "yield_g": 37.1,
+    "time_s": 25.3,
+    "ratio": 2.06,
+    "taste": null,
+    "verdict": "still fast (25.3 s total); 15 µm finer + RPM 1200→1000 net +1.8 s",
+    "next_change": "RPM up or grind down — see queue",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 67,
+    "shot_at": "2026-10-29T10:10:27.113509-07:00",
+    "burrs": null,
+    "microns": 140,
+    "rpm": 1200,
     "dose_g": null,
-    "next_change": "18 g in, cut at 34, aim 30–32 s total. Two variables moved at once by Robby's call (clarity). Expect it to still run fast: 25 µm finer gained 8 s at 1200, and lower RPM runs faster (Kuma 190: 29.4 s @ 1000 vs 37 s @ 1200). If under 28 s → 130 @ 1000; if it chokes → 148 @ 1000"
+    "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s)."
    },
    "queue": [
     {
-     "id": 65,
-     "shot_at": "2026-10-28T13:45:59.149213-07:00",
+     "id": 67,
+     "shot_at": "2026-10-29T10:10:27.113509-07:00",
      "burrs": null,
      "microns": 140,
-     "rpm": 1000,
+     "rpm": 1200,
      "dose_g": null,
-     "next_change": "18 g in, cut at 34, aim 30–32 s total. Two variables moved at once by Robby's call (clarity). Expect it to still run fast: 25 µm finer gained 8 s at 1200, and lower RPM runs faster (Kuma 190: 29.4 s @ 1000 vs 37 s @ 1200). If under 28 s → 130 @ 1000; if it chokes → 148 @ 1000"
+     "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s)."
     }
    ]
   },
@@ -1069,21 +1069,40 @@ window.DIALIN = {
  ],
  "shots": [
   {
-   "id": 65,
-   "shot_at": "2026-10-28 13:45:59.149213-07:00",
+   "id": 67,
+   "shot_at": "2026-10-29 10:10:27.113509-07:00",
    "bag": "DAC Booze Cruise",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
    "microns": 140,
-   "rpm": 1000,
+   "rpm": 1200,
    "dose_g": null,
    "yield_g": null,
    "time_s": null,
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34, aim 30–32 s total. Two variables moved at once by Robby's call (clarity). Expect it to still run fast: 25 µm finer gained 8 s at 1200, and lower RPM runs faster (Kuma 190: 29.4 s @ 1000 vs 37 s @ 1200). If under 28 s → 130 @ 1000; if it chokes → 148 @ 1000",
+   "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s).",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 66,
+   "shot_at": "2026-10-29 10:10:05.366009-07:00",
+   "bag": "DAC Booze Cruise",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 140,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "37.1",
+   "time_s": "25.3",
+   "ratio": "2.06",
+   "taste": null,
+   "verdict": "still fast (25.3 s total); 15 µm finer + RPM 1200→1000 net +1.8 s",
+   "next_change": "RPM up or grind down — see queue",
    "by_whom": null,
    "data": {}
   },
@@ -2261,10 +2280,10 @@ window.DIALIN = {
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-28 13:45:59.021307-07:00",
-  "shots_7d": 2,
-  "shots_30d": 21,
-  "shots_total": 43,
+  "last_shot_at": "2026-10-29 10:10:05.366009-07:00",
+  "shots_7d": 3,
+  "shots_30d": 22,
+  "shots_total": 44,
   "queued": 9,
   "bags_settled": 3,
   "bags_dialing": 9,
