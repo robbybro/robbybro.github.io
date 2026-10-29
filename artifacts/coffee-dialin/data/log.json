@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-29T12:52-07:00",
+ "generated_at": "2026-10-29T14:49-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -328,6 +328,16 @@
    "RPM (per bag; A/B first)",
    "water temp (later)"
   ],
+  "dial_model": {
+   "rpm": "+200 rpm = +4..+8 s at fixed grind (GR +4-5, Kuma +8); -400 rpm = -10..-13 s (Luna, Makeworth). RPM is worth about the same as 10-15 um",
+   "as_of": "2026-10-29",
+   "noise": "same setting repeats spread +-2-4 s (Ghost Rider 177 @1000: 27.7-31.7); steps under 10 um are inside noise, do not read them",
+   "shape": "convex, not linear: far from the window (<22 s) 10 um finer buys ~1-3 s; inside ~5 s of the window it buys ~5-8 s (Luna @600: +0.9, +3.0, +8.4 s/10um on successive steps; VdC decaf @400: +0.5 then +6.7)",
+   "source": "all pulled espresso shots in coffee_shots, within-bag pairs at fixed RPM + dose",
+   "n_shots": 40,
+   "per_variety": "unknown: too few bags per variety/process to separate; the window POSITION varies 125-225 um across bags, the near-window slope does not obviously",
+   "coarse_prior": "big steps (>=15 um) across all bags: median +3.2 s per 10 um finer (range -2.5..+7.5); use as the first-move estimate only"
+  },
   "dial_rules": [
    "sour / gushing / fast → finer ~10 µm",
    "bitter / choking / slow → coarser ~10 µm",
@@ -500,40 +510,40 @@
     "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
     "roaster_in_untamped": false
    },
-   "shots": 3,
+   "shots": 4,
    "last_shot": {
-    "id": 66,
-    "shot_at": "2026-10-29T10:10:05.366009-07:00",
+    "id": 68,
+    "shot_at": "2026-10-29T14:32:11.357851-07:00",
     "burrs": null,
-    "microns": 140,
+    "microns": 125,
     "rpm": 1000,
     "dose_g": 18,
-    "yield_g": 37.1,
-    "time_s": 25.3,
-    "ratio": 2.06,
+    "yield_g": 37.2,
+    "time_s": 39.8,
+    "ratio": 2.07,
     "taste": null,
-    "verdict": "still fast (25.3 s total); 15 µm finer + RPM 1200→1000 net +1.8 s",
-    "next_change": "RPM up or grind down — see queue",
+    "verdict": "slow (39.8 s total); 15 µm finer bought +14.5 s = 9.7 s/10 µm — steep part of the curve",
+    "next_change": "→ 133 @ 1000",
     "by_whom": null
    },
    "queued": {
-    "id": 67,
-    "shot_at": "2026-10-29T10:10:27.113509-07:00",
+    "id": 69,
+    "shot_at": "2026-10-29T14:32:11.480996-07:00",
     "burrs": null,
-    "microns": 140,
-    "rpm": 1200,
+    "microns": 133,
+    "rpm": 1000,
     "dose_g": null,
-    "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s)."
+    "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130."
    },
    "queue": [
     {
-     "id": 67,
-     "shot_at": "2026-10-29T10:10:27.113509-07:00",
+     "id": 69,
+     "shot_at": "2026-10-29T14:32:11.480996-07:00",
      "burrs": null,
-     "microns": 140,
-     "rpm": 1200,
+     "microns": 133,
+     "rpm": 1000,
      "dose_g": null,
-     "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s)."
+     "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130."
     }
    ]
   },
@@ -1069,21 +1079,40 @@
  ],
  "shots": [
   {
-   "id": 67,
-   "shot_at": "2026-10-29 10:10:27.113509-07:00",
+   "id": 69,
+   "shot_at": "2026-10-29 14:32:11.480996-07:00",
    "bag": "DAC Booze Cruise",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 140,
-   "rpm": 1200,
+   "microns": 133,
+   "rpm": 1000,
    "dose_g": null,
    "yield_g": null,
    "time_s": null,
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34, aim 30–32 s total. Single-variable move: RPM 1000→1200 at the same 140 µm. Store evidence: Kuma 190 µm ran 29.4 s @ 1000 and 37.8 s @ 1200 (+8.4 s), so expect ~32–34 s. Costs some clarity (fines add body). If still under 28 s → 130 @ 1200; if it chokes → 145 @ 1200. Clarity-first alternative: 125–130 @ 1000 (25 µm bought ~8 s at 1200, so ~0.3 s/µm → 125 ≈ 30 s).",
+   "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 68,
+   "shot_at": "2026-10-29 14:32:11.357851-07:00",
+   "bag": "DAC Booze Cruise",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 125,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "37.2",
+   "time_s": "39.8",
+   "ratio": "2.07",
+   "taste": null,
+   "verdict": "slow (39.8 s total); 15 µm finer bought +14.5 s = 9.7 s/10 µm — steep part of the curve",
+   "next_change": "→ 133 @ 1000",
    "by_whom": null,
    "data": {}
   },
@@ -2280,10 +2309,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-29 10:10:05.366009-07:00",
-  "shots_7d": 3,
-  "shots_30d": 22,
-  "shots_total": 44,
+  "last_shot_at": "2026-10-29 14:32:11.357851-07:00",
+  "shots_7d": 4,
+  "shots_30d": 23,
+  "shots_total": 45,
   "queued": 9,
   "bags_settled": 3,
   "bags_dialing": 9,
