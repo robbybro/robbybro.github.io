@@ -1,10 +1,10 @@
 window.DIALIN = {
- "generated_at": "2026-10-30T07:14-07:00",
+ "generated_at": "2026-10-30T07:41-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
   "laws": {
-   "timing": "clock starts at pump start and INCLUDES the 5 s pre-brew (3 on / 2 off); target 30–35 s total (classic 25–30 + 5); Robby's sweet spot is 30–32 s total (reaffirmed 2026-10-11 — he subtracts the 5 s himself, so never quote a flow-only number back to him)",
+   "timing": "clock starts at pump start and INCLUDES the 5 s pre-brew (3 on / 2 off); target 30–35 s total (classic 25–30 + 5); the sweet spot is 30–32 s total",
    "prebrew": {
     "on_s": 3,
     "off_s": 2,
@@ -64,7 +64,7 @@ window.DIALIN = {
   "glossary": [
    [
     "Next up",
-    "the queue of shots planned for this bag, newest plan first — grind, motor speed and grams in. Pull the top one; logging that shot clears it. When a bag runs out, tell Robby and the whole queue is cleared."
+    "the queue of shots planned for this bag, newest plan first — grind, motor speed and grams in. Logging a shot at that grind clears its entry; marking the bag out clears the whole queue."
    ],
    [
     "µm",
@@ -149,7 +149,7 @@ window.DIALIN = {
    ],
    "grinder": "Fellow Ode Gen 2",
    "scoop_g": null,
-   "scoop_note": "Robby thinks the scoop is ~1.5 tbsp (unweighed, 10/10). That is ~8–10 g of beans, which would put the Chemex at ~1:25 — so either the scoop is bigger than it looks or pourover runs weaker than the 1:16 law. Weigh one scoop to settle it (blocked item). Pourover precision is deliberately low: an A− cup for X+ effort is the standard.",
+   "scoop_note": "That is ~8–10 g of beans, which would put the Chemex at ~1:25 — so either the scoop is bigger than it looks or pourover runs weaker than the 1:16 law. Pourover precision is deliberately low: an A− cup for X+ effort is the standard.",
    "setting_range": "4–5"
   },
   "rpm_rule": {
@@ -397,7 +397,7 @@ window.DIALIN = {
     "taste": "good crema; a little bitter straight, should be great with milk",
     "verdict": "in window, first shot",
     "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
-    "by_whom": "Robby"
+    "by_whom": null
    },
    "queued": null,
    "queue": []
@@ -493,7 +493,7 @@ window.DIALIN = {
      "Hyacinth Decaf"
     ],
     "decaf_share": 0.5,
-    "dialin_start_note": "Robby 2026-10-30: 165 µm at 1200 gets it in the right zone. Replaces GR/VdC 50:50 (Push x Pull VdC is gone). Midpoint rule would say ~158 (GR 180, Hyacinth ~135); his number wins until a shot says otherwise."
+    "dialin_start_note": "165 µm at 1200 gets it in the right zone. Replaces GR/VdC 50:50 (Push x Pull VdC is gone). Midpoint rule would say ~158 (GR 180, Hyacinth ~135)"
    },
    "shots": 0,
    "last_shot": null,
@@ -504,7 +504,7 @@ window.DIALIN = {
     "microns": 165,
     "rpm": 1200,
     "dose_g": null,
-    "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
+    "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
    },
    "queue": [
     {
@@ -514,7 +514,7 @@ window.DIALIN = {
      "microns": 165,
      "rpm": 1200,
      "dose_g": null,
-     "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
+     "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
     }
    ]
   },
@@ -543,7 +543,7 @@ window.DIALIN = {
     "roaster": "DAC",
     "variety": "Centroamericano",
     "roast_date": "2026-10-02",
-    "roaster_note": "roaster name per Robby (box shows only the coffee name); not in untamped",
+    "roaster_note": "roaster name (box shows only the coffee name); not in untamped",
     "origin_country": "Costa Rica",
     "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
     "roaster_in_untamped": false
@@ -610,7 +610,7 @@ window.DIALIN = {
      }
     },
     "logged": "2026-10-28",
-    "opened": "2026-10-28",
+    "opened": null,
     "region": "Cajamarca",
     "process": "washed",
     "roaster": "Perdido Coffee",
@@ -619,6 +619,7 @@ window.DIALIN = {
     "elevation": "2000-2100 masl",
     "roast_date": "2026-10-07",
     "roaster_id": 295,
+    "opened_note": "not opened yet (logged 10/28 off the bag)",
     "roaster_city": "San Antonio, TX",
     "elevation_masl": "2000-2100",
     "origin_country": "Peru",
@@ -691,7 +692,7 @@ window.DIALIN = {
    "id": 13,
    "short_name": "Creature Friend Blend",
    "label": "Creature Coffee Co — Friend Blend (Guatemala, Costa Rica, Ethiopia)",
-   "verdict": null,
+   "verdict": "meh",
    "noted_at": "2026-10-18 08:38:45.468623-07:00",
    "offering_id": null,
    "data": {
@@ -717,6 +718,7 @@ window.DIALIN = {
     "process": "blend; processes not stated on bag",
     "roaster": "Creature Coffee Co",
     "roast_date": null,
+    "verdict_note": "still have it, does not taste that good, so we are slacking on it; queue left as is (160 @ 1200)",
     "roast_date_note": "not visible on front of bag — check the back/bottom",
     "dialin_start_note": "espresso-blend prior 180 @ 1000 (Ghost Rider, the other medium espresso blend, settled at 180); dial grind first, then bracket RPM",
     "roaster_in_untamped": false
@@ -1059,7 +1061,7 @@ window.DIALIN = {
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170.",
+   "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. 165 @ 1200 is the right zone. If fast → 160; if slow → 170.",
    "by_whom": null,
    "data": {}
   },
@@ -1133,10 +1135,10 @@ window.DIALIN = {
    "yield_g": "37.1",
    "time_s": "25.3",
    "ratio": "2.06",
-   "taste": "tasted best (with the 155 @ 1200 shot) — Robby 10/30",
+   "taste": "tasted best (with the 155 @ 1200 shot)",
    "verdict": "still fast (25.3 s total); 15 µm finer + RPM 1200→1000 net +1.8 s",
    "next_change": "RPM up or grind down — see queue",
-   "by_whom": "Robby",
+   "by_whom": null,
    "data": {}
   },
   {
@@ -1152,10 +1154,10 @@ window.DIALIN = {
    "yield_g": "38.1",
    "time_s": "23.5",
    "ratio": "2.12",
-   "taste": "tasted best (with the 140 @ 1000 shot) — Robby 10/30",
+   "taste": "tasted best (with the 140 @ 1000 shot)",
    "verdict": "still fast (23.5 s total); 25 µm bought ~8 s",
-   "next_change": "→ 140 @ 1000 (Robby: wants more clarity, drop RPM)",
-   "by_whom": "Robby",
+   "next_change": "→ 140 @ 1000 (wants more clarity, drop RPM)",
+   "by_whom": null,
    "data": {}
   },
   {
@@ -1249,7 +1251,7 @@ window.DIALIN = {
    "ratio": "2.07",
    "taste": "not far off, a little bitter",
    "verdict": "in window, fast edge",
-   "next_change": "→ 185 (Robby's call; bitter rule says coarser)",
+   "next_change": "→ 185 (bitter rule says coarser)",
    "by_whom": null,
    "data": {}
   },
@@ -1404,7 +1406,7 @@ window.DIALIN = {
    "ratio": "2.07",
    "taste": null,
    "verdict": "still way too fast; 10 µm finer moved time 0.9 s (19.0 → 19.9)",
-   "next_change": "→ 150 @ 600 (Robby's call, 15 µm step since 165 did nothing)",
+   "next_change": "→ 150 @ 600 (15 µm step since 165 did nothing)",
    "by_whom": null,
    "data": {}
   },
@@ -1442,7 +1444,7 @@ window.DIALIN = {
    "ratio": "1.99",
    "taste": "really good; slightly acidic; washed out by the milk in a cappuccino",
    "verdict": "in window first shot — time on the money",
-   "next_change": "A/B RPM: same 175, drop to 600; Robby's call for bolder + clarity. House rule predicts fewer fines → faster + cleaner but thinner; if it thins, go 170 @ 1000 and cut at 32 for milk",
+   "next_change": "A/B RPM: same 175, drop to 600; for bolder + clarity. House rule predicts fewer fines → faster + cleaner but thinner; if it thins, go 170 @ 1000 and cut at 32 for milk",
    "by_whom": null,
    "data": {}
   },
@@ -1542,7 +1544,7 @@ window.DIALIN = {
    "taste": "good crema; a little bitter straight, should be great with milk",
    "verdict": "in window, first shot",
    "next_change": "160 µm, or stay at 155 and drop to 400 rpm, for drinking it straight; for milk hold 155 @ 500",
-   "by_whom": "Robby",
+   "by_whom": null,
    "data": {}
   },
   {
@@ -1903,7 +1905,7 @@ window.DIALIN = {
    "yield_g": "38.4",
    "time_s": "26.7",
    "ratio": null,
-   "taste": "Emily made it, Robby did not taste; looked textbook if dose ~18g (~1:2.1). ALSO sprayed, less than the 180 shot — same puck prep both. Spray at two settings w/ identical prep = prep/seasoning, not the dial (coarser sprays less only because puck resistance drops).",
+   "taste": "Emily made it; looked textbook if dose ~18g (~1:2.1). ALSO sprayed, less than the 180 shot — same puck prep both. Spray at two settings w/ identical prep = prep/seasoning, not the dial (coarser sprays less only because puck resistance drops).",
    "verdict": null,
    "next_change": null,
    "by_whom": "Emily",
@@ -1928,7 +1930,7 @@ window.DIALIN = {
    "taste": "tons of spraying (channeling); TOO SOUR — but sour-while-channeling is a prep verdict, not a dial verdict",
    "verdict": null,
    "next_change": null,
-   "by_whom": "Robby",
+   "by_whom": null,
    "data": {
     "source": "kv zerno-dialin",
     "bag_assumed": "Ghost Rider — bag not recorded in kv; the bag in use on 9/2"
@@ -2152,7 +2154,7 @@ window.DIALIN = {
    "option_a": "1000 rpm",
    "option_b": "1200 rpm",
    "winner": "",
-   "notes": "QUEUED 10/10: the 9/10 bracket crowned 1200 on one shot pulled while 1000 was being tested at 165–170 µm, never the same grind. Robby has been pulling GR at 1000 in practice (unlogged). Rematch settles the house recipe."
+   "notes": "QUEUED 10/10: the 9/10 bracket crowned 1200 on one shot pulled while 1000 was being tested at 165–170 µm, never the same grind. Rematch settles the house recipe."
   },
   {
    "id": 6,
@@ -2218,7 +2220,7 @@ window.DIALIN = {
    "option_a": "1000 rpm: 35.8 g / 32.4 s — really good, slightly acidic, washed out by milk",
    "option_b": "600 rpm: 19 s — acidity gone, held up better in milk, under-extracted",
    "winner": "600 rpm on flavour; grind must go ~10 finer to recover time",
-   "notes": "600 took 13 s off the shot at the same grind — far more than the 'few seconds' predicted; low RPM = fewer fines = faster flow, confirmed for a light washed Colombian. Robby's milk-drink read: lower RPM, then finer."
+   "notes": "600 took 13 s off the shot at the same grind — far more than the 'few seconds' predicted; low RPM = fewer fines = faster flow, confirmed for a light washed Colombian. The milk-drink read: lower RPM, then finer."
   },
   {
    "id": 5,
