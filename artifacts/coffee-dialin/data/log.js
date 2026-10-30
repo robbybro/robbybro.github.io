@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-10-30T07:04-07:00",
+ "generated_at": "2026-10-30T07:14-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -41,7 +41,6 @@ window.DIALIN = {
    "url": "https://robbybro.com/marzocco-water/",
    "base": "distilled",
    "note": "chloride-free: all hardness from Epsom salt (MgSO4·7H2O), alkalinity from baking soda; inside La Marzocco spec (hardness 70–100, alkalinity 40–80, chloride <30 ppm)",
-   "source": "~/git/marzocco-water (house default agreed 2026-07-11)",
    "hardness_ppm": 75,
    "alkalinity_ppm": 47,
    "epsom_g_per_gal": 0.7,
@@ -354,16 +353,6 @@ window.DIALIN = {
    "tamp ×2 (twist at top)",
    "pull"
   ],
-  "retired_sheet": {
-   "id": "1H55uA6EMT98yAonN8Il2PudnP_SHZfeegY-9bA0qYNk",
-   "note": "read-only history; never write to it again",
-   "retired_on": "2026-10-10",
-   "imported_by": "import_coffee_dialin.py"
-  },
-  "retired_tools": {
-   "distributor": "edge flow + bald middle, +4 s (9/9)",
-   "Weber blind shaker": "clumps with RDT"
-  },
   "new_bag_intake": "log roaster/producer/region/variety/process/masl/roast date + measure density (weigh 100 mL → g/L)"
  },
  "bags": [

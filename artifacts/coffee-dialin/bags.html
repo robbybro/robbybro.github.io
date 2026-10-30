@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="description" content="Every bag ever logged on Robby's espresso board, each with its recipe, its shot-time history and its provenance: roaster, producer or farm, process, variety, elevation, and which other roasters buy from the same producer.">
 <title>Coffee Dial-In — All bags</title>
 <link rel="stylesheet" href="style.css">
@@ -17,12 +18,12 @@
     </div>
     <h1 style="margin-top:8px">All bags</h1>
     <p class="sub">Every bag logged, house beans first, then newest first. Each card carries its recipe and queue, its shot-time history, and where the coffee came from: roaster, producer or farm, and who else roasts that producer's coffee.</p>
-    <nav class="chips bagchips" id="bag-chips" aria-label="Bags, newest first"></nav>
+    <nav class="chips bagchips" id="bag-chips" aria-label="Bags, house beans first then newest"></nav>
     <div class="chip-legend" id="chip-legend"></div>
   </header>
 
   <details class="panel glossary" id="glossary">
-    <summary><span><b>Words on this page</b> — µm, RPM, cut at 34, time, ratio, settled, next up, RDT, WDT and the rest, defined once here</span></summary>
+    <summary><span><b>What the words on this page mean</b> — µm, RPM, cut at 34, settled, next up, RDT, WDT…</span></summary>
     <dl id="glossary-body"></dl>
   </details>
 

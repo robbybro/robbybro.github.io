@@ -7,7 +7,7 @@ for the public export, writes data/log.js + data/log.json and commits when the c
 changed. The post-commit hook queues the push (git-push job); GitHub Pages is the publish
 step. Nothing here ever writes back to the database.
 """
-import datetime, json, os, subprocess
+import datetime, json, os, re, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -26,6 +26,11 @@ def main():
     doc = json.loads(run([DB, 'coffee', 'export']).stdout)
     os.makedirs(DATA, exist_ok=True)
     body = json.dumps(doc, ensure_ascii=False, indent=1)
+    # Publish guard (CISO review 2026-10-30): the export is Robby's Postgres verbatim, so a new field
+    # carrying a local path, an email address or an image file name must never reach the public page.
+    leak = re.search(r'/Users/|/Volumes/|[\w.+-]+@[\w-]+\.[\w.]+|\.(?:png|jpe?g|heic)\b', body)
+    if leak:
+        raise SystemExit('REFUSED publish: export contains a private-looking value: %r' % body[max(0, leak.start() - 60):leak.end() + 20])
     with open(os.path.join(DATA, 'log.json'), 'w', encoding='utf-8') as f:
         f.write(body + '\n')
     with open(os.path.join(DATA, 'log.js'), 'w', encoding='utf-8') as f:

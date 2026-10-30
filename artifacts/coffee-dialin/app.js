@@ -32,6 +32,10 @@
   function n(v) { return v == null || v === '' ? '' : String(+v); }
   function fmtInt(v) { return v == null ? '—' : Number(v).toLocaleString('en-US'); }
   function slug(s) { return 'bag-' + String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+  function safeLink(a, url) {   // scraped storefront URLs only ever become links when they are http(s)
+    if (!/^https?:\/\//i.test(String(url || ''))) return false;
+    a.href = url; a.target = '_blank'; a.rel = 'noopener'; return true;
+  }
   function verdictClass(v) {
     var t = (v || '').toLowerCase();
     if (/dialed|settled/.test(t)) return 'v-good';
@@ -63,15 +67,10 @@
     D.bags.forEach(function (b) {
       var d = b.data || {}, settled = (d.dialin || {}).settled;
       var c = el('a', 'chip' + (settled ? ' settled' : ' open') + (d.house ? ' house' : ''), (d.house ? '★ ' : '') + b.short_name);
-      c.href = (PAGE === 'bags' ? '' : (D.bags.indexOf(b) < CAP ? '' : 'bags.html')) + '#' + slug(b.short_name);
+      c.href = (PAGE === 'bags' || D.bags.indexOf(b) < CAP ? '' : 'bags.html') + '#' + slug(b.short_name);
       chips.appendChild(c);
     });
-    if (legend && D.bags.length) {
-      var a = el('span', 'chip settled', 'green border'), bb = el('span', 'chip open', 'amber border');
-      legend.appendChild(a); legend.appendChild(document.createTextNode('= recipe settled'));
-      legend.appendChild(bb); legend.appendChild(document.createTextNode('= still dialing in'));
-      legend.appendChild(el('span', null, '★ = house bean'));
-    }
+    if (legend && D.bags.length) legend.textContent = 'Chip border: green = recipe settled · amber = still dialing in · ★ = house bean';
   }
 
   /* ---------- health tiles ---------- */
@@ -90,30 +89,30 @@
      "Emily's never going to log her shots — keep track, but don't use them as a sign something is wrong"). */
   function renderHealth() {
     var H = D.health, O = D.origin, T = O.totals || {}, host = $('#tiles');
-    // 1. the log: shots the machine counted that nobody logged, 7 days — a count, not a status
+    // 1. the log: what the machine counted vs what got logged, 7 days — a count, not a status
     var pulled = H.machine_shots_7d, logged = H.shots_7d || 0;
     var unlogged = pulled == null ? null : Math.max(0, pulled - logged);
     host.appendChild(tile(
-      unlogged == null ? 'Shots logged, 7 days' : 'Unlogged shots, 7 days',
-      unlogged == null ? String(logged) : String(unlogged), '',
-      (H.last_shot_at ? 'last logged ' + fmtAbs(H.last_shot_at) : 'nothing logged yet') + (pulled != null ? ' · machine pulled ' + pulled + ', log has ' + logged : ''),
-      '', unlogged == null ? '' : 'tracked, not a fault — the unlogged ones are usually Emily’s', '#log'));
-    // 2. bags — the store keeps no "on the counter" state (Robby 2026-10-13), so this is bags logged, newest 10 on this page
+      pulled == null ? 'Shots logged, 7 days' : 'Shots pulled, 7 days',
+      pulled == null ? String(logged) : String(pulled), pulled == null ? '' : 'on the machine',
+      (pulled == null ? '' : logged + ' logged · ' + unlogged + ' unlogged · ') + (H.last_shot_at ? 'last logged ' + fmtAbs(H.last_shot_at) : 'nothing logged yet'),
+      '', pulled == null ? '' : 'unlogged shots are tracked, never a fault', '#log'));
+    // 2. bags — the store keeps no "on the counter" state (Robby 2026-10-13), so this is bags logged
     var blends = D.bags.filter(function (b) { return (b.data || {}).blend_of; }).length, physical = D.bags.length - blends;
     var settled = D.bags.filter(function (b) { return ((b.data || {}).dialin || {}).settled; }).length, dialing = D.bags.length - settled;
     var planned = D.bags.filter(function (b) { return b.queue && b.queue.length; }).length;
-    host.appendChild(tile('Bags logged', String(physical), blends ? '+ ' + blends + ' blend' + (blends > 1 ? 's' : '') : '', settled + ' settled · ' + dialing + ' dialing in' + (planned ? ' · ' + planned + ' with a planned next shot' : ''),
-      '', 'newest ' + Math.min(CAP, D.bags.length) + ' on this page · all on the bags page', 'bags.html'));
+    host.appendChild(tile('Bags logged', String(D.bags.length), 'bags', physical + ' single' + (blends ? ' + ' + blends + ' blend' + (blends > 1 ? 's' : '') : '') + ' · ' + settled + ' settled · ' + dialing + ' dialing in' + (planned ? ' · ' + planned + ' with a planned next shot' : ''),
+      '', 'every bag, traced to roaster and producer, on the bags page', 'bags.html'));
     // 3. backflush
     var bf = H.backflush || {};
-    if (bf.last) {
+    if (bf.last && bf.cadence_days != null && bf.days_ago != null) {
       var left = bf.cadence_days - bf.days_ago;
       host.appendChild(tile('Backflush', String(bf.days_ago), 'days ago', 'last ' + fmtDate(bf.last) + ' · every ' + bf.cadence_days + ' days', left > 14 ? 'good' : left > 0 ? 'warn' : 'critical',
         left > 14 ? 'due in ' + left + ' days' : left > 0 ? 'due in ' + left + ' days — amber inside 2 weeks' : 'overdue by ' + (-left) + ' days', null, 100 * bf.days_ago / bf.cadence_days));
     }
     // 4. origin graph — stale state leads; the catalogue size moves to the footnote when the refresh is failing
     var ls = O.last_scrape, rel = daysAgo(T.last_release), failing = ls && ls.status !== 'ok';
-    var st = !ls ? '' : failing ? ((ls.failing_runs || 1) >= 2 ? 'critical' : 'warn') : (rel <= 35 ? 'good' : 'warn');
+    var st = !ls ? '' : failing ? ((ls.failing_runs || 1) >= 2 ? 'critical' : 'warn') : (rel != null && rel <= 35 ? 'good' : 'warn');
     var foot = fmtInt(T.offerings_available) + ' live offerings as of ' + fmtDate(T.last_release) + ' · ' + fmtInt(T.roasters) + ' roasters · ' + fmtInt(T.producers) + ' producers';
     if (failing) host.appendChild(tile('Origin graph', String(rel), 'days stale', foot, st,
       'refresh failing since ' + fmtDate(ls.failing_since || ls.fired_at) + (ls.failing_runs > 1 ? ' (' + ls.failing_runs + ' runs, red at 2)' : ' (1 run)') + (ls.last_ok ? ' · last good ' + fmtDate(ls.last_ok) : ''), '#origin'));
@@ -138,16 +137,21 @@
     p.appendChild(row);
     var note = el('p', 'small ink2', 'Base: ' + W.base + '. ' + W.note + '.'); note.style.marginTop = '8px'; p.appendChild(note);
     var link = el('p', 'small'); link.style.marginTop = '8px';
-    var a = el('a', null, 'Open the water calculator with these targets ↗'); a.href = W.url + '?gh=' + W.hardness_ppm + '&kh=' + W.alkalinity_ppm; a.target = '_blank'; a.rel = 'noopener'; link.appendChild(a);
+    var a = el('a', null, 'Open the water calculator with these targets ↗'); if (safeLink(a, W.url + '?gh=' + W.hardness_ppm + '&kh=' + W.alkalinity_ppm)) link.appendChild(a);
     link.appendChild(document.createTextNode(' · pourover water built from Seattle tap is on its second tab.'));
     p.appendChild(link);
   }
 
   /* ---------- sparkline: shot time per pulled shot, target band 30–35 s ----------
-     Every point is reachable: the whole chart is the hit area (nearest point to the pointer), a tap pins the
-     readout, arrow keys walk it, and the readout line under the chart always shows the hovered shot's
-     grind, speed and seconds, so the tooltip never gates a number (Robby 2026-10-30: the old title-tooltip
-     was "pretty hard to get to show up"). Blue dot = a shot with tasting notes. */
+     Every point is reachable: the whole chart is the hit area (nearest shot to the pointer), a tap or click
+     pins the readout, arrow keys walk it, and the readout line under the chart always shows a shot's grind,
+     speed and seconds — the newest shot by default — so no number is gated behind a hover (Robby
+     2026-10-30: the old title-tooltip was "pretty hard to get to show up"). Blue dot = a shot with tasting
+     notes. Pointer → svg coordinates go through the SVG's own screen matrix, so the mapping holds at any
+     card width (the viewBox is letterboxed, not stretched). */
+  var TOUCH = window.matchMedia && window.matchMedia('(hover: none)').matches;
+  var PINNED = null;   // the one chart holding a pinned readout; one document listener unpins it
+  document.addEventListener('pointerdown', function (e) { if (PINNED && !PINNED.svg.contains(e.target)) PINNED.unpin(); });
   function sparkline(bag, totalPulled) {
     var pts = D.shots.filter(function (s) { return s.bag === bag && s.status === 'pulled' && s.time_s != null; }).reverse(); // chronological
     if (pts.length < 2) return null;
@@ -159,8 +163,8 @@
     // one ring per chart: the shot that set the CURRENT recipe (the newest SETTLED verdict); earlier "dialed" moments get no glyph
     var ringIdx = -1; pts.forEach(function (p, i) { if (/settled/i.test(p.verdict || '')) ringIdx = i; });
     var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'img'); svg.setAttribute('tabindex', '0');
-    svg.setAttribute('aria-label', 'Shot time per shot, ' + pts.length + ' of ' + totalPulled + ' shots timed; band is the 30 to 35 second target; filled dots are inside the band; hover, tap or use arrow keys to read a shot');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'group'); svg.setAttribute('tabindex', '0');
+    svg.setAttribute('aria-label', 'Shot time per shot, ' + pts.length + ' of ' + totalPulled + ' shots timed; band is the 30 to 35 second target; left and right arrow keys read each shot');
     var band = document.createElementNS(ns, 'rect'); band.setAttribute('x', 0); band.setAttribute('width', W); band.setAttribute('y', y(BAND_HI)); band.setAttribute('height', y(BAND_LO) - y(BAND_HI)); band.setAttribute('fill', 'var(--band)'); svg.appendChild(band);
     var path = document.createElementNS(ns, 'path');
     path.setAttribute('d', pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.time_s).toFixed(1); }).join(' '));
@@ -176,41 +180,46 @@
     });
     function endLabel(i, anchor) {   // first and last shot, in the label row above the plot (never on the line)
       var p = pts[i], lab = document.createElementNS(ns, 'text');
-      lab.setAttribute('x', anchor === 'start' ? pad : W - pad); lab.setAttribute('y', 10); lab.setAttribute('text-anchor', anchor);
-      lab.setAttribute('font-size', '10'); lab.setAttribute('fill', 'var(--ink2)'); lab.textContent = n(p.microns) + ' µm → ' + n(p.time_s) + ' s'; svg.appendChild(lab);
+      lab.setAttribute('x', anchor === 'start' ? pad : W - pad); lab.setAttribute('y', 11); lab.setAttribute('text-anchor', anchor);
+      lab.setAttribute('font-size', '11'); lab.setAttribute('fill', 'var(--ink2)'); lab.textContent = n(p.microns) + ' µm → ' + n(p.time_s) + ' s'; svg.appendChild(lab);
     }
     endLabel(0, 'start'); endLabel(pts.length - 1, 'end');
-    // readout + interaction
-    var read = el('div', 'spark-read'), active = -1, pinned = false;
-    function describe(p) {
-      return (p.microns != null ? n(p.microns) + ' µm' : '') + (p.rpm != null ? ' · ' + n(p.rpm) + ' rpm' : '') + ' → ' + n(p.time_s) + ' s' + (p.yield_g ? ' · ' + n(p.dose_g || '') + (p.dose_g ? ' g → ' : '') + n(p.yield_g) + ' g' : '')
-        + ' · ' + fmtDate(p.shot_at) + (inBand(p) ? ' · in band' : '') + (p.taste ? ' — ' + p.taste : '') + (p.verdict && !p.taste ? ' — ' + p.verdict : '');
+    // readout: <b>grind · rpm → seconds</b> then the rest, never sliced out of a joined string
+    var read = el('div', 'spark-read'); read.setAttribute('aria-live', 'polite');
+    var active = -1, pinned = false, last = pts.length - 1;
+    function parts(p) {
+      var head = (p.microns != null ? n(p.microns) + ' µm' : '?') + (p.rpm != null ? ' · ' + n(p.rpm) + ' rpm' : '') + ' → ' + n(p.time_s) + ' s';
+      var tail = (p.dose_g && p.yield_g ? ' · ' + n(p.dose_g) + ' g → ' + n(p.yield_g) + ' g' : p.yield_g ? ' · ' + n(p.yield_g) + ' g out' : '')
+        + ' · ' + fmtDate(p.shot_at) + (inBand(p) ? ' · in band' : '') + (p.taste ? ' — ' + p.taste : p.verdict ? ' — ' + p.verdict : '');
+      return { head: head, tail: tail };
     }
-    function show(i, clientX, clientY) {
-      if (i < 0 || i >= pts.length) return;
-      if (active >= 0) dots[active].setAttribute('r', '3.4');
-      active = i; dots[i].setAttribute('r', '5');
-      cursor.setAttribute('x1', x(i)); cursor.setAttribute('x2', x(i)); cursor.setAttribute('visibility', 'visible');
-      var p = pts[i], txt = describe(p);
-      read.textContent = ''; var b = el('b', null, n(p.microns) + ' µm → ' + n(p.time_s) + ' s'); read.appendChild(b); read.appendChild(document.createTextNode(txt.slice(b.textContent.length)));
-      if (clientX != null) { tip.textContent = txt; tip.hidden = false; placeTip(clientX, clientY); }
+    function write(i, prefix) { var pr = parts(pts[i]); read.textContent = ''; if (prefix) read.appendChild(document.createTextNode(prefix)); read.appendChild(el('b', null, pr.head)); read.appendChild(document.createTextNode(pr.tail)); }
+    function mark(i) { if (active >= 0) dots[active].setAttribute('r', '3.4'); active = i; if (i >= 0) { dots[i].setAttribute('r', '5'); cursor.setAttribute('x1', x(i)); cursor.setAttribute('x2', x(i)); cursor.setAttribute('visibility', 'visible'); } else cursor.setAttribute('visibility', 'hidden'); }
+    function show(i) { if (i < 0 || i >= pts.length) return; mark(i); write(i, i === last ? 'Newest: ' : ''); }
+    function rest() { mark(-1); write(last, 'Newest: '); }   // idle state = the newest shot, so a number is always on screen
+    function unpin() { pinned = false; if (PINNED === me) PINNED = null; rest(); }
+    var me = { svg: svg, unpin: unpin };
+    function idxAt(clientX, clientY) {   // pointer → viewBox x through the SVG's screen matrix (correct under letterboxing)
+      var fx; try { var pt = svg.createSVGPoint(); pt.x = clientX; pt.y = clientY; fx = pt.matrixTransform(svg.getScreenCTM().inverse()).x; }
+      catch (e) { var r = svg.getBoundingClientRect(); fx = (clientX - r.left) / r.width * W; }
+      return Math.max(0, Math.min(last, Math.round((fx - pad) / (W - 2 * pad) * last)));
     }
-    function hide() { if (pinned) return; if (active >= 0) dots[active].setAttribute('r', '3.4'); active = -1; cursor.setAttribute('visibility', 'hidden'); tip.hidden = true; read.textContent = idle; }
-    function idxAt(clientX) { var r = svg.getBoundingClientRect(); var fx = (clientX - r.left) / r.width * W; return Math.max(0, Math.min(pts.length - 1, Math.round((fx - pad) / (W - 2 * pad) * (pts.length - 1)))); }
-    var idle = pts.length + ' of ' + totalPulled + ' shots timed · hover, tap or arrow through the dots to read each shot';
-    read.textContent = idle;
-    svg.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') return; pinned = false; show(idxAt(e.clientX), e.clientX, e.clientY); });
-    svg.addEventListener('pointerleave', function () { if (!pinned) hide(); });
-    svg.addEventListener('pointerdown', function (e) { var i = idxAt(e.clientX); if (pinned && i === active) { pinned = false; hide(); return; } pinned = true; show(i, e.pointerType === 'touch' ? null : e.clientX, e.clientY); });
+    rest();
+    svg.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch' || pinned) return; show(idxAt(e.clientX, e.clientY)); });
+    svg.addEventListener('pointerleave', function () { if (!pinned) rest(); });
+    var touchDown = false;
+    svg.addEventListener('pointerdown', function (e) { if (e.pointerType === 'touch') { touchDown = true; return; } pin(idxAt(e.clientX, e.clientY)); });
+    svg.addEventListener('pointercancel', function () { touchDown = false; });   // the thumb was scrolling, not tapping
+    svg.addEventListener('pointerup', function (e) { if (e.pointerType !== 'touch' || !touchDown) return; touchDown = false; pin(idxAt(e.clientX, e.clientY)); });
+    function pin(i) { if (pinned && i === active) { unpin(); return; } if (PINNED && PINNED !== me) PINNED.unpin(); pinned = true; PINNED = me; show(i); }
     svg.addEventListener('keydown', function (e) {
       var k = e.key; if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'Home' && k !== 'End' && k !== 'Escape') return;
-      e.preventDefault(); pinned = k !== 'Escape';
-      if (k === 'Escape') { hide(); return; }
-      var i = k === 'Home' ? 0 : k === 'End' ? pts.length - 1 : active < 0 ? (k === 'ArrowRight' ? 0 : pts.length - 1) : Math.max(0, Math.min(pts.length - 1, active + (k === 'ArrowRight' ? 1 : -1)));
-      show(i);
+      e.preventDefault();
+      if (k === 'Escape') { unpin(); return; }
+      var i = k === 'Home' ? 0 : k === 'End' ? last : active < 0 ? (k === 'ArrowRight' ? 0 : last) : Math.max(0, Math.min(last, active + (k === 'ArrowRight' ? 1 : -1)));
+      pin(i); if (!pinned) pin(i);
     });
-    svg.addEventListener('blur', function () { pinned = false; hide(); });
-    document.addEventListener('pointerdown', function (e) { if (pinned && !svg.contains(e.target)) { pinned = false; hide(); } });
+    svg.addEventListener('blur', function () { if (pinned) unpin(); });
     var wrap = el('div', 'spark-wrap'); wrap.appendChild(svg); wrap.appendChild(read);
     var annotated = pts.filter(noted).length;
     return { node: wrap, count: pts.length, settled: ringIdx >= 0 ? 1 : 0, annotated: annotated };
@@ -221,7 +230,7 @@
   function roasterCell(b, p, c2) {
     c2.appendChild(el('div', 'k', 'Roaster'));
     if (p) {
-      var rv = el('div', 'v'); if (p.website) { var ra = el('a', null, p.roaster); ra.href = p.website; ra.target = '_blank'; ra.rel = 'noopener'; rv.appendChild(ra); } else rv.textContent = p.roaster; c2.appendChild(rv);
+      var rv = el('div', 'v'); var ra = el('a', null, p.roaster); if (safeLink(ra, p.website)) rv.appendChild(ra); else rv.textContent = p.roaster; c2.appendChild(rv);
       c2.appendChild(el('div', 'd', [p.roaster_city, p.roaster_country].filter(Boolean).join(', ')));
     } else if ((b.data || {}).blend_of) { c2.appendChild(el('div', 'v', 'house blend')); c2.appendChild(el('div', 'd', 'mixed at the grinder')); }
     else { var dd = b.data || {}; c2.appendChild(el('div', 'v', dd.roaster || '—')); c2.appendChild(el('div', 'd', [dd.roaster_city, dd.roaster_in_untamped ? 'in the origin graph, this offering not yet' : 'not in the origin graph yet'].filter(Boolean).join(' · '))); }
@@ -240,10 +249,10 @@
         p.also_roasted_by.forEach(function (r) { chips.appendChild(el('span', 'chip', r)); });
         c3.appendChild(chips);
       } else if (p.producer) c3.appendChild(el('div', 'd', 'no other tracked roaster buys from this producer'));
-      if (p.url) { var ol = el('a', 'small', 'offering page ↗'); ol.href = p.url; ol.target = '_blank'; ol.rel = 'noopener'; c3.appendChild(ol); }
+      var ol = el('a', 'small', 'offering page ↗'); if (safeLink(ol, p.url)) c3.appendChild(ol);
     } else {
       var dd = b.data || {};
-      if (dd.blend_of) { c3.appendChild(el('div', 'v', 'blend of ' + dd.blend_of.join(' + '))); c3.appendChild(el('div', 'd', 'see those two bags')); }
+      if (dd.blend_of) { c3.appendChild(el('div', 'v', 'blend of ' + [].concat(dd.blend_of).join(' + '))); c3.appendChild(el('div', 'd', 'see those two bags')); }
       else {
         var country = dd.origin_country || dd.country;
         var place = [dd.region, country].filter(function (x, i, arr) { return x && arr.indexOf(x) === i && !(i === 1 && arr[0] && arr[0].indexOf(x) >= 0); }).join(', ');
@@ -324,7 +333,7 @@
     var sp = sparkline(b.short_name, b.shots);
     if (sp) {
       card.appendChild(sp.node);
-      card.appendChild(el('div', 'spark-cap', 'Shot time · band = 30 to 35 s target · filled = in band · blue = tasting notes recorded (' + sp.annotated + ' of ' + sp.count + ')' + (sp.settled ? ' · ring = the shot that set this recipe' : '')));
+      card.appendChild(el('div', 'spark-cap', (TOUCH ? 'Tap a dot to read that shot' : 'Hover a dot to read that shot, click to keep it') + ' · ' + sp.count + ' of ' + b.shots + ' timed · band = 30 to 35 s target · filled = in band · blue = tasting notes recorded (' + sp.annotated + ' of ' + sp.count + ')' + (sp.settled ? ' · ring = the shot that set this recipe' : '')));
     }
     if (withChain) {
       var box = el('div', 'chainbox'), p = PROV[b.short_name];
@@ -406,7 +415,7 @@
     if (more && rows.length > CAP) {
       more.appendChild(el('span', null, (open ? 'All ' + rows.length : (opts.lead || 'Newest') + ' ' + shown.length + ' of ' + rows.length) + ' ' + (opts.noun || 'rows')));
       var btn = el('button', null, open ? 'Show the ' + (opts.lead || 'newest').toLowerCase() + ' ' + CAP + ' only' : 'Show all ' + rows.length); btn.type = 'button';
-      btn.addEventListener('click', function () { EXPANDED[tbl.id] = !open; renderTable(tbl, rows, cols, opts); });
+      btn.addEventListener('click', function () { EXPANDED[tbl.id] = !open; renderTable(tbl, rows, cols, opts); var nb = more.querySelector('button'); if (nb) nb.focus(); });
       more.appendChild(btn);
     }
   }
@@ -425,7 +434,7 @@
     var rows = (D.origin.roasters || []).slice(), max = Math.max.apply(null, rows.map(function (r) { return +r.offerings || 0; }).concat([1]));
     $('#roasters-sub').textContent = 'All ' + rows.length + ' roasters in the origin graph, the ones with a bag logged here first. ● and blue = a roaster with a bag logged here. Tables scroll sideways on a phone.';
     var cols = [
-      { key: 'name', label: 'Roaster', render: function (td, r) { td.style.whiteSpace = 'nowrap'; if (r.in_my_bags) { td.appendChild(document.createTextNode('● ')); td.style.fontWeight = '600'; } if (r.website) { var a = el('a', null, r.name); a.href = r.website; a.target = '_blank'; a.rel = 'noopener'; td.appendChild(a); } else td.appendChild(document.createTextNode(r.name)); } },
+      { key: 'name', label: 'Roaster', render: function (td, r) { td.style.whiteSpace = 'nowrap'; if (r.in_my_bags) { td.appendChild(document.createTextNode('● ')); td.style.fontWeight = '600'; } var a = el('a', null, r.name); if (safeLink(a, r.website)) td.appendChild(a); else td.appendChild(document.createTextNode(r.name)); } },
       { key: 'city', label: 'City', render: function (td, r) { td.style.whiteSpace = 'nowrap'; td.textContent = [r.city, r.country].filter(Boolean).join(', '); } },
       { key: 'offerings', label: 'Live offerings', num: true, render: function (td, r) { var w = el('div'); w.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:flex-end'; var bar = el('div'); bar.style.cssText = 'height:8px;width:' + Math.round(80 * (+r.offerings || 0) / max) + 'px;background:' + (r.in_my_bags ? 'var(--s1)' : 'var(--deemph)') + ';border-radius:0 3px 3px 0'; w.appendChild(bar); w.appendChild(el('span', null, fmtInt(r.offerings))); td.appendChild(w); } },
       { key: 'producers', label: 'Producers', num: true, int: true }
@@ -450,8 +459,9 @@
     var bag = $('#bag-filter').value, rows = D.shots.slice();
     if (bag) rows = rows.filter(function (s) { return s.bag === bag; });
     if (onlySettled) rows = rows.filter(function (s) { return /dialed|settled/i.test(s.verdict || ''); });
-    renderTable($('#shots'), rows, SHOT_COLS, { more: '#shots-more', noun: 'shots' });
-    $('#log-count').textContent = rows.length + ' of ' + D.shots.length + ' rows match';
+    renderTable($('#shots'), rows, SHOT_COLS, { more: '#shots-more', noun: 'rows (pulled shots and queued plans, newest first)' });
+    var plans = rows.filter(function (s) { return s.status === 'queued'; }).length;
+    $('#log-count').textContent = (rows.length - plans) + ' shots' + (plans ? ' + ' + plans + ' queued plan' + (plans > 1 ? 's' : '') : '') + ' match, of ' + D.shots.length + ' rows';
   }
   function renderExperiments() {
     renderTable($('#exp'), D.experiments.slice(), [
@@ -484,7 +494,7 @@
         if (!val) { var only = el('dd'); only.style.gridColumn = '1 / -1'; only.textContent = label; dl.appendChild(only); return; }
         dl.appendChild(el('dt', null, label));
         var dd = el('dd');
-        if (/^https?:\/\//.test(val)) { var a = el('a', null, val.replace(/^https?:\/\//, '')); a.href = val; a.rel = 'noopener'; a.target = '_blank'; dd.appendChild(a); }
+        var a = el('a', null, val.replace(/^https?:\/\//, '')); if (safeLink(a, val)) dd.appendChild(a);
         else dd.appendChild(document.createTextNode(val));
         if (note) dd.appendChild(el('span', 'note', note));
         dl.appendChild(dd);
@@ -496,21 +506,36 @@
   }
 
   /* ---------- boot ---------- */
-  renderChips(); renderGlossary();
+  function safe(name, fn) {   // one broken section never blanks the rest; the failure is written where the section would be
+    try { fn(); } catch (e) {
+      var host = $(name); var msg = el('p', 'empty', 'This section failed to render: ' + (e && e.message ? e.message : e));
+      if (host) host.appendChild(msg); else document.querySelector('.wrap').appendChild(msg);
+      if (window.console) console.error(name, e);
+    }
+  }
+  if (!window.DIALIN || !D.generated_at) {
+    var warnBox = el('div', 'panel', 'The data file did not load (data/log.js). The page cannot show recipes or shots until the hourly publish runs again.');
+    warnBox.style.cssText = 'border-color:var(--critical);color:var(--critical)';
+    document.querySelector('.wrap').insertBefore(warnBox, document.querySelector('header').nextSibling);
+    return;
+  }
+  safe('#bag-chips', renderChips); safe('#glossary', renderGlossary);
   if (PAGE === 'bags') {
     $('#bags-count').textContent = D.bags.length + ' bags logged · house beans first, then newest first';
-    renderRecipes(D.bags, true);
+    safe('#recipe-grid', function () { renderRecipes(D.bags, true); });
   } else {
     var shown = D.bags.slice(0, CAP);
     var sel = $('#bag-filter');
     D.bags.forEach(function (b) { var o = el('option', null, b.short_name); o.value = b.short_name; sel.appendChild(o); });
     sel.addEventListener('change', renderShots);
     $('#only-settled').addEventListener('click', function () { onlySettled = !onlySettled; this.setAttribute('aria-pressed', String(onlySettled)); renderShots(); });
-    renderHealth(); renderRecipes(shown, false);
+    safe('#tiles', renderHealth);
+    safe('#recipe-grid', function () { renderRecipes(shown, false); });
+    $('#recipes-q').textContent = (D.bags.length > CAP ? shown.length + ' of ' + D.bags.length + ' bags here, house beans first then newest; the rest are on the bags page. ' : '') + 'Each card\u2019s queue is newest plan first; a pulled shot clears its entry.';
     var foot = $('#recipes-foot');
-    foot.appendChild(el('span', null, D.bags.length > CAP ? 'Newest ' + shown.length + ' of ' + D.bags.length + ' bags' : D.bags.length + ' bags'));
+    foot.appendChild(el('span', null, D.bags.length > CAP ? shown.length + ' of ' + D.bags.length + ' bags shown' : D.bags.length + ' bags'));
     var all = el('a', null, 'All bags, each traced to roaster and producer →'); all.href = 'bags.html'; foot.appendChild(all);
-    renderWater(); renderChain(shown); renderCountryBars(); renderShared(); renderRoasters();
-    renderShots(); renderExperiments(); renderReference();
+    safe('#water-panel', renderWater); safe('#chain', function () { renderChain(shown); }); safe('#country-bars', renderCountryBars); safe('#shared', renderShared); safe('#roasters', renderRoasters);
+    safe('#shots', renderShots); safe('#exp', renderExperiments); safe('#reference', renderReference);
   }
 })();
