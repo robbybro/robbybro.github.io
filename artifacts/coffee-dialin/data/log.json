@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-30T00:47-07:00",
+ "generated_at": "2026-10-30T06:51-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -510,40 +510,40 @@
     "dialin_start_note": "filter roast, anaerobic natural: light single origin prior 165–170 @ 1000; dial grind first, then bracket RPM. Elevation not on box, so no Ode setting yet",
     "roaster_in_untamped": false
    },
-   "shots": 4,
+   "shots": 5,
    "last_shot": {
-    "id": 68,
-    "shot_at": "2026-10-29T14:32:11.357851-07:00",
+    "id": 70,
+    "shot_at": "2026-10-30T06:49:24.898864-07:00",
     "burrs": null,
-    "microns": 125,
+    "microns": 133,
     "rpm": 1000,
     "dose_g": 18,
-    "yield_g": 37.2,
-    "time_s": 39.8,
-    "ratio": 2.07,
+    "yield_g": 37,
+    "time_s": 29.4,
+    "ratio": 2.06,
     "taste": null,
-    "verdict": "slow (39.8 s total); 15 µm finer bought +14.5 s = 9.7 s/10 µm — steep part of the curve",
-    "next_change": "→ 133 @ 1000",
+    "verdict": "in window (29.4 s total), a hair under the 30–32 aim; 133 landed where the bracket predicted",
+    "next_change": "hold 133 @ 1000; taste decides (sour → 130, bitter → 136)",
     "by_whom": null
    },
    "queued": {
-    "id": 69,
-    "shot_at": "2026-10-29T14:32:11.480996-07:00",
+    "id": 71,
+    "shot_at": "2026-10-30T06:49:25.021035-07:00",
     "burrs": null,
     "microns": 133,
     "rpm": 1000,
     "dose_g": null,
-    "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130."
+    "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30."
    },
    "queue": [
     {
-     "id": 69,
-     "shot_at": "2026-10-29T14:32:11.480996-07:00",
+     "id": 71,
+     "shot_at": "2026-10-30T06:49:25.021035-07:00",
      "burrs": null,
      "microns": 133,
      "rpm": 1000,
      "dose_g": null,
-     "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130."
+     "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30."
     }
    ]
   },
@@ -1079,8 +1079,8 @@
  ],
  "shots": [
   {
-   "id": 69,
-   "shot_at": "2026-10-29 14:32:11.480996-07:00",
+   "id": 71,
+   "shot_at": "2026-10-30 06:49:25.021035-07:00",
    "bag": "DAC Booze Cruise",
    "method": "espresso",
    "status": "queued",
@@ -1093,7 +1093,26 @@
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34, aim 30–32 s total. Bracketed: 140 → 25.3 s, 125 → 39.8 s at 1000; ~1 s per µm in this band, so 133 ≈ 32 s. If over 34 s → 136; if under 29 s → 130.",
+   "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 70,
+   "shot_at": "2026-10-30 06:49:24.898864-07:00",
+   "bag": "DAC Booze Cruise",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 133,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "37",
+   "time_s": "29.4",
+   "ratio": "2.06",
+   "taste": null,
+   "verdict": "in window (29.4 s total), a hair under the 30–32 aim; 133 landed where the bracket predicted",
+   "next_change": "hold 133 @ 1000; taste decides (sour → 130, bitter → 136)",
    "by_whom": null,
    "data": {}
   },
@@ -2309,10 +2328,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-29 14:32:11.357851-07:00",
-  "shots_7d": 4,
-  "shots_30d": 23,
-  "shots_total": 45,
+  "last_shot_at": "2026-10-30 06:49:24.898864-07:00",
+  "shots_7d": 5,
+  "shots_30d": 24,
+  "shots_total": 46,
   "queued": 9,
   "bags_settled": 3,
   "bags_dialing": 9,
