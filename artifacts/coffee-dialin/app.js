@@ -319,7 +319,7 @@
         if (l.dose_g && l.yield_g) bits.push(n(l.dose_g) + ' g → ' + n(l.yield_g) + ' g');
         if (l.time_s) bits.push(n(l.time_s) + ' s');
         card.appendChild(el('p', 'line small ink2', (src === 'last' ? fmtDate(l.shot_at) + ': ' : 'Last shot ' + fmtDate(l.shot_at) + ': ' + n(l.microns) + ' µm at ' + n(l.rpm) + ' rpm, ') + bits.join(', ') + (l.taste ? '. ' + l.taste : '') + (l.verdict ? '. ' + l.verdict : '')));
-        if (src === 'last') card.appendChild(el('p', 'line small', l.next_change ? 'Suggested next: ' + l.next_change : 'No plan queued yet — ask Robby what to try next.'));
+        if (src === 'last') card.appendChild(el('p', 'line small', l.next_change ? 'Suggested next: ' + l.next_change : 'No plan queued yet.'));
       } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
     }
     if (di.pourover && di.pourover.setting != null) {
