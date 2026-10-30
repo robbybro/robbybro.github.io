@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Every bag ever logged on Robby's espresso board, each with its recipe, its shot-time history and its provenance: roaster, producer or farm, process, variety, elevation, and which other roasters buy from the same producer.">
+<title>Coffee Dial-In — All bags</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="bags" class="bagspage">
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <div class="crumbs"><a href="index.html">← Coffee Dial-In</a><a href="index.html#origin">Origin</a><a href="index.html#log">Shot log</a></div>
+    </div>
+    <h1 style="margin-top:8px">All bags</h1>
+    <p class="sub">Every bag logged, house beans first, then newest first. Each card carries its recipe and queue, its shot-time history, and where the coffee came from: roaster, producer or farm, and who else roasts that producer's coffee.</p>
+    <nav class="chips bagchips" id="bag-chips" aria-label="Bags, newest first"></nav>
+    <div class="chip-legend" id="chip-legend"></div>
+  </header>
+
+  <details class="panel glossary" id="glossary">
+    <summary><span><b>Words on this page</b> — µm, RPM, cut at 34, time, ratio, settled, next up, RDT, WDT and the rest, defined once here</span></summary>
+    <dl id="glossary-body"></dl>
+  </details>
+
+  <section id="recipes">
+    <div class="sec-head"><h2>Bags</h2><span class="q" id="bags-count"></span></div>
+    <div class="grid recipes" id="recipe-grid"></div>
+  </section>
+
+  <footer>
+    <span>Read-only copy of Robby's Postgres, regenerated hourly. Shot times include the 5 s pre-brew.</span>
+  </footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+<script src="data/log.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

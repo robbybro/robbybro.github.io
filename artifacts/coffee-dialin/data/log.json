@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-30T06:51-07:00",
+ "generated_at": "2026-10-30T07:04-07:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -481,6 +481,55 @@
    ]
   },
   {
+   "id": 17,
+   "short_name": "GR/Hyacinth 50:50",
+   "label": "(blend) — GR/Hyacinth 50:50 (9g Ghost Rider + 9g Hyacinth Decaf, mixed pre-RDT)",
+   "verdict": null,
+   "noted_at": "2026-10-30 07:00:10.592764-07:00",
+   "offering_id": null,
+   "data": {
+    "roast": "half-caf house blend",
+    "dialin": {
+     "start": {
+      "rpm": 1200,
+      "microns": 165
+     },
+     "settled": false
+    },
+    "opened": "2026-10-30",
+    "process": "9g Ghost Rider + 9g Hyacinth Decaf, mixed pre-RDT",
+    "roaster": "(blend)",
+    "blend_of": [
+     "Ghost Rider",
+     "Hyacinth Decaf"
+    ],
+    "decaf_share": 0.5,
+    "dialin_start_note": "Robby 2026-10-30: 165 µm at 1200 gets it in the right zone. Replaces GR/VdC 50:50 (Push x Pull VdC is gone). Midpoint rule would say ~158 (GR 180, Hyacinth ~135); his number wins until a shot says otherwise."
+   },
+   "shots": 0,
+   "last_shot": null,
+   "queued": {
+    "id": 72,
+    "shot_at": "2026-10-30T07:00:10.719365-07:00",
+    "burrs": null,
+    "microns": 165,
+    "rpm": 1200,
+    "dose_g": null,
+    "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
+   },
+   "queue": [
+    {
+     "id": 72,
+     "shot_at": "2026-10-30T07:00:10.719365-07:00",
+     "burrs": null,
+     "microns": 165,
+     "rpm": 1200,
+     "dose_g": null,
+     "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170."
+    }
+   ]
+  },
+  {
    "id": 16,
    "short_name": "DAC Booze Cruise",
    "label": "DAC — Booze Cruise (Turrialba, Costa Rica, anaerobic natural Centroamericano)",
@@ -646,26 +695,8 @@
     "next_change": "→ 190 @ 1000 (lower RPM, same grind; 10/19 at this setting = 29.4 s)",
     "by_whom": null
    },
-   "queued": {
-    "id": 59,
-    "shot_at": "2026-10-22T09:43:24.831587-07:00",
-    "burrs": null,
-    "microns": 190,
-    "rpm": 1000,
-    "dose_g": null,
-    "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000."
-   },
-   "queue": [
-    {
-     "id": 59,
-     "shot_at": "2026-10-22T09:43:24.831587-07:00",
-     "burrs": null,
-     "microns": 190,
-     "rpm": 1000,
-     "dose_g": null,
-     "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000."
-    }
-   ]
+   "queued": null,
+   "queue": []
   },
   {
    "id": 13,
@@ -840,26 +871,8 @@
    },
    "shots": 0,
    "last_shot": null,
-   "queued": {
-    "id": 45,
-    "shot_at": "2026-10-15T09:08:08.61681-07:00",
-    "burrs": null,
-    "microns": 168,
-    "rpm": 1000,
-    "dose_g": null,
-    "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600"
-   },
-   "queue": [
-    {
-     "id": 45,
-     "shot_at": "2026-10-15T09:08:08.61681-07:00",
-     "burrs": null,
-     "microns": 168,
-     "rpm": 1000,
-     "dose_g": null,
-     "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600"
-    }
-   ]
+   "queued": null,
+   "queue": []
   },
   {
    "id": 5,
@@ -915,26 +928,8 @@
     "next_change": "→ 190 at 600 RPM; want 30–32 s total",
     "by_whom": null
    },
-   "queued": {
-    "id": 33,
-    "shot_at": "2026-10-11T12:40:01.24135-07:00",
-    "burrs": null,
-    "microns": 190,
-    "rpm": 600,
-    "dose_g": null,
-    "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180"
-   },
-   "queue": [
-    {
-     "id": 33,
-     "shot_at": "2026-10-11T12:40:01.24135-07:00",
-     "burrs": null,
-     "microns": 190,
-     "rpm": 600,
-     "dose_g": null,
-     "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180"
-    }
-   ]
+   "queued": null,
+   "queue": []
   },
   {
    "id": 10,
@@ -975,26 +970,8 @@
     "next_change": "→ 167; roast-level prior would have called this",
     "by_whom": null
    },
-   "queued": {
-    "id": 21,
-    "shot_at": "2026-09-13T12:20:00-07:00",
-    "burrs": "Core",
-    "microns": 167,
-    "rpm": 1200,
-    "dose_g": 18,
-    "next_change": "aim 33–36s, cut 34"
-   },
-   "queue": [
-    {
-     "id": 21,
-     "shot_at": "2026-09-13T12:20:00-07:00",
-     "burrs": "Core",
-     "microns": 167,
-     "rpm": 1200,
-     "dose_g": 18,
-     "next_change": "aim 33–36s, cut 34"
-    }
-   ]
+   "queued": null,
+   "queue": []
   },
   {
    "id": 9,
@@ -1079,6 +1056,25 @@
  ],
  "shots": [
   {
+   "id": 72,
+   "shot_at": "2026-10-30 07:00:10.719365-07:00",
+   "bag": "GR/Hyacinth 50:50",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 165,
+   "rpm": 1200,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. Robby: 165 @ 1200 is the right zone. If fast → 160; if slow → 170.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
    "id": 71,
    "shot_at": "2026-10-30 06:49:25.021035-07:00",
    "bag": "DAC Booze Cruise",
@@ -1148,10 +1144,10 @@
    "yield_g": "37.1",
    "time_s": "25.3",
    "ratio": "2.06",
-   "taste": null,
+   "taste": "tasted best (with the 155 @ 1200 shot) — Robby 10/30",
    "verdict": "still fast (25.3 s total); 15 µm finer + RPM 1200→1000 net +1.8 s",
    "next_change": "RPM up or grind down — see queue",
-   "by_whom": null,
+   "by_whom": "Robby",
    "data": {}
   },
   {
@@ -1167,10 +1163,10 @@
    "yield_g": "38.1",
    "time_s": "23.5",
    "ratio": "2.12",
-   "taste": null,
+   "taste": "tasted best (with the 140 @ 1000 shot) — Robby 10/30",
    "verdict": "still fast (23.5 s total); 25 µm bought ~8 s",
    "next_change": "→ 140 @ 1000 (Robby: wants more clarity, drop RPM)",
-   "by_whom": null,
+   "by_whom": "Robby",
    "data": {}
   },
   {
@@ -1208,25 +1204,6 @@
    "taste": null,
    "verdict": null,
    "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175",
-   "by_whom": null,
-   "data": {}
-  },
-  {
-   "id": 59,
-   "shot_at": "2026-10-22 09:43:24.831587-07:00",
-   "bag": "Kuma Gotiti",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": null,
-   "microns": 190,
-   "rpm": 1000,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "18 g in, cut at 34. Same grind, RPM back to 1000: 185 and 190 both ran ~37 s at 1200, so grind is not moving time there; 190 @ 1000 on 10/19 was 29.4 s. Watch for the two-stream flow again — if it repeats at 1000 it is prep (raker, 1–2 RDT sprays), not the dial. If fast and clean → 185 @ 1000.",
    "by_whom": null,
    "data": {}
   },
@@ -1386,25 +1363,6 @@
    "data": {}
   },
   {
-   "id": 45,
-   "shot_at": "2026-10-15 09:08:08.616810-07:00",
-   "bag": "Luna Kii AA",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": null,
-   "microns": 168,
-   "rpm": 1000,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "first shot: 18 g in, cut at 34, aim 30–35 s total; sibling Victor Florez (same roast date) hit 32.4 s at 175 @ 1000 first try — if fast, go 160; if Robby wants 600 rpm, sibling landed at 140 @ 600",
-   "by_whom": null,
-   "data": {}
-  },
-  {
    "id": 44,
    "shot_at": "2026-10-14 13:38:00-07:00",
    "bag": "Luna Victor Florez",
@@ -1521,25 +1479,6 @@
     "scoops": 2.0,
     "grind_setting": "4.2"
    }
-  },
-  {
-   "id": 33,
-   "shot_at": "2026-10-11 12:40:01.241350-07:00",
-   "bag": "Makeworth Danche",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": null,
-   "microns": 190,
-   "rpm": 600,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "target 30–32 s total (incl. 5 s pre-brew); if still <28 s go 180",
-   "by_whom": null,
-   "data": {}
   },
   {
    "id": 32,
@@ -1706,29 +1645,6 @@
    "data": {
     "source": "sheet import",
     "sheet_row": 23,
-    "sheet_ratio": ""
-   }
-  },
-  {
-   "id": 21,
-   "shot_at": "2026-09-13 12:20:00-07:00",
-   "bag": "Oaxaca (D. Garcia)",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": "Core",
-   "microns": 167,
-   "rpm": 1200,
-   "dose_g": "18",
-   "yield_g": "37",
-   "time_s": null,
-   "ratio": "2.06",
-   "taste": null,
-   "verdict": null,
-   "next_change": "aim 33–36s, cut 34",
-   "by_whom": null,
-   "data": {
-    "source": "sheet import",
-    "sheet_row": 22,
     "sheet_ratio": ""
    }
   },
@@ -2332,9 +2248,9 @@
   "shots_7d": 5,
   "shots_30d": 24,
   "shots_total": 46,
-  "queued": 9,
+  "queued": 6,
   "bags_settled": 3,
-  "bags_dialing": 9,
+  "bags_dialing": 10,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
@@ -3231,21 +3147,6 @@
     "in_my_bags": false
    },
    {
-    "name": "Gesha Village",
-    "country": "Ethiopia",
-    "region": "Bench Maji, Ethiopia",
-    "roasters": 5,
-    "offerings": 10,
-    "roasted_by": [
-     "April Coffee Roasters",
-     "Black & White Coffee Roasters",
-     "Friedhats",
-     "Offshoot Coffee",
-     "SEY"
-    ],
-    "in_my_bags": false
-   },
-   {
     "name": "Chelbesa",
     "country": "Ethiopia",
     "region": "Gedeb",
@@ -3256,6 +3157,21 @@
      "Hydrangea Coffee Roasters",
      "Luna Coffee",
      "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Gesha Village",
+    "country": "Ethiopia",
+    "region": "Bench Maji, Ethiopia",
+    "roasters": 5,
+    "offerings": 10,
+    "roasted_by": [
+     "April Coffee Roasters",
+     "Black & White Coffee Roasters",
+     "Friedhats",
+     "Offshoot Coffee",
      "SEY"
     ],
     "in_my_bags": false
@@ -3366,6 +3282,292 @@
     "roasted_by": [
      "Archers Coffee",
      "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "La Esperanza",
+    "country": "Colombia",
+    "region": "Valle del Cauca",
+    "roasters": 3,
+    "offerings": 12,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Diego Horta",
+    "country": "Colombia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 11,
+    "roasted_by": [
+     "Black & White Coffee Roasters",
+     "Friedhats",
+     "Onyx Coffee Lab"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Jairo Arcila",
+    "country": "Colombia",
+    "region": "Villarazo, Quindío",
+    "roasters": 3,
+    "offerings": 10,
+    "roasted_by": [
+     "Friedhats",
+     "Offshoot Coffee",
+     "Proud Mary Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Keramo",
+    "country": "Ethiopia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 8,
+    "roasted_by": [
+     "Botz Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Buku Sayisa",
+    "country": "Ethiopia",
+    "region": "West Guji",
+    "roasters": 3,
+    "offerings": 8,
+    "roasted_by": [
+     "Friedhats",
+     "Hydrangea Coffee Roasters",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Finca Sophia",
+    "country": "Panama",
+    "region": "Neuva Suiza, Panama",
+    "roasters": 3,
+    "offerings": 8,
+    "roasted_by": [
+     "Archers Coffee",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Kibingo",
+    "country": "Burundi",
+    "region": "Kayanza",
+    "roasters": 3,
+    "offerings": 7,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Bookkisa",
+    "country": "Ethiopia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 6,
+    "roasted_by": [
+     "Friedhats",
+     "Kuma Coffee",
+     "September Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Bumba Hill",
+    "country": "Burundi",
+    "region": "Kayanza",
+    "roasters": 3,
+    "offerings": 6,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Mil Cumbres",
+    "country": "Panama",
+    "region": "Volcan, Chiriqui",
+    "roasters": 3,
+    "offerings": 6,
+    "roasted_by": [
+     "Archers Coffee",
+     "Friedhats",
+     "Offshoot Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "La Muralla",
+    "country": "Colombia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 5,
+    "roasted_by": [
+     "Friedhats",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Karimikui",
+    "country": "Kenya",
+    "region": "Embu, Mt. Kenya",
+    "roasters": 3,
+    "offerings": 4,
+    "roasted_by": [
+     "Friedhats",
+     "Luna Coffee",
+     "Offshoot Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Las Lajas",
+    "country": "Costa Rica",
+    "region": "Finca San Isidro",
+    "roasters": 3,
+    "offerings": 4,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "Onyx Coffee Lab",
+     "Proud Mary Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Iris Estate",
+    "country": "Panama",
+    "region": "Volcán, Chiriqui",
+    "roasters": 3,
+    "offerings": 4,
+    "roasted_by": [
+     "Archers Coffee",
+     "Black & White Coffee Roasters",
+     "Offshoot Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Las Margaritas",
+    "country": "Colombia",
+    "region": "Valle del Cauca",
+    "roasters": 3,
+    "offerings": 4,
+    "roasted_by": [
+     "Archers Coffee",
+     "Hydrangea Coffee Roasters",
+     "Offshoot Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Las Perlitas",
+    "country": "Colombia",
+    "region": null,
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Botz Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Duwancho",
+    "country": "Ethiopia",
+    "region": "Sidama",
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Assembly Coffee",
+     "Offshoot Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Nemba",
+    "country": "Burundi",
+    "region": "Kayanza",
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Gatomboya",
+    "country": "Kenya",
+    "region": null,
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Botz Coffee",
+     "Kuma Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Kiamugumo",
+    "country": "Kenya",
+    "region": "Kirinyaga",
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Friedhats",
+     "Merit Coffee",
+     "Offshoot Coffee"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Gahahe",
+    "country": "Burundi",
+    "region": "Gahahe, Kayanza",
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Offshoot Coffee",
+     "Proud Mary Coffee",
+     "SEY"
+    ],
+    "in_my_bags": false
+   },
+   {
+    "name": "Halo Beriti",
+    "country": "Ethiopia",
+    "region": "Worka, Gedeb, Yirgacheffe",
+    "roasters": 3,
+    "offerings": 3,
+    "roasted_by": [
+     "Friedhats",
+     "Offshoot Coffee",
      "SEY"
     ],
     "in_my_bags": false

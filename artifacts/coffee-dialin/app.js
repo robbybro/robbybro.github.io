@@ -1,6 +1,8 @@
 /* Coffee Dial-In — renders data/log.js, the public export of Postgres (coffee_bags,
    coffee_shots, coffee_experiments, kv coffee-dialin, the untamped coffee_* graph and
-   machine telemetry). Nothing here knows a number; every value comes from the database. */
+   machine telemetry). Nothing here knows a number; every value comes from the database.
+   Two pages share this file: index.html (the board, every list capped at the newest 10 with an
+   expander) and bags.html (every bag, traced to roaster and producer). */
 (function () {
   'use strict';
   var D = window.DIALIN || {};
@@ -8,6 +10,8 @@
   D.health = D.health || {}; D.origin = D.origin || {};
   var $ = function (s) { return document.querySelector(s); };
   var NOW = new Date();
+  var PAGE = document.body.getAttribute('data-page') || 'index';
+  var CAP = 10;   // every list on the board shows the newest 10, then expands (Robby 2026-10-30)
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -23,17 +27,11 @@
   }
   function fmtDate(v) { var d = parseDT(v); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (v ? String(v).slice(0, 10) : ''); }
   function fmtTime(d) { return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(' AM', 'am').replace(' PM', 'pm'); }
-  function fmtWhen(v) {
-    var d = parseDT(v); if (!d) return '';
-    var days = Math.floor((NOW - d) / 864e5);
-    if (days === 0 && d.getDate() === NOW.getDate()) return 'Today ' + fmtTime(d);
-    if (days <= 1) return 'Yesterday ' + fmtTime(d);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + fmtTime(d);
-  }
   function daysAgo(v) { var d = parseDT(v); return d ? Math.floor((NOW - d) / 864e5) : null; }
   function fmtAbs(v) { var d = parseDT(v); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + fmtTime(d) : ''; }
   function n(v) { return v == null || v === '' ? '' : String(+v); }
-  function fmtInt(v) { return v == null ? '' : (+v).toLocaleString('en-US'); }
+  function fmtInt(v) { return v == null ? '—' : Number(v).toLocaleString('en-US'); }
+  function slug(s) { return 'bag-' + String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
   function verdictClass(v) {
     var t = (v || '').toLowerCase();
     if (/dialed|settled/.test(t)) return 'v-good';
@@ -43,11 +41,37 @@
 
   /* ---------- hover tooltip (one for the page) ---------- */
   var tip = $('#tip');
+  function placeTip(x, y) { tip.style.left = Math.max(8, Math.min(x + 12, window.innerWidth - 270)) + 'px'; tip.style.top = (y + 14) + 'px'; }
   function bindTip(node, text) {
     node.addEventListener('mouseenter', function () { tip.textContent = text; tip.hidden = false; });
-    node.addEventListener('mousemove', function (e) { tip.style.left = Math.min(e.clientX + 12, window.innerWidth - 270) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+    node.addEventListener('mousemove', function (e) { placeTip(e.clientX, e.clientY); });
     node.addEventListener('mouseleave', function () { tip.hidden = true; });
     node.setAttribute('title', text);
+  }
+
+  /* ---------- glossary: one block at the top of each page, collapsed ---------- */
+  function renderGlossary() {
+    var host = $('#glossary-body'), rows = D.rules.glossary || [];
+    if (!host) return;
+    if (!rows.length) { $('#glossary').hidden = true; return; }
+    rows.forEach(function (row) { host.appendChild(el('dt', null, row[0])); host.appendChild(el('dd', null, row[1])); });
+  }
+
+  /* ---------- bag chips + what their border colours mean ---------- */
+  function renderChips() {
+    var chips = $('#bag-chips'), legend = $('#chip-legend');
+    D.bags.forEach(function (b) {
+      var d = b.data || {}, settled = (d.dialin || {}).settled;
+      var c = el('a', 'chip' + (settled ? ' settled' : ' open') + (d.house ? ' house' : ''), (d.house ? '★ ' : '') + b.short_name);
+      c.href = (PAGE === 'bags' ? '' : (D.bags.indexOf(b) < CAP ? '' : 'bags.html')) + '#' + slug(b.short_name);
+      chips.appendChild(c);
+    });
+    if (legend && D.bags.length) {
+      var a = el('span', 'chip settled', 'green border'), bb = el('span', 'chip open', 'amber border');
+      legend.appendChild(a); legend.appendChild(document.createTextNode('= recipe settled'));
+      legend.appendChild(bb); legend.appendChild(document.createTextNode('= still dialing in'));
+      legend.appendChild(el('span', null, '★ = house bean'));
+    }
   }
 
   /* ---------- health tiles ---------- */
@@ -62,25 +86,24 @@
     return t;
   }
   /* Status ranks, one hue per rank, stated on the tile: good (dot green) · warn (amber) = something to do,
-     not a fault · critical (red) = a fault. Unlogged shots are never a fault (they are usually Emily's). */
+     not a fault · critical (red) = a fault. Unlogged shots are tracked but NEVER coloured (Robby 2026-10-30:
+     "Emily's never going to log her shots — keep track, but don't use them as a sign something is wrong"). */
   function renderHealth() {
     var H = D.health, O = D.origin, T = O.totals || {}, host = $('#tiles');
-    // 1. the log: one tile, headline = the count that needs Robby (shots the machine pulled that nobody logged)
+    // 1. the log: shots the machine counted that nobody logged, 7 days — a count, not a status
     var pulled = H.machine_shots_7d, logged = H.shots_7d || 0;
     var unlogged = pulled == null ? null : Math.max(0, pulled - logged);
-    var la = daysAgo(H.last_shot_at);
-    var logStatus = unlogged == null ? (la == null ? '' : la <= 3 ? 'good' : 'warn') : unlogged >= 3 ? 'warn' : 'good';
     host.appendChild(tile(
       unlogged == null ? 'Shots logged, 7 days' : 'Unlogged shots, 7 days',
       unlogged == null ? String(logged) : String(unlogged), '',
       (H.last_shot_at ? 'last logged ' + fmtAbs(H.last_shot_at) : 'nothing logged yet') + (pulled != null ? ' · machine pulled ' + pulled + ', log has ' + logged : ''),
-      logStatus, unlogged == null ? (la == null ? 'no shots yet' : la <= 3 ? 'log is current' : 'log going quiet') : unlogged >= 3 ? 'amber at 3 or more unlogged' : unlogged === 0 ? 'every pulled shot is logged' : 'under 3 unlogged is fine', '#log'));
-    // 2. bags — physical bags vs blends, counted the way the cards show them
+      '', unlogged == null ? '' : 'tracked, not a fault — the unlogged ones are usually Emily’s', '#log'));
+    // 2. bags — the store keeps no "on the counter" state (Robby 2026-10-13), so this is bags logged, newest 10 on this page
     var blends = D.bags.filter(function (b) { return (b.data || {}).blend_of; }).length, physical = D.bags.length - blends;
     var settled = D.bags.filter(function (b) { return ((b.data || {}).dialin || {}).settled; }).length, dialing = D.bags.length - settled;
-    var planned = D.bags.filter(function (b) { return b.queued; }).length;
-    host.appendChild(tile('Bags on the counter', String(physical), blends ? '+ ' + blends + ' blend' : '', settled + ' settled · ' + dialing + ' dialing in' + (planned ? ' · ' + planned + ' with a planned next shot' : ''),
-      dialing ? 'warn' : 'good', dialing ? dialing + ' still need a settled recipe' : 'every bag settled', '#recipes'));
+    var planned = D.bags.filter(function (b) { return b.queue && b.queue.length; }).length;
+    host.appendChild(tile('Bags logged', String(physical), blends ? '+ ' + blends + ' blend' + (blends > 1 ? 's' : '') : '', settled + ' settled · ' + dialing + ' dialing in' + (planned ? ' · ' + planned + ' with a planned next shot' : ''),
+      '', 'newest ' + Math.min(CAP, D.bags.length) + ' on this page · all on the bags page', 'bags.html'));
     // 3. backflush
     var bf = H.backflush || {};
     if (bf.last) {
@@ -120,157 +143,217 @@
     p.appendChild(link);
   }
 
-  /* ---------- sparkline: shot time per pulled shot, target band 30–35 s ---------- */
+  /* ---------- sparkline: shot time per pulled shot, target band 30–35 s ----------
+     Every point is reachable: the whole chart is the hit area (nearest point to the pointer), a tap pins the
+     readout, arrow keys walk it, and the readout line under the chart always shows the hovered shot's
+     grind, speed and seconds, so the tooltip never gates a number (Robby 2026-10-30: the old title-tooltip
+     was "pretty hard to get to show up"). Blue dot = a shot with tasting notes. */
   function sparkline(bag, totalPulled) {
     var pts = D.shots.filter(function (s) { return s.bag === bag && s.status === 'pulled' && s.time_s != null; }).reverse(); // chronological
     if (pts.length < 2) return null;
-    var W = 240, H = 48, lo = 10, hi = 45, pad = 6, BAND_LO = 30, BAND_HI = 35;
-    var y = function (t) { t = Math.max(lo, Math.min(hi, +t)); return pad + (H - 2 * pad) * (1 - (t - lo) / (hi - lo)); };
+    var W = 240, H = 64, lo = 10, hi = 45, pad = 8, TOP = 16, BAND_LO = 30, BAND_HI = 35;   // TOP = the label row above the plot
+    var y = function (t) { t = Math.max(lo, Math.min(hi, +t)); return TOP + (H - TOP - pad) * (1 - (t - lo) / (hi - lo)); };
     var x = function (i) { return pad + (W - 2 * pad) * (i / (pts.length - 1)); };
     var inBand = function (p) { return +p.time_s >= BAND_LO - 0.5 && +p.time_s < BAND_HI + 0.5; };   // the band as read on a stopwatch, to the nearest second
+    var noted = function (p) { return !!(p.taste && String(p.taste).trim()); };
     // one ring per chart: the shot that set the CURRENT recipe (the newest SETTLED verdict); earlier "dialed" moments get no glyph
     var ringIdx = -1; pts.forEach(function (p, i) { if (/settled/i.test(p.verdict || '')) ringIdx = i; });
     var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', 'Shot time per shot, ' + pts.length + ' of ' + totalPulled + ' shots timed; band is the 30 to 35 second target; filled dots are inside the band');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark'); svg.setAttribute('role', 'img'); svg.setAttribute('tabindex', '0');
+    svg.setAttribute('aria-label', 'Shot time per shot, ' + pts.length + ' of ' + totalPulled + ' shots timed; band is the 30 to 35 second target; filled dots are inside the band; hover, tap or use arrow keys to read a shot');
     var band = document.createElementNS(ns, 'rect'); band.setAttribute('x', 0); band.setAttribute('width', W); band.setAttribute('y', y(BAND_HI)); band.setAttribute('height', y(BAND_LO) - y(BAND_HI)); band.setAttribute('fill', 'var(--band)'); svg.appendChild(band);
     var path = document.createElementNS(ns, 'path');
     path.setAttribute('d', pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(p.time_s).toFixed(1); }).join(' '));
     path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'var(--deemph)'); path.setAttribute('stroke-width', '1.5'); path.setAttribute('stroke-linejoin', 'round'); svg.appendChild(path);
+    var cursor = document.createElementNS(ns, 'line'); cursor.setAttribute('y1', TOP - 4); cursor.setAttribute('y2', H); cursor.setAttribute('stroke', 'var(--axis)'); cursor.setAttribute('stroke-width', '1'); cursor.setAttribute('visibility', 'hidden'); svg.appendChild(cursor);
+    var dots = [];
     pts.forEach(function (p, i) {
-      if (i === ringIdx) { var ring = document.createElementNS(ns, 'circle'); ring.setAttribute('cx', x(i)); ring.setAttribute('cy', y(p.time_s)); ring.setAttribute('r', 7); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'var(--s1)'); ring.setAttribute('stroke-width', '1.5'); svg.appendChild(ring); }
-      var c = document.createElementNS(ns, 'circle'); c.setAttribute('cx', x(i)); c.setAttribute('cy', y(p.time_s)); c.setAttribute('r', 3.2);
-      c.setAttribute('fill', inBand(p) ? 'var(--ink2)' : 'var(--surface)'); c.setAttribute('stroke', 'var(--ink2)'); c.setAttribute('stroke-width', '1.5');
-      var t = document.createElementNS(ns, 'title'); t.textContent = fmtDate(p.shot_at) + ': ' + n(p.time_s) + ' s at ' + n(p.microns) + ' µm / ' + n(p.rpm) + ' rpm' + (inBand(p) ? ' (in the 30–35 s band)' : ' (outside the band)') + (p.verdict ? ' — ' + p.verdict : ''); c.appendChild(t);
-      svg.appendChild(c);
+      if (i === ringIdx) { var ring = document.createElementNS(ns, 'circle'); ring.setAttribute('cx', x(i)); ring.setAttribute('cy', y(p.time_s)); ring.setAttribute('r', 7.5); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'var(--s1)'); ring.setAttribute('stroke-width', '1.5'); svg.appendChild(ring); }
+      var c = document.createElementNS(ns, 'circle'); c.setAttribute('cx', x(i)); c.setAttribute('cy', y(p.time_s)); c.setAttribute('r', 3.4);
+      var stroke = noted(p) ? 'var(--s1)' : 'var(--ink2)';
+      c.setAttribute('fill', inBand(p) ? stroke : 'var(--surface)'); c.setAttribute('stroke', stroke); c.setAttribute('stroke-width', '1.6');
+      svg.appendChild(c); dots.push(c);
     });
-    function label(i, anchor) { var p = pts[i], lab = document.createElementNS(ns, 'text'); lab.setAttribute('x', x(i) + (anchor === 'start' ? 6 : -6)); lab.setAttribute('y', y(p.time_s) + (y(p.time_s) < 16 ? 14 : -7)); lab.setAttribute('text-anchor', anchor); lab.setAttribute('font-size', '10'); lab.setAttribute('fill', 'var(--ink2)'); lab.textContent = n(p.time_s) + ' s'; svg.appendChild(lab); }
-    label(0, 'start'); label(pts.length - 1, 'end');
-    return { svg: svg, count: pts.length, settled: ringIdx >= 0 ? 1 : 0 };
+    function endLabel(i, anchor) {   // first and last shot, in the label row above the plot (never on the line)
+      var p = pts[i], lab = document.createElementNS(ns, 'text');
+      lab.setAttribute('x', anchor === 'start' ? pad : W - pad); lab.setAttribute('y', 10); lab.setAttribute('text-anchor', anchor);
+      lab.setAttribute('font-size', '10'); lab.setAttribute('fill', 'var(--ink2)'); lab.textContent = n(p.microns) + ' µm → ' + n(p.time_s) + ' s'; svg.appendChild(lab);
+    }
+    endLabel(0, 'start'); endLabel(pts.length - 1, 'end');
+    // readout + interaction
+    var read = el('div', 'spark-read'), active = -1, pinned = false;
+    function describe(p) {
+      return (p.microns != null ? n(p.microns) + ' µm' : '') + (p.rpm != null ? ' · ' + n(p.rpm) + ' rpm' : '') + ' → ' + n(p.time_s) + ' s' + (p.yield_g ? ' · ' + n(p.dose_g || '') + (p.dose_g ? ' g → ' : '') + n(p.yield_g) + ' g' : '')
+        + ' · ' + fmtDate(p.shot_at) + (inBand(p) ? ' · in band' : '') + (p.taste ? ' — ' + p.taste : '') + (p.verdict && !p.taste ? ' — ' + p.verdict : '');
+    }
+    function show(i, clientX, clientY) {
+      if (i < 0 || i >= pts.length) return;
+      if (active >= 0) dots[active].setAttribute('r', '3.4');
+      active = i; dots[i].setAttribute('r', '5');
+      cursor.setAttribute('x1', x(i)); cursor.setAttribute('x2', x(i)); cursor.setAttribute('visibility', 'visible');
+      var p = pts[i], txt = describe(p);
+      read.textContent = ''; var b = el('b', null, n(p.microns) + ' µm → ' + n(p.time_s) + ' s'); read.appendChild(b); read.appendChild(document.createTextNode(txt.slice(b.textContent.length)));
+      if (clientX != null) { tip.textContent = txt; tip.hidden = false; placeTip(clientX, clientY); }
+    }
+    function hide() { if (pinned) return; if (active >= 0) dots[active].setAttribute('r', '3.4'); active = -1; cursor.setAttribute('visibility', 'hidden'); tip.hidden = true; read.textContent = idle; }
+    function idxAt(clientX) { var r = svg.getBoundingClientRect(); var fx = (clientX - r.left) / r.width * W; return Math.max(0, Math.min(pts.length - 1, Math.round((fx - pad) / (W - 2 * pad) * (pts.length - 1)))); }
+    var idle = pts.length + ' of ' + totalPulled + ' shots timed · hover, tap or arrow through the dots to read each shot';
+    read.textContent = idle;
+    svg.addEventListener('pointermove', function (e) { if (e.pointerType === 'touch') return; pinned = false; show(idxAt(e.clientX), e.clientX, e.clientY); });
+    svg.addEventListener('pointerleave', function () { if (!pinned) hide(); });
+    svg.addEventListener('pointerdown', function (e) { var i = idxAt(e.clientX); if (pinned && i === active) { pinned = false; hide(); return; } pinned = true; show(i, e.pointerType === 'touch' ? null : e.clientX, e.clientY); });
+    svg.addEventListener('keydown', function (e) {
+      var k = e.key; if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'Home' && k !== 'End' && k !== 'Escape') return;
+      e.preventDefault(); pinned = k !== 'Escape';
+      if (k === 'Escape') { hide(); return; }
+      var i = k === 'Home' ? 0 : k === 'End' ? pts.length - 1 : active < 0 ? (k === 'ArrowRight' ? 0 : pts.length - 1) : Math.max(0, Math.min(pts.length - 1, active + (k === 'ArrowRight' ? 1 : -1)));
+      show(i);
+    });
+    svg.addEventListener('blur', function () { pinned = false; hide(); });
+    document.addEventListener('pointerdown', function (e) { if (pinned && !svg.contains(e.target)) { pinned = false; hide(); } });
+    var wrap = el('div', 'spark-wrap'); wrap.appendChild(svg); wrap.appendChild(read);
+    var annotated = pts.filter(noted).length;
+    return { node: wrap, count: pts.length, settled: ringIdx >= 0 ? 1 : 0, annotated: annotated };
   }
 
-  /* ---------- current recipes ---------- */
-  function renderRecipes() {
-    var grid = $('#recipe-grid');
-    if (!D.bags.length) { grid.appendChild(el('p', 'empty', 'No bags logged yet.')); return; }
-    D.bags.forEach(function (b) {
-      var d = (b.data || {}), di = d.dialin || {};
-      var card = el('div', 'panel recipe');
-      var head = el('div');
-      head.appendChild(el('div', 'bag', b.short_name));
-      var who = [d.roaster, d.process].filter(Boolean).join(' · ');
-      if (who) head.appendChild(el('div', 'roaster', who));
-      card.appendChild(head);
-      card.id = 'bag-' + b.short_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      var pills = el('div', 'pills');
-      if (d.house) { card.classList.add('house'); pills.appendChild(el('span', 'pill house', 'House bean')); }
-      pills.appendChild(el('span', 'pill ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
-      card.appendChild(pills);
-      // The hero number means ONE thing per card, and says which: the setting to use (settled recipe, or the
-      // newest plan in the bag's next-up queue), or the last shot pulled (nothing queued), or the intake start
-      // point (no shots yet). The queue (every planned shot, newest plan first) is what to try next; a pulled
-      // shot at that grind clears its entry and "X is out" clears the whole queue (Robby 2026-10-22).
-      var Q = b.queue || (b.queued ? [b.queued] : []), houseDose = +((D.rules.laws || {}).espresso_dose_g) || 18;
-      var doseOf = function (s) { return s && s.dose_g != null && s.dose_g !== '' ? +s.dose_g : houseDose; };
-      var src = di.settled ? 'settled' : Q.length ? 'planned' : b.last_shot && b.last_shot.microns ? 'last' : di.start ? 'start' : null;
-      var pick = { settled: { um: di.microns, rpm: di.rpm, dose: di.dose_g || houseDose }, planned: Q[0] && { um: Q[0].microns, rpm: Q[0].rpm, dose: doseOf(Q[0]) },
-                   last: b.last_shot && { um: b.last_shot.microns, rpm: b.last_shot.rpm, dose: doseOf(b.last_shot) }, start: di.start && { um: di.start.microns, rpm: di.start.rpm, dose: houseDose } }[src] || {};
-      var eyebrow = { settled: 'Set the grinder to', planned: 'Next up · set the grinder to', last: 'Nothing queued · last shot was pulled at', start: 'Start point, no shot yet' }[src];
-      if (src) card.appendChild(el('div', 'eyebrow', eyebrow));
-      var dial = el('div', 'dial');
-      [[pick.um, 'µm'], [pick.rpm, 'rpm'], [pick.dose, 'g in']].forEach(function (x) {
-        if (!x[0]) return; var w = el('div'); w.appendChild(el('span', 'big', n(x[0]))); w.appendChild(el('span', 'unit', x[1])); dial.appendChild(w);
+  /* ---------- provenance for one bag (roaster → producer / farm), from the untamped graph ---------- */
+  var PROV = {}; (D.origin.provenance || []).forEach(function (p) { PROV[p.bag] = p; });
+  function roasterCell(b, p, c2) {
+    c2.appendChild(el('div', 'k', 'Roaster'));
+    if (p) {
+      var rv = el('div', 'v'); if (p.website) { var ra = el('a', null, p.roaster); ra.href = p.website; ra.target = '_blank'; ra.rel = 'noopener'; rv.appendChild(ra); } else rv.textContent = p.roaster; c2.appendChild(rv);
+      c2.appendChild(el('div', 'd', [p.roaster_city, p.roaster_country].filter(Boolean).join(', ')));
+    } else if ((b.data || {}).blend_of) { c2.appendChild(el('div', 'v', 'house blend')); c2.appendChild(el('div', 'd', 'mixed at the grinder')); }
+    else { var dd = b.data || {}; c2.appendChild(el('div', 'v', dd.roaster || '—')); c2.appendChild(el('div', 'd', [dd.roaster_city, dd.roaster_in_untamped ? 'in the origin graph, this offering not yet' : 'not in the origin graph yet'].filter(Boolean).join(' · '))); }
+  }
+  function producerCell(b, p, c3) {
+    c3.appendChild(el('div', 'k', 'Producer / farm'));
+    if (p) {
+      var o = p.origin || {};
+      c3.appendChild(el('div', 'v', p.producer || o.farm || o.producer || 'unresolved producer'));
+      var where = [o.farm && o.farm !== p.producer ? o.farm : null, o.region || p.producer_region, o.country || p.producer_country].filter(Boolean).join(' · ');
+      if (where) c3.appendChild(el('div', 'd', where));
+      var how = [o.process, o.variety, o.elevation].filter(Boolean).join(' · ');
+      if (how) c3.appendChild(el('div', 'd', how));
+      if (p.also_roasted_by && p.also_roasted_by.length) {
+        var chips = el('div', 'chips'); chips.appendChild(el('span', 'd', 'also roasted by'));
+        p.also_roasted_by.forEach(function (r) { chips.appendChild(el('span', 'chip', r)); });
+        c3.appendChild(chips);
+      } else if (p.producer) c3.appendChild(el('div', 'd', 'no other tracked roaster buys from this producer'));
+      if (p.url) { var ol = el('a', 'small', 'offering page ↗'); ol.href = p.url; ol.target = '_blank'; ol.rel = 'noopener'; c3.appendChild(ol); }
+    } else {
+      var dd = b.data || {};
+      if (dd.blend_of) { c3.appendChild(el('div', 'v', 'blend of ' + dd.blend_of.join(' + '))); c3.appendChild(el('div', 'd', 'see those two bags')); }
+      else {
+        var country = dd.origin_country || dd.country;
+        var place = [dd.region, country].filter(function (x, i, arr) { return x && arr.indexOf(x) === i && !(i === 1 && arr[0] && arr[0].indexOf(x) >= 0); }).join(', ');
+        c3.appendChild(el('div', 'v', dd.producer || dd.farm || place || 'origin not recorded'));
+        var w2 = [(dd.producer || dd.farm) && place, dd.variety, dd.process && dd.process !== 'blend; processes not stated on bag' ? dd.process : null, dd.harvest, dd.elevation_masl && dd.elevation_masl + ' masl'].filter(Boolean).join(' · '); if (w2) c3.appendChild(el('div', 'd', w2));
+        if (dd.origins && dd.origins.length) c3.appendChild(el('div', 'd', 'origins: ' + dd.origins.join(', ')));
+      }
+    }
+  }
+
+  /* ---------- recipe cards ---------- */
+  function recipeCard(b, withChain) {
+    var d = (b.data || {}), di = d.dialin || {};
+    var card = el('div', 'panel recipe');
+    var head = el('div');
+    head.appendChild(el('div', 'bag', b.short_name));
+    var who = [d.roaster, d.process].filter(Boolean).join(' · ');
+    if (who) head.appendChild(el('div', 'roaster', who));
+    card.appendChild(head);
+    card.id = slug(b.short_name);
+    var pills = el('div', 'pills');
+    if (d.house) { card.classList.add('house'); pills.appendChild(el('span', 'pill house', 'House bean')); }
+    pills.appendChild(el('span', 'pill ' + (di.settled ? 'settled' : 'open'), di.settled ? 'Settled' : 'Dialing in'));
+    card.appendChild(pills);
+    // The hero number means ONE thing per card, and says which: the setting to use (settled recipe, or the
+    // newest plan in the bag's next-up queue), or the last shot pulled (nothing queued), or the intake start
+    // point (no shots yet). The queue (every planned shot, newest plan first) is what to try next; a pulled
+    // shot at that grind clears its entry and "X is out" clears the whole queue (Robby 2026-10-22).
+    var Q = b.queue || (b.queued ? [b.queued] : []), houseDose = +((D.rules.laws || {}).espresso_dose_g) || 18;
+    var doseOf = function (s) { return s && s.dose_g != null && s.dose_g !== '' ? +s.dose_g : houseDose; };
+    var src = di.settled ? 'settled' : Q.length ? 'planned' : b.last_shot && b.last_shot.microns ? 'last' : di.start ? 'start' : null;
+    var pick = { settled: { um: di.microns, rpm: di.rpm, dose: di.dose_g || houseDose }, planned: Q[0] && { um: Q[0].microns, rpm: Q[0].rpm, dose: doseOf(Q[0]) },
+                 last: b.last_shot && { um: b.last_shot.microns, rpm: b.last_shot.rpm, dose: doseOf(b.last_shot) }, start: di.start && { um: di.start.microns, rpm: di.start.rpm, dose: houseDose } }[src] || {};
+    var eyebrow = { settled: 'Set the grinder to', planned: 'Next up · set the grinder to', last: 'Nothing queued · last shot was pulled at', start: 'Start point, no shot yet' }[src];
+    if (src) card.appendChild(el('div', 'eyebrow', eyebrow));
+    var dial = el('div', 'dial');
+    [[pick.um, 'µm'], [pick.rpm, 'rpm'], [pick.dose, 'g in']].forEach(function (x) {
+      if (!x[0]) return; var w = el('div'); w.appendChild(el('span', 'big', n(x[0]))); w.appendChild(el('span', 'unit', x[1])); dial.appendChild(w);
+    });
+    if (dial.children.length) card.appendChild(dial);
+    function queueList(plans, startAt) {
+      var ol = el('ol', 'queue'); ol.start = startAt;
+      plans.forEach(function (q) {
+        var li = el('li'); li.appendChild(el('b', null, n(q.microns) + ' µm · ' + n(q.rpm) + ' rpm · ' + n(doseOf(q)) + ' g'));
+        if (q.next_change) li.appendChild(document.createTextNode(' — ' + q.next_change));
+        li.appendChild(el('span', 'small muted', ' · planned ' + fmtDate(q.shot_at)));
+        ol.appendChild(li);
       });
-      if (dial.children.length) card.appendChild(dial);
-      // The queue, newest plan first. For a dialing-in bag the first plan IS the hero above, so the list starts at the second.
-      function queueList(plans, startAt) {
-        var ol = el('ol', 'queue'); ol.start = startAt;
-        plans.forEach(function (q) {
-          var li = el('li'); li.appendChild(el('b', null, n(q.microns) + ' µm · ' + n(q.rpm) + ' rpm · ' + n(doseOf(q)) + ' g'));
-          if (q.next_change) li.appendChild(document.createTextNode(' — ' + q.next_change));
-          li.appendChild(el('span', 'small muted', ' · planned ' + fmtDate(q.shot_at)));
-          ol.appendChild(li);
-        });
-        return ol;
+      return ol;
+    }
+    if (src === 'settled') {
+      if (di.recipe) card.appendChild(el('p', 'line', di.recipe));
+      if (Q.length) { card.appendChild(el('div', 'eyebrow', 'Next up · test' + (Q.length > 1 ? 's' : '') + ' queued, recipe above still stands')); card.appendChild(queueList(Q, 1)); }
+    } else {
+      if (src === 'planned') {
+        var q0 = Q[0];
+        card.appendChild(el('p', 'line', (q0.next_change || 'cut at 34 g, aim 30–35 s total') + ' '));
+        card.lastChild.appendChild(el('span', 'small muted', '· planned ' + fmtDate(q0.shot_at)));
+        if (Q.length > 1) { card.appendChild(el('div', 'eyebrow', 'Also queued')); card.appendChild(queueList(Q.slice(1), 2)); }
       }
-      if (src === 'settled') {
-        if (di.recipe) card.appendChild(el('p', 'line', di.recipe));
-        if (Q.length) { card.appendChild(el('div', 'eyebrow', 'Next up · test' + (Q.length > 1 ? 's' : '') + ' queued, recipe above still stands')); card.appendChild(queueList(Q, 1)); }
-      } else {
-        if (src === 'planned') {
-          var q0 = Q[0];
-          card.appendChild(el('p', 'line', (q0.next_change || 'cut at 34 g, aim 30–35 s total') + ' '));
-          card.lastChild.appendChild(el('span', 'small muted', '· planned ' + fmtDate(q0.shot_at)));
-          if (Q.length > 1) { card.appendChild(el('div', 'eyebrow', 'Also queued')); card.appendChild(queueList(Q.slice(1), 2)); }
-        }
-        if (src === 'start' && di.start_note) card.appendChild(el('p', 'line', di.start_note));
-        if (b.last_shot) {
-          var l = b.last_shot, bits = [];
-          if (l.dose_g && l.yield_g) bits.push(n(l.dose_g) + ' g → ' + n(l.yield_g) + ' g');
-          if (l.time_s) bits.push(n(l.time_s) + ' s');
-          card.appendChild(el('p', 'line small ink2', (src === 'last' ? fmtDate(l.shot_at) + ': ' : 'Last shot ' + fmtDate(l.shot_at) + ': ' + n(l.microns) + ' µm at ' + n(l.rpm) + ' rpm, ') + bits.join(', ') + (l.verdict ? '. ' + l.verdict : '')));
-          if (src === 'last') card.appendChild(el('p', 'line small', l.next_change ? 'Suggested next: ' + l.next_change : 'No plan queued yet — ask Robby what to try next.'));
-        } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
-      }
-      if (di.pourover && di.pourover.setting != null) {
-        var po = di.pourover, pl = el('p', 'line pour');
-        pl.appendChild(el('span', 'eyebrow', 'Pourover · ' + (po.grinder || 'Fellow Ode Gen 2') + ' at '));
-        pl.appendChild(el('strong', null, n(po.setting)));
-        if (po.brewers) pl.appendChild(document.createTextNode(' · ' + po.brewers));
-        if (po.why) pl.appendChild(el('span', 'small muted', ' — ' + po.why));
-        card.appendChild(pl);
-      }
-      var sp = sparkline(b.short_name, b.shots);
-      if (sp) { card.appendChild(sp.svg); card.appendChild(el('div', 'spark-cap', 'Shot time, ' + sp.count + ' of ' + b.shots + ' shots timed · band = 30 to 35 s target, to the nearest second · filled = in band' + (sp.settled ? ' · ring = the shot that set this recipe' : ''))); }
-      var gl = el('a', 'small', 'words on this card ↓'); gl.href = '#glossary'; card.appendChild(gl);
-      card.appendChild(el('p', 'small muted', b.shots + (b.shots === 1 ? ' shot' : ' shots') + ' logged' + (d.opened ? ' · opened ' + fmtDate(d.opened) : '')));
-      grid.appendChild(card);
-    });
+      if (src === 'start' && (di.start_note || d.dialin_start_note)) card.appendChild(el('p', 'line', di.start_note || d.dialin_start_note));
+      if (b.last_shot) {
+        var l = b.last_shot, bits = [];
+        if (l.dose_g && l.yield_g) bits.push(n(l.dose_g) + ' g → ' + n(l.yield_g) + ' g');
+        if (l.time_s) bits.push(n(l.time_s) + ' s');
+        card.appendChild(el('p', 'line small ink2', (src === 'last' ? fmtDate(l.shot_at) + ': ' : 'Last shot ' + fmtDate(l.shot_at) + ': ' + n(l.microns) + ' µm at ' + n(l.rpm) + ' rpm, ') + bits.join(', ') + (l.taste ? '. ' + l.taste : '') + (l.verdict ? '. ' + l.verdict : '')));
+        if (src === 'last') card.appendChild(el('p', 'line small', l.next_change ? 'Suggested next: ' + l.next_change : 'No plan queued yet — ask Robby what to try next.'));
+      } else if (src !== 'start') card.appendChild(el('p', 'line small muted', 'No shots logged yet.'));
+    }
+    if (di.pourover && di.pourover.setting != null) {
+      var po = di.pourover, pl = el('p', 'line pour');
+      pl.appendChild(el('span', 'eyebrow', 'Pourover · ' + (po.grinder || 'Fellow Ode Gen 2') + ' at '));
+      pl.appendChild(el('strong', null, n(po.setting)));
+      if (po.brewers) pl.appendChild(document.createTextNode(' · ' + po.brewers));
+      if (po.why) pl.appendChild(el('span', 'small muted', ' — ' + po.why));
+      card.appendChild(pl);
+    }
+    var sp = sparkline(b.short_name, b.shots);
+    if (sp) {
+      card.appendChild(sp.node);
+      card.appendChild(el('div', 'spark-cap', 'Shot time · band = 30 to 35 s target · filled = in band · blue = tasting notes recorded (' + sp.annotated + ' of ' + sp.count + ')' + (sp.settled ? ' · ring = the shot that set this recipe' : '')));
+    }
+    if (withChain) {
+      var box = el('div', 'chainbox'), p = PROV[b.short_name];
+      var c2 = el('div'); roasterCell(b, p, c2); box.appendChild(c2);
+      var c3 = el('div'); producerCell(b, p, c3); box.appendChild(c3);
+      card.appendChild(box);
+    }
+    card.appendChild(el('p', 'small muted', b.shots + (b.shots === 1 ? ' shot' : ' shots') + ' logged' + (d.opened ? ' · opened ' + fmtDate(d.opened) : '') + (d.roast_date ? ' · roasted ' + fmtDate(d.roast_date) : '')));
+    return card;
+  }
+  function renderRecipes(bags, withChain) {
+    var grid = $('#recipe-grid');
+    if (!bags.length) { grid.appendChild(el('p', 'empty', 'No bags logged yet.')); return; }
+    bags.forEach(function (b) { grid.appendChild(recipeCard(b, withChain)); });
   }
 
-  /* ---------- origin: provenance chain ---------- */
-  function renderChain() {
-    var host = $('#chain'), prov = D.origin.provenance || [];
-    var linked = {}; prov.forEach(function (p) { linked[p.bag] = p; });
-    D.bags.forEach(function (b) {
-      var p = linked[b.short_name], hop = el('div', 'hop');
-      var c1 = el('div'); c1.appendChild(el('div', 'k', 'Bag')); c1.appendChild(el('div', 'v', b.short_name)); hop.appendChild(c1);
+  /* ---------- origin: provenance chain for the bags shown on the board ---------- */
+  function renderChain(bags) {
+    var host = $('#chain');
+    bags.forEach(function (b) {
+      var p = PROV[b.short_name], hop = el('div', 'hop');
+      var c1 = el('div'); c1.appendChild(el('div', 'k', 'Bag')); var bv = el('a', 'v', b.short_name); bv.href = '#' + slug(b.short_name); bv.style.cssText = 'display:block;color:inherit;text-decoration:none'; c1.appendChild(bv); hop.appendChild(c1);
       hop.appendChild(el('div', 'arrow', '→'));
-      var c2 = el('div'); c2.appendChild(el('div', 'k', 'Roaster'));
-      if (p) {
-        var rv = el('div', 'v'); if (p.website) { var ra = el('a', null, p.roaster); ra.href = p.website; ra.target = '_blank'; ra.rel = 'noopener'; rv.appendChild(ra); } else rv.textContent = p.roaster; c2.appendChild(rv);
-        c2.appendChild(el('div', 'd', [p.roaster_city, p.roaster_country].filter(Boolean).join(', ')));
-      } else if ((b.data || {}).blend_of) { c2.appendChild(el('div', 'v', 'house blend')); c2.appendChild(el('div', 'd', 'mixed at the grinder')); }
-      else { c2.appendChild(el('div', 'v', (b.data || {}).roaster || '—')); c2.appendChild(el('div', 'd', 'not in the origin graph yet')); }
-      hop.appendChild(c2);
+      var c2 = el('div'); roasterCell(b, p, c2); hop.appendChild(c2);
       hop.appendChild(el('div', 'arrow', '→'));
-      var c3 = el('div'); c3.appendChild(el('div', 'k', 'Producer / farm'));
-      if (p) {
-        var o = p.origin || {};
-        c3.appendChild(el('div', 'v', p.producer || o.farm || o.producer || 'unresolved producer'));
-        var where = [o.farm && o.farm !== p.producer ? o.farm : null, o.region || p.producer_region, o.country || p.producer_country].filter(Boolean).join(' · ');
-        if (where) c3.appendChild(el('div', 'd', where));
-        var how = [o.process, o.variety, o.elevation].filter(Boolean).join(' · ');
-        if (how) c3.appendChild(el('div', 'd', how));
-        if (p.also_roasted_by && p.also_roasted_by.length) {
-          var chips = el('div', 'chips'); chips.appendChild(el('span', 'd', 'also roasted by'));
-          p.also_roasted_by.forEach(function (r) { chips.appendChild(el('span', 'chip', r)); });
-          c3.appendChild(chips);
-        } else if (p.producer) c3.appendChild(el('div', 'd', 'no other tracked roaster buys from this producer'));
-        if (p.url) { var ol = el('a', 'small', 'offering page ↗'); ol.href = p.url; ol.target = '_blank'; ol.rel = 'noopener'; c3.appendChild(ol); }
-      } else {
-        var dd = b.data || {};
-        if (dd.blend_of) { c3.appendChild(el('div', 'v', 'blend of ' + dd.blend_of.join(' + '))); c3.appendChild(el('div', 'd', 'see those two bags above')); }
-        else {
-          var place = [dd.region, dd.country].filter(function (x, i, arr) { return x && arr.indexOf(x) === i && !(i === 1 && arr[0] && arr[0].indexOf(x) >= 0); }).join(', ');
-          c3.appendChild(el('div', 'v', dd.producer || dd.farm || place || 'origin not recorded'));
-          var w2 = [(dd.producer || dd.farm) && place, dd.harvest, dd.elevation_masl && dd.elevation_masl + ' masl'].filter(Boolean).join(' · '); if (w2) c3.appendChild(el('div', 'd', w2));
-        }
-      }
-      hop.appendChild(c3);
+      var c3 = el('div'); producerCell(b, p, c3); hop.appendChild(c3);
       host.appendChild(hop);
     });
-    if (!D.bags.length) host.appendChild(el('p', 'empty', 'No bags logged.'));
+    if (!bags.length) host.appendChild(el('p', 'empty', 'No bags logged.'));
   }
 
   /* ---------- origin: producers per country (emphasis bars) ---------- */
@@ -279,23 +362,24 @@
     if (!rows.length) { host.appendChild(el('p', 'empty', 'No origin data.')); return; }
     var total = rows.reduce(function (a, r) { return a + +r.producers; }, 0);
     var isMe = function (c) { return onCounter.indexOf(c) >= 0; };
-    // top 10 by producers, plus any country that is on the counter even if it ranks lower; the rest fold into Other
-    var top = rows.filter(function (r, i) { return i < 10 || isMe(r.country); }), rest = rows.filter(function (r) { return top.indexOf(r) < 0; });
+    // top 10 by producers, plus any country that is in a logged bag even if it ranks lower; the rest fold into Other
+    var top = rows.filter(function (r, i) { return i < CAP || isMe(r.country); }), rest = rows.filter(function (r) { return top.indexOf(r) < 0; });
     if (rest.length) top.push({ country: 'Other (' + rest.length + ' countries)', producers: rest.reduce(function (a, r) { return a + +r.producers; }, 0), roasters: null, other: true });
     var max = Math.max.apply(null, top.map(function (r) { return +r.producers; }));
-    $('#country-sub').textContent = fmtInt(total) + ' producers with a live offering across the ' + fmtInt((D.origin.totals || {}).roasters) + ' roasters tracked, by country. ● and blue = a country that is on the counter right now.';
+    $('#country-sub').textContent = fmtInt(total) + ' producers with a live offering across the ' + fmtInt((D.origin.totals || {}).roasters) + ' roasters tracked, by country. ● and blue = a country in one of Robby’s bags.';
     top.forEach(function (r) {
       var me = !r.other && isMe(r.country);
       var lbl = el('div', 'lbl' + (me ? ' me' : ''), (me ? '● ' : '') + r.country), track = el('div', 'track'), i = el('i'); i.style.width = (100 * r.producers / max) + '%'; track.appendChild(i);
       if (me) i.style.background = 'var(--s1)';
       var num = el('div', 'n', fmtInt(r.producers));
       [lbl, track, num].forEach(function (x) { host.appendChild(x); });
-      var text = r.country + ': ' + fmtInt(r.producers) + ' producers' + (r.roasters != null ? ' across ' + r.roasters + ' roasters' : '') + (me ? ' · on the counter now' : '');
+      var text = r.country + ': ' + fmtInt(r.producers) + ' producers' + (r.roasters != null ? ' across ' + r.roasters + ' roasters' : '') + (me ? ' · in a logged bag' : '');
       [lbl, track, num].forEach(function (x) { bindTip(x, text); });
     });
   }
 
-  /* ---------- tables ---------- */
+  /* ---------- tables, capped at the newest 10 with an expander ---------- */
+  var EXPANDED = {};
   function renderTable(tbl, rows, cols, opts) {
     opts = opts || {};
     var thead = tbl.querySelector('thead'), tbody = tbl.querySelector('tbody');
@@ -303,8 +387,10 @@
     var tr = el('tr');
     cols.forEach(function (c) { tr.appendChild(el('th', c.num ? 'num' : '', c.label)); });
     thead.appendChild(tr);
+    var more = opts.more ? $(opts.more) : null; if (more) more.innerHTML = '';
     if (!rows.length) { var e = el('tr'); var td = el('td', 'empty', 'Nothing here yet.'); td.colSpan = cols.length; e.appendChild(td); tbody.appendChild(e); return; }
-    rows.forEach(function (r) {
+    var open = !!EXPANDED[tbl.id], shown = open || rows.length <= CAP ? rows : rows.slice(0, CAP);
+    shown.forEach(function (r) {
       var row = el('tr');
       cols.forEach(function (c) {
         var td = el('td', c.num ? 'num' : (c.wrap ? 'wrap' : ''));
@@ -317,6 +403,12 @@
       });
       tbody.appendChild(row);
     });
+    if (more && rows.length > CAP) {
+      more.appendChild(el('span', null, (open ? 'All ' + rows.length : (opts.lead || 'Newest') + ' ' + shown.length + ' of ' + rows.length) + ' ' + (opts.noun || 'rows')));
+      var btn = el('button', null, open ? 'Show the ' + (opts.lead || 'newest').toLowerCase() + ' ' + CAP + ' only' : 'Show all ' + rows.length); btn.type = 'button';
+      btn.addEventListener('click', function () { EXPANDED[tbl.id] = !open; renderTable(tbl, rows, cols, opts); });
+      more.appendChild(btn);
+    }
   }
 
   function renderShared() {
@@ -326,18 +418,19 @@
       { key: 'roasters', label: 'Roasters', num: true },
       { key: 'roasted_by', label: 'Roasted by', render: function (td, r) { td.style.cssText = 'min-width:44ch;overflow-wrap:anywhere'; td.textContent = (r.roasted_by || []).join(', '); } }
     ];
-    renderTable($('#shared'), D.origin.shared_producers || [], cols);
+    renderTable($('#shared'), D.origin.shared_producers || [], cols, { more: '#shared-more', noun: 'producers, most roasters first', lead: 'Top' });
   }
 
   function renderRoasters() {
     var rows = (D.origin.roasters || []).slice(), max = Math.max.apply(null, rows.map(function (r) { return +r.offerings || 0; }).concat([1]));
+    $('#roasters-sub').textContent = 'All ' + rows.length + ' roasters in the origin graph, the ones with a bag logged here first. ● and blue = a roaster with a bag logged here. Tables scroll sideways on a phone.';
     var cols = [
       { key: 'name', label: 'Roaster', render: function (td, r) { td.style.whiteSpace = 'nowrap'; if (r.in_my_bags) { td.appendChild(document.createTextNode('● ')); td.style.fontWeight = '600'; } if (r.website) { var a = el('a', null, r.name); a.href = r.website; a.target = '_blank'; a.rel = 'noopener'; td.appendChild(a); } else td.appendChild(document.createTextNode(r.name)); } },
       { key: 'city', label: 'City', render: function (td, r) { td.style.whiteSpace = 'nowrap'; td.textContent = [r.city, r.country].filter(Boolean).join(', '); } },
       { key: 'offerings', label: 'Live offerings', num: true, render: function (td, r) { var w = el('div'); w.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:flex-end'; var bar = el('div'); bar.style.cssText = 'height:8px;width:' + Math.round(80 * (+r.offerings || 0) / max) + 'px;background:' + (r.in_my_bags ? 'var(--s1)' : 'var(--deemph)') + ';border-radius:0 3px 3px 0'; w.appendChild(bar); w.appendChild(el('span', null, fmtInt(r.offerings))); td.appendChild(w); } },
       { key: 'producers', label: 'Producers', num: true, int: true }
     ];
-    renderTable($('#roasters'), rows, cols);
+    renderTable($('#roasters'), rows, cols, { more: '#roasters-more', noun: 'roasters, most live offerings first', lead: 'Top' });
   }
 
   var SHOT_COLS = [
@@ -357,26 +450,18 @@
     var bag = $('#bag-filter').value, rows = D.shots.slice();
     if (bag) rows = rows.filter(function (s) { return s.bag === bag; });
     if (onlySettled) rows = rows.filter(function (s) { return /dialed|settled/i.test(s.verdict || ''); });
-    renderTable($('#shots'), rows, SHOT_COLS);
-    $('#log-count').textContent = rows.length + ' of ' + D.shots.length + ' rows';
+    renderTable($('#shots'), rows, SHOT_COLS, { more: '#shots-more', noun: 'shots' });
+    $('#log-count').textContent = rows.length + ' of ' + D.shots.length + ' rows match';
   }
   function renderExperiments() {
     renderTable($('#exp'), D.experiments.slice(), [
       { key: 'run_on', label: 'Date', date: true }, { key: 'method', label: 'Method' }, { key: 'variable', label: 'Variable under test', wrap: true }, { key: 'held_constant', label: 'Held constant', wrap: true },
-      { key: 'option_a', label: 'A', wrap: true }, { key: 'option_b', label: 'B', wrap: true }, { key: 'winner', label: 'Winner', wrap: true }, { key: 'notes', label: 'Notes', wrap: true }]);
+      { key: 'option_a', label: 'A', wrap: true }, { key: 'option_b', label: 'B', wrap: true }, { key: 'winner', label: 'Winner', wrap: true }, { key: 'notes', label: 'Notes', wrap: true }], { more: '#exp-more', noun: 'experiments' });
   }
 
-  /* ---------- house rules ---------- */
+  /* ---------- house rules (the glossary moved to the top of the page, 2026-10-30) ---------- */
   function renderReference() {
     var host = $('#reference'), sections = (D.rules.sections || []);
-    if (D.rules.glossary && D.rules.glossary.length) {   // words on the cards, defined once, first
-      var g = el('div', 'panel'); g.id = 'glossary';
-      var gh = el('div'); gh.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px';
-      gh.appendChild(el('h3', null, 'Words on the cards')); var back = el('a', 'small', '↑ back to recipes'); back.href = '#recipes'; gh.appendChild(back); g.appendChild(gh);
-      var gl = el('dl');
-      D.rules.glossary.forEach(function (row) { gl.appendChild(el('dt', null, row[0])); gl.appendChild(el('dd', null, row[1])); });
-      g.appendChild(gl); host.appendChild(g);
-    }
     var PO = D.rules.pourover;
     if (PO) {   // pourover house rules (kv coffee-dialin.pourover) — a panel beside the espresso sections
       var pp = el('div', 'panel'); pp.id = 'pourover'; pp.appendChild(el('h3', null, 'Pourover — ' + (PO.grinder || 'grinder')));
@@ -411,14 +496,21 @@
   }
 
   /* ---------- boot ---------- */
-  var sel = $('#bag-filter'), chips = $('#bag-chips');
-  D.bags.forEach(function (b) {
-    var o = el('option', null, b.short_name); o.value = b.short_name; sel.appendChild(o);
-    var c = el('a', 'chip' + (((b.data || {}).dialin || {}).settled ? ' settled' : ' open') + ((b.data || {}).house ? ' house' : ''), ((b.data || {}).house ? '★ ' : '') + b.short_name); c.href = '#bag-' + b.short_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'); chips.appendChild(c);
-  });
-  sel.addEventListener('change', renderShots);
-  $('#only-settled').addEventListener('click', function () { onlySettled = !onlySettled; this.setAttribute('aria-pressed', String(onlySettled)); renderShots(); });
-
-  renderHealth(); renderRecipes(); renderWater(); renderChain(); renderCountryBars(); renderShared(); renderRoasters();
-  renderShots(); renderExperiments(); renderReference();
+  renderChips(); renderGlossary();
+  if (PAGE === 'bags') {
+    $('#bags-count').textContent = D.bags.length + ' bags logged · house beans first, then newest first';
+    renderRecipes(D.bags, true);
+  } else {
+    var shown = D.bags.slice(0, CAP);
+    var sel = $('#bag-filter');
+    D.bags.forEach(function (b) { var o = el('option', null, b.short_name); o.value = b.short_name; sel.appendChild(o); });
+    sel.addEventListener('change', renderShots);
+    $('#only-settled').addEventListener('click', function () { onlySettled = !onlySettled; this.setAttribute('aria-pressed', String(onlySettled)); renderShots(); });
+    renderHealth(); renderRecipes(shown, false);
+    var foot = $('#recipes-foot');
+    foot.appendChild(el('span', null, D.bags.length > CAP ? 'Newest ' + shown.length + ' of ' + D.bags.length + ' bags' : D.bags.length + ' bags'));
+    var all = el('a', null, 'All bags, each traced to roaster and producer →'); all.href = 'bags.html'; foot.appendChild(all);
+    renderWater(); renderChain(shown); renderCountryBars(); renderShared(); renderRoasters();
+    renderShots(); renderExperiments(); renderReference();
+  }
 })();
