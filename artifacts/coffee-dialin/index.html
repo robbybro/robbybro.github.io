@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<meta name="description" content="Espresso operations board for Robby's kitchen: the settled recipe for every bag on the counter, machine and log health, where each coffee came from (roaster → producer → farm, from the untamped origin graph), the house water chemistry, and every shot ever pulled. Read-only, regenerated hourly from Postgres.">
+<meta name="description" content="Espresso operations board: the settled recipe for every bag on the counter, machine and log health, where each coffee came from (roaster → producer → farm, from the untamped origin graph), the house water chemistry, and every shot ever pulled. Read-only, regenerated hourly from Postgres.">
 <title>Coffee Dial-In — Balthamos + Zerno Z2</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -17,7 +17,7 @@
       <div class="crumbs"><a href="/artifacts/">← Artifacts</a><a id="water-top" href="#water">Water chemistry</a><a href="#log">Shot log</a><a href="#origin">Origin</a><a href="bags.html">All bags</a></div>
     </div>
     <h1 style="margin-top:8px">Coffee Dial-In</h1>
-    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2 in Robby's kitchen. Standing at the machine without him? Tap your bag, set the grinder to the number on its card, and follow the house rules.</p>
+    <p class="sub">Balthamos (La Marzocco Linea Mini R) and the Zerno Z2. Tap your bag, set the grinder to the number on its card, and follow the house rules.</p>
     <nav class="chips bagchips" id="bag-chips" aria-label="Bags, house beans first then newest"></nav>
     <div class="chip-legend" id="chip-legend"></div>
   </header>
@@ -48,7 +48,7 @@
     <div class="panel"><div class="sec-head" style="margin-bottom:10px"><h3>Newest bags, traced back</h3><a class="small" href="bags.html">every bag, down to roaster and producer →</a></div><div class="chain" id="chain"></div></div>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
       <div class="panel"><h3>Producers per origin country</h3><p class="small muted" style="margin:2px 0 10px" id="country-sub"></p><div class="bars" id="country-bars"></div></div>
-      <div class="panel pad0"><div style="padding:12px 14px 0"><h3>Producers roasted by three or more roasters</h3><p class="small muted" style="margin:2px 0 10px">The shared-supply backbone. ● marks a producer in one of Robby's bags.</p></div><div class="scroll"><table id="shared"><thead></thead><tbody></tbody></table></div><div class="more-row" id="shared-more"></div></div>
+      <div class="panel pad0"><div style="padding:12px 14px 0"><h3>Producers roasted by three or more roasters</h3><p class="small muted" style="margin:2px 0 10px">The shared-supply backbone. ● marks a producer in one of these bags.</p></div><div class="scroll"><table id="shared"><thead></thead><tbody></tbody></table></div><div class="more-row" id="shared-more"></div></div>
     </div>
     <div class="panel pad0"><p class="small muted" style="padding:10px 10px 0" id="roasters-sub">Roasters in the origin graph. ● and blue = a roaster with a bag logged here. Tables scroll sideways on a phone.</p><div class="scroll"><table id="roasters"><thead></thead><tbody></tbody></table></div><div class="more-row" id="roasters-more"></div></div>
   </section>
@@ -75,7 +75,7 @@
   </section>
 
   <footer>
-    <span>Read-only copy of Robby's Postgres (shots, bags, rules, the untamped origin graph, machine telemetry), regenerated hourly. Shot times include the 5 s pre-brew.</span>
+    <span>Read-only copy of the shot log (shots, bags, rules, the untamped origin graph, machine telemetry), regenerated hourly. Shot times include the 5 s pre-brew.</span>
   </footer>
 </div>
 <div class="tip" id="tip" hidden></div>

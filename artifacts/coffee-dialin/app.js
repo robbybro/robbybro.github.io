@@ -375,7 +375,7 @@
     var top = rows.filter(function (r, i) { return i < CAP || isMe(r.country); }), rest = rows.filter(function (r) { return top.indexOf(r) < 0; });
     if (rest.length) top.push({ country: 'Other (' + rest.length + ' countries)', producers: rest.reduce(function (a, r) { return a + +r.producers; }, 0), roasters: null, other: true });
     var max = Math.max.apply(null, top.map(function (r) { return +r.producers; }));
-    $('#country-sub').textContent = fmtInt(total) + ' producers with a live offering across the ' + fmtInt((D.origin.totals || {}).roasters) + ' roasters tracked, by country. ● and blue = a country in one of Robby’s bags.';
+    $('#country-sub').textContent = fmtInt(total) + ' producers with a live offering across the ' + fmtInt((D.origin.totals || {}).roasters) + ' roasters tracked, by country. ● and blue = a country in one of these bags.';
     top.forEach(function (r) {
       var me = !r.other && isMe(r.country);
       var lbl = el('div', 'lbl' + (me ? ' me' : ''), (me ? '● ' : '') + r.country), track = el('div', 'track'), i = el('i'); i.style.width = (100 * r.producers / max) + '%'; track.appendChild(i);
