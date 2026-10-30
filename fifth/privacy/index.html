@@ -11,7 +11,8 @@
   h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
   h2 { font-size: 1.1rem; margin: 1.75rem 0 .4rem; }
   p, li { margin: .45rem 0; }
-  .muted { color: #888; font-size: .9rem; }
+  .muted { color: #666; font-size: .9rem; }
+  @media (prefers-color-scheme: dark) { .muted { color: #aaa; } }
 </style>
 </head>
 <body>
@@ -28,11 +29,17 @@
 <p>We never see this data. Deleting the app deletes it.</p>
 
 <h2>Data shared with Meta (Facebook)</h2>
-<p>Fifth includes the Meta (Facebook) SDK, which automatically reports basic app events, such as the app being installed and opened, together with device information and an app-specific identifier. We use this only to measure whether our app-install promotions on Facebook and Instagram work. Collection of your device's advertising identifier is turned off, and Fifth does not ask to track you across other companies' apps. Meta handles this data under its own policy: <a href="https://www.facebook.com/privacy/policy/">facebook.com/privacy/policy</a>.</p>
+<p>Fifth shares a limited amount of data with Meta through the Meta (Facebook) SDK built into the app:</p>
+<ul>
+  <li><strong>What is sent:</strong> app activity (basic events such as the app being installed and opened) and device identifiers (device information and an app-specific identifier).</li>
+  <li><strong>What is not sent:</strong> your device's advertising identifier. Its collection is turned off, and Fifth does not ask to track you across other companies' apps.</li>
+  <li><strong>Why:</strong> to measure whether our app-install promotions on Facebook and Instagram work, and for basic usage analytics.</li>
+</ul>
+<p>Meta handles this data under its own policy: <a href="https://www.facebook.com/privacy/policy/">facebook.com/privacy/policy</a>.</p>
 
 <h2>What we don't do</h2>
 <ul>
-  <li>We don't collect your name, email, contacts, location, photos or microphone audio.</li>
+  <li>Apart from the Meta data above, we don't collect anything. In particular we never ask for or receive your name, email, contacts, location, photos or microphone audio.</li>
   <li>We don't sell data or show ads.</li>
   <li>We don't run our own servers for the app.</li>
 </ul>
