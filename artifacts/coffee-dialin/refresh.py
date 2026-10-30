@@ -22,8 +22,46 @@ def run(cmd, cwd=None, check=True):
     return r
 
 
+# The page never mentions Robby (2026-10-30: "dont mention me at all. I am the arbiter of
+# dialins"). The shot log keeps its attributions; they are stripped here, on the way out.
+ME = r"Robby"
+SCRUB = [
+    (r"\s*[—-]\s*%s\s+\d{1,2}/\d{1,2}\b" % ME, ""),           # "tasted best — Robby 10/30"
+    (r"\b%s\s+\d{4}-\d{2}-\d{2}:\s*" % ME, ""),               # "Robby 2026-10-30: 165 µm…"
+    (r"\b%s['’]s call[;,]\s*" % ME, ""),                       # "(Robby's call; bitter rule…)"
+    (r",?\s*\b%s did not taste\b" % ME, ""),                   # "Emily made it, Robby did not taste;"
+    (r",?\s*\b%s['’]s call\b" % ME, ""),                       # "(…, Robby's call…)"
+    (r"\b%s:\s*" % ME, ""),                                    # "Robby: wants more clarity"
+    (r"\s*\bper %s\b" % ME, ""),                               # "roaster name per Robby"
+]
+POSSESSIVE = re.compile(r"(^|[.!?]\s+)?\b%s['’]s\s+" % ME)     # "Robby's milk-drink read" → "the …"
+PERSON = re.compile(r"\b(%s|he|him|himself|his)\b" % ME, re.I)
+
+
+def scrub(s):
+    for pat, rep in SCRUB:
+        s = re.sub(pat, rep, s)
+    s = POSSESSIVE.sub(lambda m: (m.group(1) + "The ") if m.group(1) is not None else "the ", s)
+    if PERSON.search(s):  # anything the rules missed: drop the clause that still names him
+        parts = re.split(r"(?<=[.;—])\s+|\s+(?=—)", s)
+        s = " ".join(p for p in parts if not PERSON.search(p))
+    s = re.sub(r"\(\s*\)", "", re.sub(r"\(\s+", "(", s))
+    if s.count("(") > s.count(")"):  # a dropped clause can leave "(reaffirmed 2026-10-11" open
+        s = re.sub(r"\s*\([^()]*$", "", s)
+    return re.sub(r"\s{2,}", " ", s).strip(" ;—")
+
+
+def depersonalize(o):
+    if isinstance(o, dict):
+        return {k: (None if k == "by_whom" and isinstance(v, str) and re.fullmatch(ME, v.strip())
+                    else depersonalize(v)) for k, v in o.items()}
+    if isinstance(o, list):
+        return [depersonalize(v) for v in o]
+    return scrub(o) if isinstance(o, str) else o
+
+
 def main():
-    doc = json.loads(run([DB, 'coffee', 'export']).stdout)
+    doc = depersonalize(json.loads(run([DB, 'coffee', 'export']).stdout))
     os.makedirs(DATA, exist_ok=True)
     body = json.dumps(doc, ensure_ascii=False, indent=1)
     # Publish guard (CISO review 2026-10-30): the export is Robby's Postgres verbatim, so a new field
