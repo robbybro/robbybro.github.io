@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-01T11:51-08:00",
+ "generated_at": "2026-11-01T13:47-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -627,40 +627,40 @@
     "roaster_in_untamped": true,
     "offering_in_untamped": false
    },
-   "shots": 1,
+   "shots": 2,
    "last_shot": {
-    "id": 73,
-    "shot_at": "2026-11-01T11:05:54.333663-08:00",
-    "burrs": null,
-    "microns": 168,
-    "rpm": 1000,
-    "dose_g": 18,
-    "yield_g": 38.4,
-    "time_s": 20.1,
-    "ratio": 2.13,
-    "taste": null,
-    "verdict": "fast (target 30-32 s)",
-    "next_change": "→ 160",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 74,
-    "shot_at": "2026-11-01T11:05:54.462631-08:00",
+    "id": 75,
+    "shot_at": "2026-11-01T13:08:12.361427-08:00",
     "burrs": null,
     "microns": 160,
     "rpm": 1000,
     "dose_g": 18,
-    "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164"
+    "yield_g": 41.2,
+    "time_s": 17.6,
+    "ratio": 2.29,
+    "taste": "a lot of spray",
+    "verdict": "faster than 168 despite finer grind + spray = channeling",
+    "next_change": "fix prep, repeat 160",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 76,
+    "shot_at": "2026-11-01T13:08:20.156098-08:00",
+    "burrs": null,
+    "microns": 160,
+    "rpm": 1000,
+    "dose_g": 18,
+    "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150"
    },
    "queue": [
     {
-     "id": 74,
-     "shot_at": "2026-11-01T11:05:54.462631-08:00",
+     "id": 76,
+     "shot_at": "2026-11-01T13:08:20.156098-08:00",
      "burrs": null,
      "microns": 160,
      "rpm": 1000,
      "dose_g": 18,
-     "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164"
+     "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150"
     }
    ]
   },
@@ -1061,8 +1061,8 @@
  ],
  "shots": [
   {
-   "id": 74,
-   "shot_at": "2026-11-01 11:05:54.462631-08:00",
+   "id": 76,
+   "shot_at": "2026-11-01 13:08:20.156098-08:00",
    "bag": "Perdido Felipe Estela",
    "method": "espresso",
    "status": "queued",
@@ -1075,7 +1075,26 @@
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164",
+   "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 75,
+   "shot_at": "2026-11-01 13:08:12.361427-08:00",
+   "bag": "Perdido Felipe Estela",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 160,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "41.2",
+   "time_s": "17.6",
+   "ratio": "2.29",
+   "taste": "a lot of spray",
+   "verdict": "faster than 168 despite finer grind + spray = channeling",
+   "next_change": "fix prep, repeat 160",
    "by_whom": null,
    "data": {}
   },
@@ -2268,10 +2287,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-01 11:05:54.333663-08:00",
-  "shots_7d": 6,
-  "shots_30d": 25,
-  "shots_total": 47,
+  "last_shot_at": "2026-11-01 13:08:12.361427-08:00",
+  "shots_7d": 7,
+  "shots_30d": 26,
+  "shots_total": 48,
   "queued": 6,
   "bags_settled": 3,
   "bags_dialing": 10,
