@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-01T00:50-07:00",
+ "generated_at": "2026-11-01T06:48-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -2247,8 +2247,8 @@
    "cadence_days": 90,
    "days_ago": 47
   },
-  "machine_shots_7d": 21,
-  "machine_telemetry_at": "2026-10-31T17:41:24+00:00"
+  "machine_shots_7d": 23,
+  "machine_telemetry_at": "2026-11-01T14:18:44+00:00"
  },
  "origin": {
   "provenance": [
@@ -2389,8 +2389,8 @@
     "lat": 45.5202,
     "lng": -122.6742,
     "website": "https://proudmarycoffee.com",
-    "offerings": 36,
-    "producers": 19,
+    "offerings": 34,
+    "producers": 17,
     "in_my_bags": true
    },
    {
@@ -2422,8 +2422,8 @@
     "lat": null,
     "lng": null,
     "website": "https://enjoylunacoffee.com",
-    "offerings": 1,
-    "producers": 1,
+    "offerings": 3,
+    "producers": 3,
     "in_my_bags": true
    },
    {
@@ -2433,19 +2433,8 @@
     "lat": 25.2048,
     "lng": 55.2708,
     "website": "https://archerscoffee.com",
-    "offerings": 215,
-    "producers": 101,
-    "in_my_bags": false
-   },
-   {
-    "name": "Coffee Collective",
-    "city": "Copenhagen",
-    "country": "Denmark",
-    "lat": 55.6828,
-    "lng": 12.5357,
-    "website": "https://coffeecollective.dk",
-    "offerings": 61,
-    "producers": 28,
+    "offerings": 217,
+    "producers": 102,
     "in_my_bags": false
    },
    {
@@ -2455,8 +2444,19 @@
     "lat": 36.332,
     "lng": -94.1185,
     "website": "https://onyxcoffeelab.com",
-    "offerings": 54,
+    "offerings": 62,
     "producers": 23,
+    "in_my_bags": false
+   },
+   {
+    "name": "Coffee Collective",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6828,
+    "lng": 12.5357,
+    "website": "https://coffeecollective.dk",
+    "offerings": 60,
+    "producers": 27,
     "in_my_bags": false
    },
    {
@@ -2467,7 +2467,7 @@
     "lng": -0.1156,
     "website": "https://assemblycoffee.co.uk",
     "offerings": 44,
-    "producers": 35,
+    "producers": 34,
     "in_my_bags": false
    },
    {
@@ -2477,7 +2477,7 @@
     "lat": 30.2672,
     "lng": -97.7431,
     "website": "https://www.barrettscoffee.com",
-    "offerings": 39,
+    "offerings": 41,
     "producers": 0,
     "in_my_bags": false
    },
@@ -2504,6 +2504,17 @@
     "in_my_bags": false
    },
    {
+    "name": "Tim Wendelboe",
+    "city": "Oslo",
+    "country": "Norway",
+    "lat": 59.9227,
+    "lng": 10.7527,
+    "website": "https://timwendelboe.no",
+    "offerings": 27,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
     "name": "Bows & Arrows",
     "city": "Victoria, BC",
     "country": "Canada",
@@ -2526,25 +2537,14 @@
     "in_my_bags": false
    },
    {
-    "name": "Tim Wendelboe",
-    "city": "Oslo",
-    "country": "Norway",
-    "lat": 59.9227,
-    "lng": 10.7527,
-    "website": "https://timwendelboe.no",
-    "offerings": 24,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
     "name": "Hydrangea Coffee Roasters",
     "city": "Petaluma, CA",
     "country": "USA",
     "lat": 38.2324,
     "lng": -122.6367,
     "website": "https://hydrangea.coffee",
-    "offerings": 23,
-    "producers": 10,
+    "offerings": 21,
+    "producers": 12,
     "in_my_bags": false
    },
    {
@@ -2556,17 +2556,6 @@
     "website": "https://www.friedhats.com",
     "offerings": 20,
     "producers": 19,
-    "in_my_bags": false
-   },
-   {
-    "name": "Black & White Coffee Roasters",
-    "city": "Wake Forest, NC",
-    "country": "USA",
-    "lat": 35.9799,
-    "lng": -78.5097,
-    "website": "https://www.blackwhiteroasters.com",
-    "offerings": 18,
-    "producers": 14,
     "in_my_bags": false
    },
    {
@@ -2592,6 +2581,39 @@
     "in_my_bags": false
    },
    {
+    "name": "POMA Coffee Research Lab",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6761,
+    "lng": 12.5683,
+    "website": "https://www.pomacoffee.com",
+    "offerings": 17,
+    "producers": 1,
+    "in_my_bags": false
+   },
+   {
+    "name": "Black & White Coffee Roasters",
+    "city": "Wake Forest, NC",
+    "country": "USA",
+    "lat": 35.9799,
+    "lng": -78.5097,
+    "website": "https://www.blackwhiteroasters.com",
+    "offerings": 17,
+    "producers": 14,
+    "in_my_bags": false
+   },
+   {
+    "name": "September Coffee",
+    "city": "Stittsville (Ottawa), ON",
+    "country": "Canada",
+    "lat": 45.2743576,
+    "lng": -75.9019097,
+    "website": "https://september.coffee",
+    "offerings": 16,
+    "producers": 7,
+    "in_my_bags": false
+   },
+   {
     "name": "Prolog Coffee",
     "city": "Copenhagen",
     "country": "Denmark",
@@ -2603,25 +2625,14 @@
     "in_my_bags": false
    },
    {
-    "name": "POMA Coffee Research Lab",
-    "city": "Copenhagen",
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
     "country": "Denmark",
-    "lat": 55.6761,
-    "lng": 12.5683,
-    "website": "https://www.pomacoffee.com",
-    "offerings": 16,
-    "producers": 1,
-    "in_my_bags": false
-   },
-   {
-    "name": "September Coffee",
-    "city": "Stittsville (Ottawa), ON",
-    "country": "Canada",
-    "lat": 45.2743576,
-    "lng": -75.9019097,
-    "website": "https://september.coffee",
-    "offerings": 16,
-    "producers": 8,
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 11,
+    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -2636,6 +2647,17 @@
     "in_my_bags": false
    },
    {
+    "name": "Heart Coffee Roasters",
+    "city": "Portland, OR",
+    "country": "USA",
+    "lat": 45.5231,
+    "lng": -122.6765,
+    "website": "https://www.heartroasters.com",
+    "offerings": 10,
+    "producers": 5,
+    "in_my_bags": false
+   },
+   {
     "name": "Merit Coffee",
     "city": "San Antonio, TX",
     "country": "USA",
@@ -2647,36 +2669,14 @@
     "in_my_bags": false
    },
    {
-    "name": "Heart Coffee Roasters",
-    "city": "Portland, OR",
-    "country": "USA",
-    "lat": 45.5231,
-    "lng": -122.6765,
-    "website": "https://www.heartroasters.com",
-    "offerings": 9,
-    "producers": 4,
-    "in_my_bags": false
-   },
-   {
-    "name": "La Cabra",
-    "city": "Copenhagen (HQ Aarhus) + NYC",
-    "country": "Denmark",
-    "lat": 56.1572,
-    "lng": 10.2107,
-    "website": "https://www.lacabra.dk",
-    "offerings": 8,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
     "name": "SEY",
     "city": "Brooklyn, NY",
     "country": "USA",
     "lat": 40.7057,
     "lng": -73.9204,
     "website": "https://www.seycoffee.com",
-    "offerings": 7,
-    "producers": 6,
+    "offerings": 5,
+    "producers": 4,
     "in_my_bags": false
    },
    {
@@ -2735,12 +2735,23 @@
     "in_my_bags": false
    },
    {
-    "name": "Coffee Project NY",
-    "city": "New York, NY",
+    "name": "Botz Coffee",
+    "city": "San Antonio, TX",
     "country": "USA",
-    "lat": 40.7264,
-    "lng": -73.9878,
-    "website": "https://coffeeprojectny.com",
+    "lat": 29.4241,
+    "lng": -98.4936,
+    "website": "https://botz-coffee.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "Perdido Coffee",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": null,
+    "lng": null,
+    "website": null,
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2779,23 +2790,12 @@
     "in_my_bags": false
    },
    {
-    "name": "Perdido Coffee",
-    "city": "San Antonio, TX",
+    "name": "Coffee Project NY",
+    "city": "New York, NY",
     "country": "USA",
-    "lat": null,
-    "lng": null,
-    "website": null,
-    "offerings": 0,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
-    "name": "Botz Coffee",
-    "city": "San Antonio, TX",
-    "country": "USA",
-    "lat": 29.4241,
-    "lng": -98.4936,
-    "website": "https://botz-coffee.com",
+    "lat": 40.7264,
+    "lng": -73.9878,
+    "website": "https://coffeeprojectny.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -2826,23 +2826,23 @@
   "countries": [
    {
     "country": "Colombia",
-    "producers": 94,
+    "producers": 93,
     "roasters": 19,
-    "offerings": 124,
+    "offerings": 122,
     "my_bags": 1
    },
    {
     "country": "Panama",
-    "producers": 64,
+    "producers": 65,
     "roasters": 7,
     "offerings": 134,
     "my_bags": 0
    },
    {
     "country": "Ethiopia",
-    "producers": 59,
-    "roasters": 19,
-    "offerings": 105,
+    "producers": 57,
+    "roasters": 18,
+    "offerings": 104,
     "my_bags": 1
    },
    {
@@ -2883,7 +2883,7 @@
    {
     "country": "Honduras",
     "producers": 10,
-    "roasters": 6,
+    "roasters": 7,
     "offerings": 12,
     "my_bags": 0
    },
@@ -3112,7 +3112,7 @@
     "country": "Ecuador",
     "region": "Imababura",
     "roasters": 5,
-    "offerings": 27,
+    "offerings": 28,
     "roasted_by": [
      "Archers Coffee",
      "Black & White Coffee Roasters",
@@ -3566,16 +3566,16 @@
   ],
   "totals": {
    "roasters": 40,
-   "producers": 2059,
-   "offerings": 4217,
-   "offerings_available": 817,
-   "offerings_with_producer": 547,
-   "last_release": "2026-10-29 08:49:42-07:00"
+   "producers": 2064,
+   "offerings": 4248,
+   "offerings_available": 831,
+   "offerings_with_producer": 544,
+   "last_release": "2026-10-30 08:37:46-07:00"
   },
   "last_scrape": {
-   "fired_at": "2026-10-29 12:36:31.764423-07:00",
+   "fired_at": "2026-11-01 06:42:21.061928-08:00",
    "status": "ok",
-   "summary": "refresh complete 2026-10-29T12:38"
+   "summary": "refresh complete 2026-11-01T06:43"
   }
  }
 }
