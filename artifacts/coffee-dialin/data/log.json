@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-01T06:48-08:00",
+ "generated_at": "2026-11-01T11:51-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -627,26 +627,40 @@
     "roaster_in_untamped": true,
     "offering_in_untamped": false
    },
-   "shots": 0,
-   "last_shot": null,
-   "queued": {
-    "id": 60,
-    "shot_at": "2026-10-28T06:20:44.779563-07:00",
+   "shots": 1,
+   "last_shot": {
+    "id": 73,
+    "shot_at": "2026-11-01T11:05:54.333663-08:00",
     "burrs": null,
     "microns": 168,
     "rpm": 1000,
-    "dose_g": null,
-    "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175"
+    "dose_g": 18,
+    "yield_g": 38.4,
+    "time_s": 20.1,
+    "ratio": 2.13,
+    "taste": null,
+    "verdict": "fast (target 30-32 s)",
+    "next_change": "→ 160",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 74,
+    "shot_at": "2026-11-01T11:05:54.462631-08:00",
+    "burrs": null,
+    "microns": 160,
+    "rpm": 1000,
+    "dose_g": 18,
+    "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164"
    },
    "queue": [
     {
-     "id": 60,
-     "shot_at": "2026-10-28T06:20:44.779563-07:00",
+     "id": 74,
+     "shot_at": "2026-11-01T11:05:54.462631-08:00",
      "burrs": null,
-     "microns": 168,
+     "microns": 160,
      "rpm": 1000,
-     "dose_g": null,
-     "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175"
+     "dose_g": 18,
+     "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164"
     }
    ]
   },
@@ -1047,6 +1061,44 @@
  ],
  "shots": [
   {
+   "id": 74,
+   "shot_at": "2026-11-01 11:05:54.462631-08:00",
+   "bag": "Perdido Felipe Estela",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": null,
+   "microns": 160,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "18 g in, cut at 34, aim 30-32 s total. 168 ran 38.4 g in 20.1 s (gusher) so finer per the first-shot plan; if still under 27 s go 152, if it drags go 164",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 73,
+   "shot_at": "2026-11-01 11:05:54.333663-08:00",
+   "bag": "Perdido Felipe Estela",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 168,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "38.4",
+   "time_s": "20.1",
+   "ratio": "2.13",
+   "taste": null,
+   "verdict": "fast (target 30-32 s)",
+   "next_change": "→ 160",
+   "by_whom": null,
+   "data": {}
+  },
+  {
    "id": 72,
    "shot_at": "2026-10-30 07:00:10.719365-07:00",
    "bag": "GR/Hyacinth 50:50",
@@ -1176,25 +1228,6 @@
    "taste": null,
    "verdict": "gusher — 15.6 s total (~10 s flow), way too fast",
    "next_change": "→ 155 @ 1200",
-   "by_whom": null,
-   "data": {}
-  },
-  {
-   "id": 60,
-   "shot_at": "2026-10-28 06:20:44.779563-07:00",
-   "bag": "Perdido Felipe Estela",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": null,
-   "microns": 168,
-   "rpm": 1000,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "first shot: 18 g in, cut at 34, aim 30–32 s total. Light washed prior 165–170 @ 1000; Luna Victor Florez (also washed, light) hit 32.4 s at 175 @ 1000 first try, so if this gushes go 160; if it drags go 175",
    "by_whom": null,
    "data": {}
   },
@@ -2235,10 +2268,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-10-30 06:49:24.898864-07:00",
-  "shots_7d": 5,
-  "shots_30d": 24,
-  "shots_total": 46,
+  "last_shot_at": "2026-11-01 11:05:54.333663-08:00",
+  "shots_7d": 6,
+  "shots_30d": 25,
+  "shots_total": 47,
   "queued": 6,
   "bags_settled": 3,
   "bags_dialing": 10,
