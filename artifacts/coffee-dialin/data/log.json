@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-02T06:52-08:00",
+ "generated_at": "2026-11-02T13:49-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -627,40 +627,40 @@
     "roaster_in_untamped": true,
     "offering_in_untamped": false
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 75,
-    "shot_at": "2026-11-01T13:08:12.361427-08:00",
+    "id": 77,
+    "shot_at": "2026-11-02T13:46:17.161143-08:00",
     "burrs": null,
     "microns": 160,
     "rpm": 1000,
     "dose_g": 18,
-    "yield_g": 41.2,
-    "time_s": 17.6,
-    "ratio": 2.29,
-    "taste": "a lot of spray",
-    "verdict": "faster than 168 despite finer grind + spray = channeling",
-    "next_change": "fix prep, repeat 160",
+    "yield_g": 40,
+    "time_s": 23.8,
+    "ratio": 2.22,
+    "taste": null,
+    "verdict": "fast; under 27 s on a repeat at 160",
+    "next_change": "→ 150",
     "by_whom": null
    },
    "queued": {
-    "id": 76,
-    "shot_at": "2026-11-01T13:08:20.156098-08:00",
+    "id": 78,
+    "shot_at": "2026-11-02T13:46:17.287175-08:00",
     "burrs": null,
-    "microns": 160,
+    "microns": 150,
     "rpm": 1000,
     "dose_g": 18,
-    "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150"
+    "next_change": "150 @ 1000, 18g → 40g, cut 34, target 30–35 s. 160 repeated at 23.8 s so the grind moves."
    },
    "queue": [
     {
-     "id": 76,
-     "shot_at": "2026-11-01T13:08:20.156098-08:00",
+     "id": 78,
+     "shot_at": "2026-11-02T13:46:17.287175-08:00",
      "burrs": null,
-     "microns": 160,
+     "microns": 150,
      "rpm": 1000,
      "dose_g": 18,
-     "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150"
+     "next_change": "150 @ 1000, 18g → 40g, cut 34, target 30–35 s. 160 repeated at 23.8 s so the grind moves."
     }
    ]
   },
@@ -1061,13 +1061,13 @@
  ],
  "shots": [
   {
-   "id": 76,
-   "shot_at": "2026-11-01 13:08:20.156098-08:00",
+   "id": 78,
+   "shot_at": "2026-11-02 13:46:17.287175-08:00",
    "bag": "Perdido Felipe Estela",
    "method": "espresso",
    "status": "queued",
    "burrs": null,
-   "microns": 160,
+   "microns": 150,
    "rpm": 1000,
    "dose_g": "18",
    "yield_g": null,
@@ -1075,7 +1075,26 @@
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "REPEAT 160, dial untouched: finer ran FASTER (17.6 s vs 20.1 s at 168) with spray = channeling, not grind. Full prep chain: RDT 1-2 sprays max, shake, orbital raker, tamp x2 with the twist at top, cut at 34. If a clean puck at 160 still runs under 27 s, then 150",
+   "next_change": "150 @ 1000, 18g → 40g, cut 34, target 30–35 s. 160 repeated at 23.8 s so the grind moves.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 77,
+   "shot_at": "2026-11-02 13:46:17.161143-08:00",
+   "bag": "Perdido Felipe Estela",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": null,
+   "microns": 160,
+   "rpm": 1000,
+   "dose_g": "18",
+   "yield_g": "40",
+   "time_s": "23.8",
+   "ratio": "2.22",
+   "taste": null,
+   "verdict": "fast; under 27 s on a repeat at 160",
+   "next_change": "→ 150",
    "by_whom": null,
    "data": {}
   },
@@ -2287,10 +2306,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-01 13:08:12.361427-08:00",
-  "shots_7d": 7,
-  "shots_30d": 26,
-  "shots_total": 48,
+  "last_shot_at": "2026-11-02 13:46:17.161143-08:00",
+  "shots_7d": 8,
+  "shots_30d": 27,
+  "shots_total": 49,
   "queued": 6,
   "bags_settled": 3,
   "bags_dialing": 10,
