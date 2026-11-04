@@ -40,12 +40,14 @@
   .hand { font-family: "Gochi Hand", cursive; }
 
   /* header */
-  header { padding: 20px 0 10px; display: grid; gap: 18px; }
+  header { padding: 0 0 10px; display: grid; gap: 18px; }
   .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
   .topbar a { text-decoration: none; color: var(--olive); border-bottom: 2px solid var(--olive); padding-bottom: 1px; }
   .topbar a:hover { color: var(--persimmon); border-color: var(--persimmon); }
-  .topbar a { flex: 0 1 auto; }
-  .mark { flex: 0 0 auto; display: block; width: clamp(120px, 34vw, 200px); aspect-ratio: 356 / 260; background: var(--olive); -webkit-mask: url("mark.svg") center / contain no-repeat; mask: url("mark.svg") center / contain no-repeat; }
+  .brand { position: sticky; top: 0; z-index: 10; display: flex; justify-content: center; padding: 10px 0 6px; margin: 0 -16px; background: var(--butter); }
+  .mark { display: block; width: clamp(120px, 34vw, 200px); aspect-ratio: 356 / 260; background: var(--olive); -webkit-mask: url("mark.svg") center / contain no-repeat; mask: url("mark.svg") center / contain no-repeat; transition: width .3s ease; }
+  .brand.small { box-shadow: 0 1px 0 var(--rule); }
+  .brand.small .mark { width: clamp(68px, 18vw, 92px); }
   h1 { margin: 8px 0 0; font-size: clamp(48px, 12vw, 124px); }
   h1 .tilt { display: inline-block; color: var(--persimmon); transform: rotate(-2.5deg); transform-origin: left bottom; }
   .sub { font-style: italic; color: var(--muted); font-size: 15px; }
@@ -95,16 +97,19 @@
   footer { padding: 50px 0 60px; display: grid; gap: 10px; text-align: center; font-size: 14px; color: var(--muted); }
   footer .back { font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .06em; font-size: 20px; text-decoration: none; color: var(--olive); }
   footer .back:hover { color: var(--persimmon); }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .mark { transition: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
 
+  <div class="brand" id="brand">
+    <span class="mark" role="img" aria-label="Emily &amp; Robby 2027 — line drawing of the two of us riding bikes"></span>
+  </div>
+
 <header>
   <div class="topbar">
     <a href="https://emilyandrobby.wedding">← back to the wedding site</a>
-    <span class="mark" role="img" aria-label="Emily &amp; Robby 2027 — line drawing of the two of us riding bikes"></span>
   </div>
   <div>
     <h1 class="display">Extra <span class="tilt">Adventures</span></h1>
@@ -279,5 +284,17 @@
 </footer>
 
 </div>
+<script>
+  (function () {
+    var brand = document.getElementById("brand"), small = false;
+    function onScroll() {
+      var y = window.scrollY || 0;
+      if (!small && y > 140) { small = true; brand.classList.add("small"); }
+      else if (small && y < 40) { small = false; brand.classList.remove("small"); }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
 </body>
 </html>
