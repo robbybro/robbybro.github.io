@@ -8,6 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F2E6C3">
+<meta name="color-scheme" content="light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Gochi+Hand&display=swap">
@@ -16,13 +17,6 @@
     --butter: #F2E6C3; --olive: #77722E; --olive-deep: #5C5822; --ink: #302F1A; --muted: #6B6740;
     --honey: #E6B55D; --peri: #92AAC3; --peri-deep: #3B6186; --persimmon: #D25030; --paper: #FFFDF7;
     --rule: rgba(48,47,26,.16); --shadow: 0 1px 2px rgba(48,47,26,.12), 0 0 0 1px rgba(48,47,26,.08);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --butter: #24230F; --olive: #C9C27A; --olive-deep: #E0D99A; --ink: #F2E6C3; --muted: #BDB58F;
-      --paper: #302F1A; --rule: rgba(242,230,195,.18); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(242,230,195,.1);
-      --peri-deep: #92AAC3;
-    }
   }
   :root[data-theme="dark"] {
     --butter: #24230F; --olive: #C9C27A; --olive-deep: #E0D99A; --ink: #F2E6C3; --muted: #BDB58F;
@@ -75,9 +69,10 @@
   .card .vibe { font-style: italic; color: var(--muted); font-size: 15px; }
   .pill { justify-self: start; font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; text-decoration: none; color: var(--ink); background: var(--honey); padding: 5px 12px; border-radius: 999px; }
   .pill:hover { background: var(--persimmon); color: #fff; }
-  ol.chain { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; font-size: 15px; line-height: 1.5; }
-  ol.chain li { display: inline; }
-  ol.chain li + li::before { content: "→"; color: var(--persimmon); font-family: "Gochi Hand", cursive; font-size: 20px; margin: 0 .35em 0 .1em; line-height: 1; }
+  ol.chain { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 15px; line-height: 1.5; }
+  ol.chain li { padding-left: 1.5em; position: relative; }
+  ol.chain li::before { content: "→"; position: absolute; left: 0; top: -.05em; color: var(--persimmon); font-family: "Gochi Hand", cursive; font-size: 20px; line-height: 1.3; }
+  ol.chain li:first-child::before { content: "↓"; }
 
   /* photos */
   .photo { margin: 0; display: grid; gap: 4px; }
