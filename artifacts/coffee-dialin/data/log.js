@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-11-04T00:49-08:00",
+ "generated_at": "2026-11-04T08:50-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -564,26 +564,8 @@ window.DIALIN = {
     "next_change": "hold 133 @ 1000; taste decides (sour → 130, bitter → 136)",
     "by_whom": null
    },
-   "queued": {
-    "id": 71,
-    "shot_at": "2026-10-30T06:49:25.021035-07:00",
-    "burrs": null,
-    "microns": 133,
-    "rpm": 1000,
-    "dose_g": null,
-    "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30."
-   },
-   "queue": [
-    {
-     "id": 71,
-     "shot_at": "2026-10-30T06:49:25.021035-07:00",
-     "burrs": null,
-     "microns": 133,
-     "rpm": 1000,
-     "dose_g": null,
-     "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30."
-    }
-   ]
+   "queued": null,
+   "queue": []
   },
   {
    "id": 15,
@@ -1152,25 +1134,6 @@ window.DIALIN = {
    "taste": null,
    "verdict": null,
    "next_change": "18 g in (9 g each), cut at 34, aim 30–32 s total. 165 @ 1200 is the right zone. If fast → 160; if slow → 170.",
-   "by_whom": null,
-   "data": {}
-  },
-  {
-   "id": 71,
-   "shot_at": "2026-10-30 06:49:25.021035-07:00",
-   "bag": "DAC Booze Cruise",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": null,
-   "microns": 133,
-   "rpm": 1000,
-   "dose_g": null,
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "18 g in, cut at 34, aim 30–32 s. Hold here. If it tastes sour/thin → 130; if bitter/drying → 136. Hit 29.4 s at 133 on 10/30.",
    "by_whom": null,
    "data": {}
   },
@@ -2307,10 +2270,10 @@ window.DIALIN = {
  ],
  "health": {
   "last_shot_at": "2026-11-02 13:46:17.161143-08:00",
-  "shots_7d": 8,
+  "shots_7d": 7,
   "shots_30d": 27,
   "shots_total": 49,
-  "queued": 6,
+  "queued": 5,
   "bags_settled": 3,
   "bags_dialing": 10,
   "backflush": {
