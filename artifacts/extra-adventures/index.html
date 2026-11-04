@@ -39,16 +39,16 @@
   .display { font-family: "Londrina Solid", "Rubik", system-ui, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .95; color: var(--olive); }
   .hand { font-family: "Gochi Hand", cursive; }
 
-  /* header */
-  header { padding: 0 0 10px; display: grid; gap: 18px; }
-  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
-  .topbar a { text-decoration: none; color: var(--olive); border-bottom: 2px solid var(--olive); padding-bottom: 1px; }
-  .topbar a:hover { color: var(--persimmon); border-color: var(--persimmon); }
-  .brand { position: sticky; top: 0; z-index: 10; display: flex; justify-content: center; padding: 10px 0 6px; margin: 0 -16px; background: var(--butter); }
-  .mark { display: block; width: clamp(120px, 34vw, 200px); aspect-ratio: 356 / 260; color: var(--olive); overflow: visible; transition: width .3s ease, transform .2s ease; transform-origin: 50% 70%; }
+  /* floating header: back link, title, bikes */
+  .brand { position: sticky; top: 0; z-index: 10; margin: 0 -16px; padding: 8px 16px 6px; background: var(--butter); }
   .brand.small { box-shadow: 0 1px 0 var(--rule); }
-  .brand.small .mark { width: clamp(68px, 18vw, 92px); }
-  h1 { margin: 8px 0 0; font-size: clamp(48px, 12vw, 124px); }
+  .brand .back { display: inline-block; font-size: 12px; line-height: 1.2; text-decoration: none; color: var(--olive); border-bottom: 1px solid var(--olive); padding-bottom: 1px; }
+  .brand .back:hover { color: var(--persimmon); border-color: var(--persimmon); }
+  .stage { position: relative; margin-top: 4px; }
+  .stage h1 { position: absolute; left: 0; top: 0; margin: 0; white-space: nowrap; line-height: .95; font-size: 124px; }
+  .bikes { position: absolute; left: 0; top: 0; width: 200px; }
+  .bikes svg.mark { display: block; width: 100%; height: auto; color: var(--olive); overflow: visible; transform-origin: 50% 70%; }
+  header { padding: 14px 0 10px; display: grid; gap: 18px; }
   h1 .tilt { display: inline-block; color: var(--persimmon); transform: rotate(-2.5deg); transform-origin: left bottom; }
   .sub { font-style: italic; color: var(--muted); font-size: 15px; }
   .intro { display: grid; gap: 12px; max-width: 62ch; font-size: 17px; }
@@ -104,6 +104,10 @@
 <div class="wrap">
 
   <div class="brand" id="brand">
+    <a class="back" href="https://emilyandrobby.wedding">← back to the wedding site</a>
+    <div class="stage" id="stage">
+      <h1 class="display" id="title">Extra <span class="tilt">Adventures</span></h1>
+      <div class="bikes" id="bikes">
 <!-- mark:start -->
 <svg class="mark" viewBox="38 112 356 260" role="img" aria-label="Emily &amp; Robby 2027 — line drawing of the two of us riding bikes">
 <g class="spokes" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round"><g id="w1" data-cx="78.4" data-cy="286.6" data-r="39"><line x1="78.4" y1="286.6" x2="108.0" y2="295.8"/><line x1="78.4" y1="286.6" x2="55.7" y2="307.7"/><line x1="78.4" y1="286.6" x2="71.5" y2="256.4"/><circle cx="78.4" cy="286.6" r="2.4"/></g><g id="w2" data-cx="185.8" data-cy="286.9" data-r="41"><line x1="185.8" y1="286.9" x2="217.3" y2="296.7"/><line x1="185.8" y1="286.9" x2="161.6" y2="309.3"/><line x1="185.8" y1="286.9" x2="178.5" y2="254.7"/><circle cx="185.8" cy="286.9" r="2.4"/></g><g id="w3" data-cx="237.2" data-cy="285.7" data-r="40"><line x1="237.2" y1="285.7" x2="267.8" y2="295.2"/><line x1="237.2" y1="285.7" x2="213.7" y2="307.5"/><line x1="237.2" y1="285.7" x2="230.1" y2="254.5"/><circle cx="237.2" cy="285.7" r="2.4"/></g><g id="w4" data-cx="351.3" data-cy="285.3" data-r="40"><line x1="351.3" y1="285.3" x2="381.9" y2="294.8"/><line x1="351.3" y1="285.3" x2="327.8" y2="307.1"/><line x1="351.3" y1="285.3" x2="344.2" y2="254.1"/><circle cx="351.3" cy="285.3" r="2.4"/></g></g>
@@ -732,14 +736,12 @@
 		c-0.307-0.09-0.391-0.371-0.488-0.509c-0.15-0.214,0.101-0.844,0.395-0.716l1.812,0.788L149.613,136.226z"/></g>
 </svg>
 <!-- mark:end -->
+      </div>
+    </div>
   </div>
 
 <header>
-  <div class="topbar">
-    <a href="https://emilyandrobby.wedding">← back to the wedding site</a>
-  </div>
   <div>
-    <h1 class="display">Extra <span class="tilt">Adventures</span></h1>
     <p class="sub">A guest guide to Seattle and the PNW · July 30 – August 1, 2027 · Bainbridge Island, WA</p>
   </div>
   <div class="intro">
@@ -913,34 +915,54 @@
 </div>
 <script>
   (function () {
-    var brand = document.getElementById("brand"), small = false;
-    var svg = brand.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g"));
+    var brand = document.getElementById("brand"), stage = document.getElementById("stage"),
+        title = document.getElementById("title"), bikes = document.getElementById("bikes"),
+        svg = bikes.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var lastY = window.scrollY || 0, target = 0, shown = 0, vel = 0, raf = 0;
-    function draw(dist) {
+    var RANGE = 260, GAP = 12, SMALL_FS = 22;
+    var lastY = window.scrollY || 0, dist = 0, shownDist = 0, vel = 0, pTarget = 0, pShown = 0, raf = 0;
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function layout(p) {
+      var vw = window.innerWidth, bigFS = clamp(0.105 * vw, 34, 124), bigW = clamp(0.34 * vw, 120, 200), smallW = clamp(0.2 * vw, 72, 100);
+      var fs = lerp(bigFS, SMALL_FS, p);
+      title.style.fontSize = fs.toFixed(2) + "px";
+      var tw = title.offsetWidth, th = title.offsetHeight;
+      var bw = lerp(bigW, smallW, p), bh = bw * 260 / 356;
+      var titleTop0 = bh - th * 0.12, H0 = titleTop0 + th;          // bikes riding on top of the letters
+      var H1 = Math.max(th, bh), titleTop1 = (H1 - th) / 2, bikesTop1 = (H1 - bh) / 2;   // bikes beside the small title
+      stage.style.height = lerp(H0, H1, p).toFixed(1) + "px";
+      title.style.top = lerp(titleTop0, titleTop1, p).toFixed(1) + "px";
+      bikes.style.width = bw.toFixed(1) + "px";
+      bikes.style.top = lerp(0, bikesTop1, p).toFixed(1) + "px";
+      bikes.style.left = lerp(tw * 0.06, tw + GAP, p).toFixed(1) + "px";
+      if (p > 0.98) brand.classList.add("small"); else brand.classList.remove("small");
+    }
+    function spin(d) {
       var pxPerUnit = svg.clientWidth / 356 || 0.5;
       wheels.forEach(function (w) {
-        var deg = dist / (w.dataset.r * pxPerUnit) * 180 / Math.PI;
+        var deg = d / (w.dataset.r * pxPerUnit) * 180 / Math.PI;
         w.setAttribute("transform", "rotate(" + deg.toFixed(2) + " " + w.dataset.cx + " " + w.dataset.cy + ")");
       });
     }
     function frame() {
-      shown += (target - shown) * 0.18; vel *= 0.85;
-      if (Math.abs(target - shown) < 0.05) shown = target;
-      draw(shown);
-      svg.style.transform = "rotate(" + (-Math.max(-4, Math.min(4, vel * 0.12))).toFixed(2) + "deg)";
-      raf = (shown !== target || Math.abs(vel) > 0.1) ? requestAnimationFrame(frame) : 0;
+      pShown += (pTarget - pShown) * 0.2; if (Math.abs(pTarget - pShown) < 0.002) pShown = pTarget;
+      shownDist += (dist - shownDist) * 0.18; if (Math.abs(dist - shownDist) < 0.05) shownDist = dist;
+      vel *= 0.85;
+      layout(pShown); spin(shownDist);
+      svg.style.transform = "rotate(" + (-clamp(vel * 0.12, -4, 4)).toFixed(2) + "deg)";
+      raf = (pShown !== pTarget || shownDist !== dist || Math.abs(vel) > 0.1) ? requestAnimationFrame(frame) : 0;
     }
     function onScroll() {
       var y = window.scrollY || 0, dy = y - lastY; lastY = y;
-      if (!small && y > 140) { small = true; brand.classList.add("small"); }
-      else if (small && y < 40) { small = false; brand.classList.remove("small"); }
-      if (reduce) return;
-      target += dy; vel += (dy - vel) * 0.5;
+      pTarget = clamp(y / RANGE, 0, 1); dist += dy;
+      if (reduce) { pShown = pTarget; shownDist = dist; layout(pShown); spin(shownDist); return; }
+      vel += (dy - vel) * 0.5;
       if (!raf) raf = requestAnimationFrame(frame);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    window.addEventListener("resize", function () { layout(pShown); }, { passive: true });
+    layout(0); onScroll();
   })();
 </script>
 </body>
