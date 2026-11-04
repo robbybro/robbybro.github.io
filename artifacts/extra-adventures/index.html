@@ -24,7 +24,7 @@
     --peri-deep: #92AAC3;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; overflow-x: clip; }
+  html { scroll-behavior: smooth; overflow-x: clip; overflow-anchor: none; }
   body { margin: 0; background: var(--butter); color: var(--ink); font-family: "Libre Baskerville", Georgia, serif; font-size: 16px; line-height: 1.6; padding-inline: 16px; -webkit-font-smoothing: antialiased; }
   a { color: var(--olive-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover { color: var(--persimmon); }
@@ -39,7 +39,7 @@
   .display { font-family: "Londrina Solid", "Rubik", system-ui, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .95; color: var(--olive); }
   .hand { font-family: "Gochi Hand", cursive; }
 
-  /* header: normal flow, fixed height; the stage inside parallaxes as the page scrolls */
+  /* header: normal flow. While the intro animation runs it grows by exactly the scrolled distance, so the page below stays put; the stage is anchored to its bottom edge. */
   .brand { position: relative; padding: 8px 0 6px; }
   .brand .back { position: absolute; left: 0; top: 0; font-size: 12px; line-height: 1.2; text-decoration: none; color: var(--olive); border-bottom: 1px solid var(--olive); padding-bottom: 1px; }
   .brand .back:hover { color: var(--persimmon); border-color: var(--persimmon); }
@@ -103,8 +103,8 @@
 <div class="wrap">
 
   <div class="brand" id="brand">
+    <a class="back" id="back" href="https://emilyandrobby.wedding">← back to the wedding site</a>
     <div class="stage" id="stage">
-      <a class="back" href="https://emilyandrobby.wedding">← back to the wedding site</a>
       <h1 class="display" id="title">Extra <span class="tilt">Adventures</span></h1>
       <div class="bikes" id="bikes">
 <!-- mark:start -->
@@ -861,17 +861,17 @@
 </div>
 <script>
   (function () {
-    var brand = document.getElementById("brand"), stage = document.getElementById("stage"),
+    var brand = document.getElementById("brand"), back = document.getElementById("back"), stage = document.getElementById("stage"),
         title = document.getElementById("title"), bikes = document.getElementById("bikes"),
         svg = bikes.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var GAP = 12, SMALL_FS = 22, BACK_H = 22, ASPECT = 222 / 356;
-    var lastY = window.scrollY || 0, dist = 0, shownDist = 0, vel = 0, pTarget = 0, pShown = 0, raf = 0, range = 1;
+    var lastY = window.scrollY || 0, dist = 0, shownDist = 0, vel = 0, pTarget = 0, pShown = 0, raf = 0, range = 300, base = 0;
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function sizes() {
       var vw = window.innerWidth;
-      return { bigFS: clamp(0.105 * vw, 34, 124), bigW: clamp(0.34 * vw, 120, 200), smallW: clamp(0.2 * vw, 72, 100) };
+      return { bigFS: clamp(0.105 * vw, 34, 124), bigW: clamp(0.34 * vw, 120, 200), smallW: clamp(0.2 * vw, 72, 100), range: vw < 600 ? 240 : 320 };
     }
     function metrics(p, z) {
       // bikes roll left-to-right along the top of the letters (0 → .8) and ease down beside the small title (.35 → 1); the phases overlap so they never hang past the end
@@ -891,11 +891,15 @@
       bikes.style.top = (BACK_H + m.bikesTop).toFixed(1) + "px";
       bikes.style.left = m.bikesLeft.toFixed(1) + "px";
     }
-    function measure() {                       // header height = the big stage; range = how far it shrinks
-      var z = sizes(), big = metrics(0, z).H, small = metrics(1, z).H;
-      range = Math.max(1, big - small);
-      brand.style.height = (BACK_H + big + 14).toFixed(1) + "px";
-      layout(pShown);
+    function measure() {                       // header height at rest = the big stage; it then grows by the scrolled distance up to `range`
+      var z = sizes(), big = metrics(0, z).H;
+      range = z.range; base = 8 + BACK_H + big + 14;
+      pin(window.scrollY || 0); layout(pShown);
+    }
+    function pin(y) {                          // exact, not eased: this is what holds the page content still
+      var t = clamp(y, 0, range);
+      brand.style.height = (base + t).toFixed(1) + "px";
+      back.style.top = (8 + t).toFixed(1) + "px";
     }
     function spin(d) {
       var pxPerUnit = svg.clientWidth / 356 || 0.5;
@@ -914,7 +918,7 @@
     }
     function onScroll() {
       var y = window.scrollY || 0, dy = y - lastY; lastY = y;
-      pTarget = clamp(y / range, 0, 1); dist += dy;
+      pin(y); pTarget = clamp(y / range, 0, 1); dist += dy;
       if (reduce) { pShown = pTarget; shownDist = dist; layout(pShown); spin(shownDist); return; }
       vel += (dy - vel) * 0.5;
       if (!raf) raf = requestAnimationFrame(frame);
