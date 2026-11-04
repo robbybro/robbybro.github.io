@@ -874,8 +874,8 @@
       return { bigFS: clamp(0.105 * vw, 34, 124), bigW: clamp(0.34 * vw, 120, 200), smallW: clamp(0.2 * vw, 72, 100) };
     }
     function metrics(p, z) {
-      // 0 → .6: bikes roll left-to-right along the top of the letters while everything shrinks; .6 → 1: they drop in beside the small title
-      var u = clamp(p / 0.6, 0, 1), v = clamp((p - 0.6) / 0.4, 0, 1); u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v);
+      // bikes roll left-to-right along the top of the letters (0 → .8) and ease down beside the small title (.35 → 1); the phases overlap so they never hang past the end
+      var u = clamp(p / 0.8, 0, 1), v = clamp((p - 0.35) / 0.65, 0, 1); u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v);
       title.style.fontSize = lerp(z.bigFS, SMALL_FS, p).toFixed(2) + "px";
       var tw = title.offsetWidth, th = title.offsetHeight, bw = lerp(z.bigW, z.smallW, p), bh = bw * ASPECT;
       var titleTop0 = bh - th * 0.12, H0 = titleTop0 + th;            // bikes riding on top of the letters
@@ -905,7 +905,7 @@
       });
     }
     function frame() {
-      pShown += (pTarget - pShown) * 0.25; if (Math.abs(pTarget - pShown) < 0.002) pShown = pTarget;
+      pShown += (pTarget - pShown) * 0.1; if (Math.abs(pTarget - pShown) < 0.001) pShown = pTarget;
       shownDist += (dist - shownDist) * 0.18; if (Math.abs(dist - shownDist) < 0.05) shownDist = dist;
       vel *= 0.85;
       layout(pShown); spin(shownDist);
