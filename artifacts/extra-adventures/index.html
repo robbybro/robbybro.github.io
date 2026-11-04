@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Extra Adventures · Emily &amp; Robby</title>
+<meta name="description" content="Emily and Robby's guest guide to Seattle, day trips, hikes, and multi-day PNW trips around the July 2027 wedding weekend.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#F2E6C3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Gochi+Hand&display=swap">
+<style>
+  :root {
+    --butter: #F2E6C3; --olive: #77722E; --olive-deep: #5C5822; --ink: #302F1A; --muted: #6B6740;
+    --honey: #E6B55D; --peri: #92AAC3; --peri-deep: #3B6186; --persimmon: #D25030; --paper: #FFFDF7;
+    --rule: rgba(48,47,26,.16); --shadow: 0 1px 2px rgba(48,47,26,.12), 0 0 0 1px rgba(48,47,26,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --butter: #24230F; --olive: #C9C27A; --olive-deep: #E0D99A; --ink: #F2E6C3; --muted: #BDB58F;
+      --paper: #302F1A; --rule: rgba(242,230,195,.18); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(242,230,195,.1);
+      --peri-deep: #92AAC3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --butter: #24230F; --olive: #C9C27A; --olive-deep: #E0D99A; --ink: #F2E6C3; --muted: #BDB58F;
+    --paper: #302F1A; --rule: rgba(242,230,195,.18); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 0 0 1px rgba(242,230,195,.1);
+    --peri-deep: #92AAC3;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; overflow-x: clip; }
+  body { margin: 0; background: var(--butter); color: var(--ink); font-family: "Libre Baskerville", Georgia, serif; font-size: 16px; line-height: 1.6; padding-inline: 16px; -webkit-font-smoothing: antialiased; }
+  a { color: var(--olive-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: var(--persimmon); }
+  a:focus-visible { outline: 2px solid var(--peri-deep); outline-offset: 3px; }
+  p { margin: 0; }
+  ul { margin: 0; padding-left: 1.15em; display: grid; gap: .45em; }
+  ul.sub { margin-top: .45em; }
+  li::marker { color: var(--persimmon); }
+  strong { font-weight: 700; }
+  .wrap { max-width: 64rem; margin: 0 auto; }
+
+  .display { font-family: "Londrina Solid", "Rubik", system-ui, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .95; color: var(--olive); }
+  .hand { font-family: "Gochi Hand", cursive; }
+
+  /* header */
+  header { padding: 20px 0 10px; display: grid; gap: 18px; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
+  .topbar a { text-decoration: none; color: var(--olive); border-bottom: 2px solid var(--olive); padding-bottom: 1px; }
+  .topbar a:hover { color: var(--persimmon); border-color: var(--persimmon); }
+  .topbar .names { font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .06em; color: var(--olive); font-size: 18px; }
+  .topbar .names span { font-family: "Libre Baskerville", serif; font-size: 12px; text-transform: none; letter-spacing: 0; margin: 0 .35em; }
+  h1 { margin: 8px 0 0; font-size: clamp(48px, 12vw, 124px); }
+  h1 .tilt { display: inline-block; color: var(--persimmon); transform: rotate(-2.5deg); transform-origin: left bottom; }
+  .sub { font-style: italic; color: var(--muted); font-size: 15px; }
+  .intro { display: grid; gap: 12px; max-width: 62ch; font-size: 17px; }
+  nav.jump { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0 22px; border-bottom: 2px solid var(--olive); }
+  nav.jump a { font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .05em; font-size: 15px; text-decoration: none; color: var(--olive); background: var(--paper); padding: 5px 12px; border-radius: 999px; box-shadow: var(--shadow); }
+  nav.jump a:hover { background: var(--honey); color: var(--ink); }
+
+  /* sections */
+  section { padding: 44px 0 10px; display: grid; gap: 18px; }
+  h2 { margin: 0; font-size: clamp(36px, 7vw, 60px); position: relative; display: inline-block; }
+  h2::after { content: ""; display: block; height: 10px; margin-top: 2px; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 10' preserveAspectRatio='none'><path d='M0 6 Q7.5 0 15 6 T30 6 T45 6 T60 6' fill='none' stroke='%23E6B55D' stroke-width='3'/></svg>") repeat-x; background-size: 30px 10px; width: min(100%, 14rem); }
+  h3 { margin: 0; font-family: "Londrina Solid", "Rubik", system-ui, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .02em; line-height: .95; color: var(--olive); font-size: clamp(34px, 6vw, 52px); }
+  h4 { margin: 0; font-family: "Londrina Solid", sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .03em; font-size: 24px; line-height: 1.05; color: var(--olive); }
+  h5 { margin: 0 0 6px; font-family: "Gochi Hand", cursive; font-weight: 400; font-size: 20px; color: var(--persimmon); }
+  .lead { font-size: 17px; max-width: 64ch; }
+  .kicker { font-family: "Gochi Hand", cursive; font-size: 24px; color: var(--olive); margin-top: 10px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+  .card { background: var(--paper); border-radius: 14px; padding: 18px 18px 16px; box-shadow: var(--shadow); display: grid; gap: 10px; align-content: start; }
+  .card .vibe { font-style: italic; color: var(--muted); font-size: 15px; }
+  .pill { justify-self: start; font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; text-decoration: none; color: var(--ink); background: var(--honey); padding: 5px 12px; border-radius: 999px; }
+  .pill:hover { background: var(--persimmon); color: #fff; }
+  ol.chain { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; font-size: 15px; line-height: 1.5; }
+  ol.chain li { display: inline; }
+  ol.chain li + li::before { content: "→"; color: var(--persimmon); font-family: "Gochi Hand", cursive; font-size: 20px; margin: 0 .35em 0 .1em; line-height: 1; }
+
+  /* photos */
+  .photo { margin: 0; display: grid; gap: 4px; }
+  .photo .frame { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 3 / 2; background: var(--honey); }
+  .photo .frame::after { content: ""; position: absolute; inset: 0; border-radius: 10px; box-shadow: inset 0 0 0 3px var(--peri); pointer-events: none; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.85); }
+  .photo figcaption { font-family: "Gochi Hand", cursive; color: var(--olive); font-size: 17px; text-align: right; }
+  .photo.wide .frame { aspect-ratio: 16 / 7; }
+  .hikes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 20px; align-items: start; }
+
+  /* destinations */
+  .dest { background: var(--paper); border-radius: 18px; padding: 16px 16px 22px; box-shadow: var(--shadow); display: grid; gap: 12px; scroll-margin-top: 12px; }
+  .dest .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .dest .meta span { font-size: 13px; font-style: italic; background: var(--butter); color: var(--ink); padding: 3px 10px; border-radius: 999px; }
+  .dest .blurb { font-size: 17px; max-width: 66ch; }
+  .dest .grp { padding-top: 6px; }
+  .dest .grp ul { max-width: 70ch; }
+  @media (min-width: 760px) { .dest { padding: 20px 24px 26px; } .dest .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
+
+  footer { padding: 50px 0 60px; display: grid; gap: 10px; text-align: center; font-size: 14px; color: var(--muted); }
+  footer .back { font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .06em; font-size: 20px; text-decoration: none; color: var(--olive); }
+  footer .back:hover { color: var(--persimmon); }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="topbar">
+    <a href="https://emilyandrobby.wedding">← back to the wedding site</a>
+    <div class="names">Emily <span>&amp;</span> Robby</div>
+  </div>
+  <div>
+    <h1 class="display">Extra <span class="tilt">Adventures</span></h1>
+    <p class="sub">A guest guide to Seattle and the PNW · July 30 – August 1, 2027 · Bainbridge Island, WA</p>
+  </div>
+  <div class="intro">
+    <p class="">We know a lot of you are traveling from out of town and in case you have some extra time and want to make a trip out of it here are a few of our favorite things in and around Seattle to keep you caffeinated, fed, and busy. If you are in doubt, reach out and we can try and steer you in the right direction.</p>
+    <p class="">For general food/drink recs check out <a href="https://robbybro.com/food/?region=seattle" target="_blank" rel="noopener">Robby’s food website</a> - the “Try” list is places we haven’t been and want to go, and the “True” list is places we’ve tried and liked</p>
+  </div>
+  <nav class="jump" aria-label="Sections">
+    <a href="#getting-around">Getting around</a>
+    <a href="#quick-outings">Quick outings</a>
+    <a href="#day-trips">Day trips</a>
+    <a href="#hikes">Hikes</a>
+    <a href="#multi-day">Multi-day trips</a>
+    <a href="#bainbridge">On Bainbridge</a>
+  </nav>
+</header>
+
+<section id="getting-around">
+  <h2 class="display">Getting around Seattle</h2>
+  <p class="lead">We have all the rideshares you could ever want (Uber, Lyft, Waymo) but note that we also have the highest rideshare prices in the country. But fear not because we’ve got a great Lightrail system that connects the airport to the downtown corridor (the 1 Line which runs North/South), and recently expanded East/West with the 2 Line. We’ve also got all the Lime / Bird bikes and scooter brands too. There are busses too but I wouldn’t dare lol.</p>
+</section>
+
+<section id="quick-outings">
+  <h2 class="display">Quick Outings</h2>
+  <div>
+    <p class="kicker">“Guided tours”</p>
+    <p class="lead">Have some downtime in Seattle and want to explore? Check out one of these</p>
+  </div>
+  <div class="grid">
+    <article class="card tour">
+  <figure class="photo">
+  <div class="frame"><img src="https://picsum.photos/seed/seattle-waterfront/1200/800" alt="" loading="lazy"></div>
+  <figcaption>us, somewhere on the waterfront (photo coming)</figcaption>
+</figure>
+  <h4>Seattle Waterfront</h4>
+  <p class="vibe">Flat and mostly walkable, with a short bus or rideshare hop up to Ballard.</p>
+  <ol class="chain"><li><a href="https://www.seattleartmuseum.org/visit/olympic-sculpture-park" target="_blank" rel="noopener">Sculpture Park</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Elliott+Bay+Trail+Seattle" target="_blank" rel="noopener">Elliott Bay Trail</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Cafe+Hagen+Waterfront&amp;query_place_id=ChIJITXkqhMVkFQRJzDkyDwTXxE" target="_blank" rel="noopener">Cafe Hagen</a> for coffee</li><li><a href="https://www.nws.usace.army.mil/Missions/Civil-Works/Locks-and-Dams/Chittenden-Locks/" target="_blank" rel="noopener">Ballard Locks</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Sabine+Cafe+%26+Bar&amp;query_place_id=ChIJP5dBOwEVkFQROQPTePKbtnE" target="_blank" rel="noopener">Sabine</a> for brunch</li><li>shop around Ballard</li></ol>
+  <a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Olympic+Sculpture+Park&amp;destination=Sabine+Cafe+%26+Bar&amp;origin_place_id=ChIJc88dJ1AVkFQRmZ_S-xv-_Hs&amp;destination_place_id=ChIJP5dBOwEVkFQROQPTePKbtnE&amp;waypoints=Cafe+Hagen+Waterfront%7CBallard+Locks&amp;waypoint_place_ids=ChIJITXkqhMVkFQRJzDkyDwTXxE%7CChIJjdGpD8IVkFQRUy8VM9-VXIM&amp;travelmode=walking" target="_blank" rel="noopener">Route map ↗</a>
+</article><article class="card tour">
+  
+  <h4>Pioneer Square, a Boat, and Noodles by the Beach</h4>
+  <p class="vibe">The skyline from every angle, then a beach walk and a long dinner.</p>
+  <ol class="chain"><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Gloom+Coffee&amp;query_place_id=ChIJh8NuvcBrkFQRWGIwAO2DiGU" target="_blank" rel="noopener">Gloom Coffee</a></li><li><a href="https://www.smithtower.com/observatory-bar/" target="_blank" rel="noopener">Smith Tower</a> (Robby’s second favorite view of the Seattle skyline)</li><li><a href="https://kingcounty.gov/en/dept/metro/travel-options/water-taxi/west-seattle" target="_blank" rel="noopener">fast ferry to West Seattle</a> (Robby’s favorite view of Seattle skyline)</li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Alki+Beach+Park&amp;query_place_id=ChIJ75GZ5YVAkFQRD5DR36vUwQM" target="_blank" rel="noopener">Alki Beach</a></li><li>Dinner at <a href="https://www.google.com/maps/search/?api=1&amp;query=Il+Nido&amp;query_place_id=ChIJP5RfPuJBkFQRxXB_39jXjig" target="_blank" rel="noopener">Il Nido</a> (one of our favorite restaurants! Recommend a reservation).</li></ol>
+  <a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Gloom+Coffee&amp;destination=Il+Nido&amp;origin_place_id=ChIJh8NuvcBrkFQRWGIwAO2DiGU&amp;destination_place_id=ChIJP5RfPuJBkFQRxXB_39jXjig&amp;waypoints=Smith+Tower%7CPier+50+Water+Taxi%2C+Seattle%7CAlki+Beach+Park&amp;waypoint_place_ids=ChIJ1xR0krpqkFQRxAG6EUap_0M%7CChIJcUsGgq9qkFQRm-Zn3geVQrg%7CChIJ75GZ5YVAkFQRD5DR36vUwQM&amp;travelmode=transit" target="_blank" rel="noopener">Route map ↗</a>
+</article><article class="card tour">
+  
+  <h4>Ravenna Park &amp; Neighborhood Bookstores</h4>
+  <p class="vibe">A gravel path through a wooded ravine park, excellent coffee, and a bookstore to get lost in.</p>
+  <ol class="chain"><li>Walk through <a href="https://www.google.com/maps/search/?api=1&amp;query=Ravenna+Park&amp;query_place_id=ChIJGdxLn3wUkFQRDkH8l-Ix8WM" target="_blank" rel="noopener">Ravenna Park</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Santo+Coffee&amp;query_place_id=ChIJ180jEgUVkFQRPQPHs15Q2Lw" target="_blank" rel="noopener">Santo Coffee</a></li><li><a href="https://thirdplacebooks.com/ravenna" target="_blank" rel="noopener">Third Place Books Ravenna</a></li></ol>
+  <a class="pill" href="https://maps.app.goo.gl/5XCrDq6PLN2dYtWa8" target="_blank" rel="noopener">Route map ↗</a>
+</article><article class="card tour">
+  
+  <h4>Pike Place, Charcuterie, and Beer</h4>
+  <p class="vibe">Pike place is on a big hill but it’s easy to get around and there’s lots to see and do, so we kept this itinerary tight.</p>
+  <ol class="chain"><li><a href="https://www.pikeplacemarket.org/" target="_blank" rel="noopener">Pike Place Market</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Le+Pichet&amp;query_place_id=ChIJLWKDK00VkFQRQaHHVu-CZ1g" target="_blank" rel="noopener">Le Pichet</a> for charcuterie and the best quiche we’ve ever had</li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Cloudburst+Brewing&amp;query_place_id=ChIJg-YsE00VkFQRavJQE7x8jLY" target="_blank" rel="noopener">Cloudburst</a> for a beer. Vibe: the classic tourist stuff done right.</li></ol>
+  <a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Pike+Place+Market&amp;destination=Cloudburst+Brewing&amp;origin_place_id=ChIJy9ZRwbJqkFQRHJ8-Y18dRGA&amp;destination_place_id=ChIJg-YsE00VkFQRavJQE7x8jLY&amp;waypoints=Le+Pichet&amp;waypoint_place_ids=ChIJLWKDK00VkFQRQaHHVu-CZ1g&amp;travelmode=walking" target="_blank" rel="noopener">Route map ↗</a>
+</article><article class="card tour">
+  
+  <h4>Seattle Center greatest hits</h4>
+  <p class="vibe">All of these locations are in and around the Seattle Center, a large flat park between our NHL stadium, the Space Needle, and some museums.</p>
+  <ol class="chain"><li><a href="https://www.chihulygardenandglass.com/" target="_blank" rel="noopener">Chihuly</a> (ok ok we’ve never been there but people keep telling us they love it)</li><li><a href="https://www.kexp.org/visit/" target="_blank" rel="noopener">KEXP</a> for coffee</li><li>look at the <a href="https://www.spaceneedle.com/" target="_blank" rel="noopener">space needle</a> but the top is overrated tbh</li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=The+Masonry&amp;query_place_id=ChIJKVls1UMVkFQRPzfDxx3Oego" target="_blank" rel="noopener">Masonry</a> for pizza and beer (we HAVE been here and there is a LOT to love about it, especially the meatballs).</li></ol>
+  <a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Chihuly+Garden+and+Glass&amp;destination=The+Masonry&amp;origin_place_id=ChIJVTtr1kUVkFQRh-YAfijbQXs&amp;destination_place_id=ChIJKVls1UMVkFQRPzfDxx3Oego&amp;waypoints=KEXP%7CSpace+Needle&amp;waypoint_place_ids=ChIJl7UJikMVkFQRiSg0kL3oKW4%7CChIJ-bfVTh8VkFQRDZLQnmioK9s&amp;travelmode=walking" target="_blank" rel="noopener">Route map ↗</a>
+</article><article class="card tour">
+  
+  <h4>Art Museums and hot pot</h4>
+  <p class="vibe">Flat or downhill, fully paved.</p>
+  <ol class="chain"><li>Coffee at <a href="https://www.google.com/maps/search/?api=1&amp;query=Boon+Boona+Coffee&amp;query_place_id=ChIJ39ALGHVrkFQRRGZ_fVpsri0" target="_blank" rel="noopener">Boon Boona</a></li><li><a href="https://fryemuseum.org/" target="_blank" rel="noopener">Frye Art Museum</a> (donation based, Robby’s favorite art museum)</li><li>International District for Dim Sum (<a href="https://www.google.com/maps/search/?api=1&amp;query=Jade+Garden&amp;query_place_id=ChIJnb9JP7xqkFQR1r8VvSZ-zsY" target="_blank" rel="noopener">Jade Garden</a>) or Hot Pot (<a href="https://www.google.com/maps/search/?api=1&amp;query=Boiling+Point&amp;query_place_id=ChIJC_eG0LxqkFQRuXLVYvd8_nA" target="_blank" rel="noopener">Boiling Point</a> has single serve, <a href="https://www.google.com/maps/search/?api=1&amp;query=Chengdu+Memory&amp;query_place_id=ChIJpcnQTZxrkFQRwcYwLkI8ItM" target="_blank" rel="noopener">Chengdu Memory</a> for Hot Pot). Bonus: Grab some vietnamese coffee at <a href="https://www.google.com/maps/search/?api=1&amp;query=PHIN+Vietnamese+Coffee&amp;query_place_id=ChIJw6_CI99rkFQRCpeH3MMW8PM" target="_blank" rel="noopener">Phin</a> (get the mochi waffle too) or <a href="https://www.google.com/maps/search/?api=1&amp;query=Hello+Em+Viet+Coffee&amp;query_place_id=ChIJPZxNkZ1rkFQREOhvtKhmGo4" target="_blank" rel="noopener">Hello Em</a> (get the pandan butter croissant it will change you). Vibe: art, then a very big lunch.</li></ol>
+  <a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Boon+Boona+Coffee&amp;destination=PHIN+Vietnamese+Coffee&amp;origin_place_id=ChIJ39ALGHVrkFQRRGZ_fVpsri0&amp;destination_place_id=ChIJw6_CI99rkFQRCpeH3MMW8PM&amp;waypoints=Frye+Art+Museum%7CJade+Garden&amp;waypoint_place_ids=ChIJEWIFw7dqkFQRDw3cK6AcdXA%7CChIJnb9JP7xqkFQR1r8VvSZ-zsY&amp;travelmode=walking" target="_blank" rel="noopener">Route map ↗</a>
+</article>
+  </div>
+  <div>
+    <p class="kicker">Want to get outdoors but don’t have all day?</p>
+    <p class="lead">We’ve got some great parks!</p>
+  </div>
+  <ul class=""><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Washington+Park+Arboretum&amp;query_place_id=ChIJgTy59sYUkFQRin5kehZcTqI" target="_blank" rel="noopener">Arboretum</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Discovery+Park&amp;query_place_id=ChIJn0CO4fAVkFQRIGP6pMpCmFE" target="_blank" rel="noopener">Discovery Park</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Ravenna+Park&amp;query_place_id=ChIJGdxLn3wUkFQRDkH8l-Ix8WM" target="_blank" rel="noopener">Ravenna Park</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Carkeek+Park&amp;query_place_id=ChIJyVw29LsWkFQRtWZ3uO0R9hA" target="_blank" rel="noopener">Carkeek Park</a></li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Saint+Edward+State+Park&amp;query_place_id=ChIJA9OZpYwRkFQRJvhBx5jNbnk" target="_blank" rel="noopener">St. Edward State Park</a> (on the other side of Lake Washington - Emily raced cyclocross there!)</li></ul>
+  <div>
+    <p class="kicker">We have a lot of water!</p>
+    <p class="lead">You’ll notice this during the last few minutes of your flight. Lake Washington, Lake Union, Green Lake, and Puget Sound all have kayak, paddleboard, and boat rentals. You can even take a <a href="https://www.argosycruises.com/cruises/harbor-cruise/" target="_blank" rel="noopener">guided boat tour</a>, <a href="https://kenmoreair.com/seattle-scenic/" target="_blank" rel="noopener">seaplane tour</a>, or rent a <a href="https://hottubboats.com/" target="_blank" rel="noopener">hot tub boat</a> and go see Robby’s old houseboat!</p>
+  </div>
+</section>
+
+<section id="day-trips">
+  <h2 class="display">Day Trips</h2>
+  <p class="lead">A few options that can be part of a day trip (or overnight) on the way north.</p>
+  <div class="grid">
+    <article class="card"><h4>Bellingham out and back</h4><p class="">Start with a hike to <a href="https://www.wta.org/go-hiking/hikes/oyster-dome" target="_blank" rel="noopener">Oyster Dome</a> for a fabulous view, stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Taylor+Shellfish+Farms+Samish&amp;query_place_id=ChIJWdB_KDt1hVQRKzIPl5S-Zoo" target="_blank" rel="noopener">Taylor Shellfish Farms</a> for oysters, then venture into town for amazing coffee at <a href="https://www.google.com/maps/search/?api=1&amp;query=Makeworth+Coffee&amp;query_place_id=ChIJ26VzqZ2jhVQRwL_lcHum6rs" target="_blank" rel="noopener">Makeworth</a> and even more good food. Top it off with a beer at <a href="https://www.google.com/maps/search/?api=1&amp;query=Structures+Brewing&amp;query_place_id=ChIJ2UVV3r2jhVQRbE0vjylD_Ys" target="_blank" rel="noopener">Structures</a>.</p><a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle%2C+WA&amp;destination=Structures+Brewing%2C+Bellingham&amp;destination_place_id=ChIJ2UVV3r2jhVQRbE0vjylD_Ys&amp;waypoints=Oyster+Dome+Trailhead%2C+Chuckanut+Drive%2C+Bow%2C+WA%7CTaylor+Shellfish+Farms%2C+Bow%2C+WA%7CMakeworth+Coffee%2C+Bellingham&amp;travelmode=driving" target="_blank" rel="noopener">Route map ↗</a></article><article class="card"><h4>Whidbey Island Loop</h4><p class="">Drive up to <a href="https://parks.wa.gov/find-parks/state-parks/deception-pass-state-park" target="_blank" rel="noopener">Deception Pass</a> (great short hikes with beautiful views), and stop in Edison along the way for <a href="https://www.google.com/maps/search/?api=1&amp;query=Breadfarm+Edison&amp;query_place_id=ChIJOYLDvXp0hVQRtcE4_D4vXIA" target="_blank" rel="noopener">great bread (and weirdly good peanut butter)</a>, and a <a href="https://www.google.com/maps/search/?api=1&amp;query=Tweets+Cafe+Edison&amp;query_place_id=ChIJiU6Kmnp0hVQRFO4KI4GlmE8" target="_blank" rel="noopener">lovely diner</a>. Take the Deception Pass bridge and work your way down to <a href="https://www.google.com/maps/search/?api=1&amp;query=Greenbank+Farm&amp;query_place_id=ChIJH3HFEN7wj1QR86Vdh2EYg8s" target="_blank" rel="noopener">Greenbank Farm</a> (very tasty loganberry pies) and Coupeville (fun town to explore) before taking the <a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">ferry back to Mukilteo</a> and driving back to Seattle.</p><a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Seattle,+WA&amp;waypoints=Breadfarm%2C+Edison%2C+WA%7CDeception+Pass+State+Park%7CGreenbank+Farm%2C+Greenbank%2C+WA%7CCoupeville%2C+WA%7CClinton+Ferry+Terminal%2C+Clinton%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">Route map ↗</a></article><article class="card"><h4>Float the Snoqualmie River</h4><p class="">We do this with friends every year! <a href="https://www.google.com/maps?q=Plum%20%231%20River%20Access%20Point%2C%2037198%20SE%20Fish%20Hatchery%20Rd%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a2b8dae640f%3A0x8d65ca26e019bd0" target="_blank" rel="noopener">Start here</a> and <a href="https://www.google.com/maps?q=33723%20Redmond-Fall%20City%20Rd%20SE%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a0d99c04081%3A0xeae9badd63772214" target="_blank" rel="noopener">end here</a>. You can rent floaties and get a ride back to your car through <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">this service</a>. Heads up: the start-point lot needs a <a href="https://store.discoverpass.wa.gov" target="_blank" rel="noopener">Discover Pass</a> and fills by about 10:30 AM on weekends, so carpool and leave most cars at the end point. The <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">Fall City Floating shuttle</a> drops you 0.2 miles from the put-in. Plan on 3–5 hours on the water.<strong> </strong></p></article><article class="card"><h4><a href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Mt Rainier National Park</a></h4><p class="">Our tallest mountain and one of 5 volcanoes over 10,000 feet. Ok, ok TECHNICALLY Mt St Helens is a little shorter than that now but that’s sorta recent. The park has all levels of hikes from leisurely strolls to ice-axe-and-crampon rope lines. <a href="https://www.wta.org/go-outside/seasonal-hikes/regional/mount-rainier-hikes" target="_blank" rel="noopener">Choose your own adventure</a>.</p><a class="pill" href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Park website ↗</a></article>
+  </div>
+</section>
+
+<section id="hikes">
+  <h2 class="display">Other Hikes we like that are close(ish) to Seattle</h2>
+  <div class="hikes">
+    <ul class=""><li><a href="https://www.wta.org/go-hiking/hikes/snow-lake" target="_blank" rel="noopener">Snow Lake</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Snow+Lake+Trailhead%2C+Alpental%2C+Snoqualmie+Pass%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr from Seattle</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/kendall-katwalk" target="_blank" rel="noopener">Kendall Katwalk</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Pacific+Crest+Trail+North+Trailhead%2C+Snoqualmie+Pass%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/granite-mountain" target="_blank" rel="noopener">Granite Mountain</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Granite+Mountain+Trailhead%2C+North+Bend%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~50 min</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/thunder-mountain-lakes" target="_blank" rel="noopener">Thunder Mountain Lakes</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Surprise+Creek+Trailhead%2C+Skykomish%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr 45 min</a>)</li></ul>
+    <figure class="photo">
+  <div class="frame"><img src="https://picsum.photos/seed/snow-lake/1200/800" alt="" loading="lazy"></div>
+  <figcaption>Snow Lake, probably sweaty (photo coming)</figcaption>
+</figure>
+  </div>
+</section>
+
+<section id="multi-day">
+  <h2 class="display">Multi day trips</h2>
+  <p class="lead">Worth building a few extra days around. Temps are typical late-July highs and lows.</p>
+  <article class="dest" id="orcas">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/orcas/1200/800" alt="" loading="lazy"></div>
+  <figcaption>Mt Constitution, probably (photo coming)</figcaption>
+</figure>
+  <h3>Orcas Island</h3>
+  <p class="meta"><span>recommend 2 nights</span><span><a href="https://usclimatedata.com/climate/friday-harbor/washington/united-states/uswa0660" target="_blank" rel="noopener">late July ~71°/49°F</a>, mild and dry</span></p>
+  <p class="blurb">Orcas Island is our favorite of the San Juans. It’s also the hilliest!</p>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li>The ferry is a 90 min drive from Seattle and fills up quick, we recommend either biking on or getting a <a href="https://secureapps.wsdot.wa.gov/Ferries/Reservations/Vehicle/default.aspx" target="_blank" rel="noopener">ferry reservation</a>.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Drive/bike/hike <a href="https://www.wta.org/go-hiking/hikes/mount-constitution" target="_blank" rel="noopener">Mt Constitution</a> (there is hiking here)</li><li>Eat at <a href="https://www.houlme.com" target="_blank" rel="noopener">Houlme</a></li><li>Get pastries at <a href="https://www.instagram.com/seabirdbakeshop" target="_blank" rel="noopener">Seabird</a> (only open Saturdays. Get there early, they sell out fast!)</li><li>Paddle board on <a href="https://www.google.com/maps/search/?api=1&amp;query=Moran+State+Park&amp;query_place_id=ChIJjSm3xzyFhVQR0KZNENyj7s8" target="_blank" rel="noopener">Cascade Lake</a> and <a href="https://www.wta.org/go-hiking/hikes/cascade-lake" target="_blank" rel="noopener">walk the path that goes around the lake</a></li></ul></div>
+</article><article class="dest" id="san-juan">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/san-juan/1200/800" alt="" loading="lazy"></div>
+  <figcaption>Lime Kiln, whale-less (photo coming)</figcaption>
+</figure>
+  <h3>San Juan Island</h3>
+  <p class="meta"><span>recommend 2 nights</span><span><a href="https://usclimatedata.com/climate/friday-harbor/washington/united-states/uswa0660" target="_blank" rel="noopener">late July ~71°/49°F</a>, mild and dry</span></p>
+  <p class="blurb">San Juan Island is less populated and smaller than Orcas, but has some heavy hitters.</p>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li>Same ferry terminal and reservation rigamarole as Orcas.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Friday Harbor is a bit touristy but some very cute shops</li><li>Whale watching - plenty of options that leave from this island and one of the best areas for Orcas. If this is all you do you can walk onto the ferry as the town (Friday Harbor) is right off of the ferry and make this a day trip</li><li>Roche Harbor has some cute shops and good food</li><li>Scenic views of the San Juans, potential whale sightings, and hiking at <a href="https://www.sanjuancountywa.gov/Facilities/Facility/Details/San-Juan-County-Park-12" target="_blank" rel="noopener">San Juan County Park</a> (we’re 2 for 2 on whale sightings during bikepacking trips here), <a href="https://dnr.wa.gov/natural-areas/natural-resources-conservation-areas/cattle-point-natural-resources-conservation-area" target="_blank" rel="noopener">Cattle Point</a>, <a href="https://parks.wa.gov/find-parks/state-parks/lime-kiln-point-state-park" target="_blank" rel="noopener">Lime Kiln Point State Park</a></li></ul></div>
+</article><article class="dest" id="olympic">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/olympic/1200/800" alt="" loading="lazy"></div>
+  <figcaption>the Hoh, dripping (photo coming)</figcaption>
+</figure>
+  <h3>Olympic Peninsula</h3>
+  <p class="meta"><span><a href="https://usclimatedata.com/climate/port-townsend/washington/united-states/uswa0351" target="_blank" rel="noopener">late July ~70°/53°F</a> in Port Townsend, <a href="https://www.usclimatedata.com/climate/forks/washington/united-states/uswa0149" target="_blank" rel="noopener">~72°/50°F</a> at the Hoh</span></p>
+  <p class="blurb">Home to the only rainforest in the lower 48, one of our favorite national parks, lavender farms as far as the eye can see, and some of the <a href="https://www.google.com/maps/search/?api=1&amp;query=123+Thai+Food+Port+Townsend&amp;query_place_id=ChIJFQoInMvtj1QRF9eXGbF0Ay8" target="_blank" rel="noopener">best pad thai we’ve ever had</a>, the Olympic Peninsula is a vibe.</p>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li><a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">Kingston or Bremerton Ferry</a> will cut some time off the drive.</li><li>You can also drive around - stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Hama+Hama+Oyster+Saloon&amp;query_place_id=ChIJ88qWuaDNkVQR3ptf1sFACEg" target="_blank" rel="noopener">Hama Hama Oysters</a> or <a href="https://www.google.com/maps/search/?api=1&amp;query=Union+City+Market&amp;query_place_id=ChIJSSa2iK24kVQR0p1KBGQSpss" target="_blank" rel="noopener">Union City Market</a> if you go this route. Also don’t watch <a href="https://www.youtube.com/watch?v=j-zczJXSxnw&amp;t=106s" target="_blank" rel="noopener">this Tacoma Narrows Bridge video</a> - that every Washington physics class uses to teach resonance and frequencies - until after you’ve driven over it.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li><a href="https://www.nps.gov/olym/planyourvisit/visiting-the-hoh.htm" target="_blank" rel="noopener">Hoh Rainforest</a> - slaps</li><li><a href="https://www.nps.gov/olym/index.htm" target="_blank" rel="noopener">Olympic National Park</a> - slaps</li><li>Port Townsend - slaps (skip Port Angeles it kinda sucks)</li><li>Lavender Farms (if you’re into that)</li><li><a href="https://olygamefarm.com/" target="_blank" rel="noopener">Olympic Game Farm</a> - feed bison bread through your car window, expect enough saliva to need a car wash and a shower after. Slaps?</li></ul></div>
+</article><article class="dest" id="north-cascades">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/north-cascades/1200/800" alt="" loading="lazy"></div>
+  <figcaption>Mazama, where he asked (photo coming)</figcaption>
+</figure>
+  <h3><a href="https://www.nps.gov/noca/index.htm" target="_blank" rel="noopener">North Cascades National Park</a></h3>
+  <p class="meta"><span>recommend 2+ nights</span><span><a href="https://usclimatedata.com/climate/winthrop/washington/united-states/uswa0497" target="_blank" rel="noopener">late July ~86°/50°F</a>, hot and dry</span></p>
+  <p class="blurb">This<strong> </strong>is one of our favorite places. Here are just a few hikes we like. You <em>could</em> day trip it, but it’s a 3 hour drive each way so we recommend overnighting somewhere.</p>
+  <div class="grp"><h5>What to do</h5><ul><li>Here are some of our favorite hikes<ul class="sub"><li><a href="https://www.wta.org/go-hiking/hikes/cutthroat-pass-via-pacific-crest-trail" target="_blank" rel="noopener">Cutthroat Pass</a></li><li><a href="https://www.wta.org/go-hiking/hikes/maple-pass" target="_blank" rel="noopener">Maple Pass</a></li><li><a href="https://www.wta.org/go-hiking/hikes/blue-lake" target="_blank" rel="noopener">Blue Lake</a></li><li><a href="https://www.wta.org/go-hiking/hikes/colchuck-lake" target="_blank" rel="noopener">Colchuck Lake</a></li><li><a href="https://www.wta.org/go-hiking/hikes/lake-ingalls" target="_blank" rel="noopener">Ingalls Lake</a></li></ul></li><li>Diablo Lake/Ross Lake - primarily for kayaking although there are some hiking trails from the lake. <a href="https://www.rosslakeresort.com/how-to-get-here" target="_blank" rel="noopener">Can only access Ross Lake via a 1 mile hike</a>. <a href="https://www.rosslakeresort.com/equipment-rentals" target="_blank" rel="noopener">Kayak rentals available on Ross Lake</a></li></ul></div><div class="grp"><h5>Where to stay</h5><ul><li><strong>Mazama</strong> is our favorite place to go and is where we got engaged. While it is home to some of the best XC skiing in the country, it can get pretty hot in the summer.<ul class="sub"><li>Accessible via North Cascades highway (very pretty drive and the shorter route of the two ways to get there) in the summer. I-5 north to Burlington, then <a href="https://wsdotblog.blogspot.com/2026/04/north-cascades-highway-2026-opening.html" target="_blank" rel="noopener">Highway 20</a> east over Rainy and Washington Passes. About 180 miles / 4 hours. <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Mazama,+WA&amp;waypoints=Marblemount,+WA%7CWashington+Pass" target="_blank" rel="noopener">Directions</a>.</li><li>If you want to stop in Leavenworth you can take Highway 2 and either Snoqualmie + Blewett Pass or Stevens Pass. If you take this route recommend a half way stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Anjou+Bakery&amp;query_place_id=ChIJoRUoRE-1m1QRdVid5P-N2Gs" target="_blank" rel="noopener">Anjou</a> (great french bakery). About 250 miles / 5 hours either way. <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Mazama,+WA&amp;waypoints=Leavenworth,+WA%7CPateros,+WA" target="_blank" rel="noopener">Directions</a>.</li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Mazama+Store+%26+Bakery&amp;query_place_id=ChIJA3flf4BUg1QRzEroDoDfmk8" target="_blank" rel="noopener">Mazama Store</a> - a great bakery, grocery store, cafe in town. Highly recommend the baguette.</li><li><a href="https://www.innmazama.com/" target="_blank" rel="noopener">The Inn at Mazama</a>/<a href="https://cabinsofthemethow.com/" target="_blank" rel="noopener">Cabins of the Methow</a> - has a hotel but also rents many cabins. We have never stayed at the hotel but have rented through them many times for cabins</li></ul></li><li><strong>Leavenworth</strong> is kind of touristy, but it is a cute and walkable Bavarian town<ul class="sub"><li>You can float the Wenatchee River right through town! <a href="https://www.leavenworthoutdoorcenter.com" target="_blank" rel="noopener">Leavenworth Outdoor Center</a> rents tubes and shuttles you to the put-in (<a href="https://leavenworth.org/experience/river-tubing/" target="_blank" rel="noopener">more info</a>).</li></ul></li><li><strong>Winthrop</strong> while we’re on the subject of themed towns, this one is straight out of an Old Western. <a href="https://parks.wa.gov/find-parks/state-parks/pearrygin-lake-state-park" target="_blank" rel="noopener">Pearrygin Lake State Park</a> has good camping, and there is a lot of gravel biking in the area.</li></ul></div>
+</article><article class="dest" id="victoria">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/victoria/1200/800" alt="" loading="lazy"></div>
+  <figcaption>high tea, pinkies out (photo coming)</figcaption>
+</figure>
+  <h3>Victoria, BC</h3>
+  <p class="meta"><span>Recommend 2 nights</span><span><a href="https://www.currentresults.com/Weather/Canada/British-Columbia/Places/victoria-temperatures-by-month-average.php" target="_blank" rel="noopener">late July ~73°/53°F</a>, warm and dry</span></p>
+  <p class="blurb">Wow, we really do a lot of themed towns in the PNW. Victoria is uhhh… Victorian? I guess? Idk it looks like Charles Dickens Britain. It’s got a really walkable downtown.</p>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li>You can take the <a href="https://www.frs-clipper.com/seattle-victoria-ferry" target="_blank" rel="noopener">Victoria Clipper</a> directly from downtown Seattle or check out the Tofino section if you want to bring a car</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Explore <a href="https://butchartgardens.com/" target="_blank" rel="noopener">Butchart Gardens</a>, get high tea at the <a href="https://www.teaattheempress.com/" target="_blank" rel="noopener">Fairmont Empress</a>, explore a cute island town with <a href="https://www.google.com/maps/search/?api=1&amp;query=Bows+Coffee+Roasters&amp;query_place_id=ChIJs6axbXlzj1QRPyZm8y9U4D4" target="_blank" rel="noopener">good coffee</a> and <a href="https://www.google.com/maps/search/?api=1&amp;query=Jam+Cafe+Victoria&amp;query_place_id=ChIJB6epc4N0j1QRCZoubfE2Xr4" target="_blank" rel="noopener">breakfast</a>. If you want to drive, see the Tofino section for details.</li></ul></div>
+</article><article class="dest" id="tofino">
+  <figure class="photo wide">
+  <div class="frame"><img src="https://picsum.photos/seed/tofino/1200/800" alt="" loading="lazy"></div>
+  <figcaption>Cox Bay, wetsuits on (photo coming)</figcaption>
+</figure>
+  <h3>Tofino, BC</h3>
+  <p class="meta"><span>Recommend 4+ nights</span><span><a href="https://weatherspark.com/y/307/Average-Weather-in-Tofino-British-Columbia-Canada-Year-Round" target="_blank" rel="noopener">late July ~66°/51°F</a>, cool and often foggy</span></p>
+  <p class="blurb">Tofino is a small surfing town known for its storms. There are tons of beaches and beachfront resorts, as well as good restaurants, and of course, <a href="https://www.google.com/maps/search/?api=1&amp;query=Tofino+Coffee+Roasting+Company&amp;query_place_id=ChIJ9bQXceOXiVQRbiFS8j6acz8" target="_blank" rel="noopener">coffee</a>.</p>
+  <div class="grp"><h5>How to get there</h5><ul><li>There are 2 ways to get to Vancouver Island from Seattle and both will require a car.<ul class="sub"><li>Drive to Port Angeles, take the <a href="https://www.cohoferry.com/" target="_blank" rel="noopener">Black Ball Ferry</a> to Victoria and drive to Tofino.</li><li>There is also a <a href="https://www.bcferries.com/routes-fares/schedules/daily/TSA-SWB" target="_blank" rel="noopener">ferry from Vancouver BC to Victoria</a>, but be generous with your drive time estimate because the <a href="https://www.cbsa-asfc.gc.ca/bwt-taf/menu-eng.html" target="_blank" rel="noopener">border crossing can be slow</a> (<a href="https://bwt.cbp.gov/viewAllPorts" target="_blank" rel="noopener">US-bound wait times</a>). Let us know if you want any more information here, we loved Tofino!</li></ul></li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Go to Ucluelet for some great waterfront hiking, check out <a href="https://www.google.com/maps/search/?api=1&amp;query=Ucluelet+Brewing+Company&amp;query_place_id=ChIJHzsxDr1ziVQRplBCFQArTW8" target="_blank" rel="noopener">their brewery</a> for great water views and cozy vibes, and book a rez for <a href="https://www.google.com/maps/search/?api=1&amp;query=Pluvio+restaurant&amp;query_place_id=ChIJX717MZZziVQR6odK9dVcARc" target="_blank" rel="noopener">Pluvio</a> if you like fine dining.</li><li>Surf at <a href="https://www.google.com/maps/search/?api=1&amp;query=Cox+Bay+Beach+Tofino" target="_blank" rel="noopener">Cox Bay</a> (don’t worry the board shops rent out wetsuits too!)</li><li>Book a whale watching tour (they leave from downtown)</li><li>Get fish tacos at <a href="https://www.google.com/maps/search/?api=1&amp;query=Tacofino+Tofino&amp;query_place_id=ChIJb9L5HKaQiVQRrjXAJdxIqBQ" target="_blank" rel="noopener">Tacofino</a></li><li>Stop at <a href="https://maps.app.goo.gl/YvH7kyam1PKJUGeBA" target="_blank" rel="noopener">Goats on the Roof Market</a> on your way there</li><li>Hike in <a href="https://parks.canada.ca/pn-np/bc/pacificrim" target="_blank" rel="noopener">Pacific Rim National Park</a></li></ul></div>
+</article>
+</section>
+
+<section id="bainbridge">
+  <h2 class="display">On Bainbridge</h2>
+  <p class="lead">Downtime will be fleeting but if you need a break from the festivities,</p>
+  <ul class=""><li><a href="https://bloedelreserve.org/" target="_blank" rel="noopener">The Bloedel Reserve</a> is a big honkin’ botanical garden</li><li>U Pick Dahlias at <a href="https://maps.app.goo.gl/eQvREF6LSD9yFkvG8" target="_blank" rel="noopener">Suyematsu Farms</a></li><li>Downtown Bainbridge has <a href="https://www.bainbridgedowntown.org/" target="_blank" rel="noopener">cute shops</a>, <a href="https://maps.app.goo.gl/X7P1ZLRJSBcPvyRM9" target="_blank" rel="noopener">good beer</a>, and <a href="https://maps.app.goo.gl/Ffm6HLWhbacU97cy8" target="_blank" rel="noopener">poke that blew us away</a>.</li></ul>
+</section>
+
+<footer>
+  <a class="back" href="https://emilyandrobby.wedding">← back to emilyandrobby.wedding</a>
+  <p>Photos of us in these places are on the way. Questions? Just ask us.</p>
+</footer>
+
+</div>
+</body>
+</html>
