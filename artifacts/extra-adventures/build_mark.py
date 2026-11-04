@@ -34,10 +34,12 @@ def wheel(w):
 
 def build():
     src = SRC.read_text(encoding="utf-8")
-    paths = "".join(re.findall(r"<path[^>]*/>", src, flags=re.S))
+    # keep the riders, bikes and heart; drop the "EMILY & ROBBY 2027" lettering (every path that starts below y=340)
+    paths = "".join(p for p in re.findall(r"<path[^>]*/>", src, flags=re.S)
+                    if float(re.search(r'd="M[-\d.]+,([-\d.]+)', p).group(1)) < 340)
     svg = (
-        '<svg class="mark" viewBox="38 112 356 260" role="img" '
-        'aria-label="Emily &amp; Robby 2027 — line drawing of the two of us riding bikes">\n'
+        '<svg class="mark" viewBox="38 112 356 222" role="img" '
+        'aria-label="Line drawing of Emily and Robby riding bikes">\n'
         '<g class="spokes" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round">'
         + "".join(wheel(w) for w in WHEELS)
         + '</g>\n<g fill="currentColor">' + paths + "</g>\n</svg>"
