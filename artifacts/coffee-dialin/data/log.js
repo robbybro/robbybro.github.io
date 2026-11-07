@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-11-06T07:49-08:00",
+ "generated_at": "2026-11-07T00:50-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -2279,7 +2279,7 @@ window.DIALIN = {
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
-   "days_ago": 52
+   "days_ago": 53
   },
   "machine_shots_7d": 23,
   "machine_telemetry_at": "2026-11-06T14:16:06+00:00"
