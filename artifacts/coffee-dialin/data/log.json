@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T06:49-08:00",
+ "generated_at": "2026-11-09T07:50-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -486,6 +486,40 @@
      "next_change": "220 @ 1200, 18 g, cut at 34. RPM read: +200 rpm has been worth +4–8 s at fixed grind, so expect 24–28 s — closer, probably still under 30. If the window is the goal, 215 @ 1200 predicts 32–36."
     }
    ]
+  },
+  {
+   "id": 18,
+   "short_name": "Kuma Hunapu",
+   "label": "Kuma — Guatemala Hunapu",
+   "verdict": null,
+   "noted_at": "2026-11-09 07:43:26.905827-08:00",
+   "offering_id": 916,
+   "data": {
+    "dialin": {
+     "settled": false
+    },
+    "opened": "2026-11-09",
+    "roaster": "Kuma Coffee",
+    "roast_date": "2026-10-05"
+   },
+   "shots": 1,
+   "last_shot": {
+    "id": 87,
+    "shot_at": "2026-11-09T07:43:27.024842-08:00",
+    "burrs": "SSP Lab Sweet",
+    "microns": 600,
+    "rpm": 600,
+    "dose_g": null,
+    "yield_g": null,
+    "time_s": null,
+    "ratio": null,
+    "taste": null,
+    "verdict": null,
+    "next_change": null,
+    "by_whom": null
+   },
+   "queued": null,
+   "queue": []
   },
   {
    "id": 17,
@@ -1060,6 +1094,27 @@
   }
  ],
  "shots": [
+  {
+   "id": 87,
+   "shot_at": "2026-11-09 07:43:27.024842-08:00",
+   "bag": "Kuma Hunapu",
+   "method": "pourover",
+   "status": "pulled",
+   "burrs": "SSP Lab Sweet",
+   "microns": 600,
+   "rpm": 600,
+   "dose_g": null,
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": null,
+   "by_whom": null,
+   "data": {
+    "grinder": "Zerno Z2"
+   }
+  },
   {
    "id": 86,
    "shot_at": "2026-11-07 11:48:11.994710-08:00",
@@ -2325,13 +2380,13 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-07 11:48:11.876930-08:00",
-  "shots_7d": 4,
-  "shots_30d": 28,
-  "shots_total": 52,
+  "last_shot_at": "2026-11-09 07:43:27.024842-08:00",
+  "shots_7d": 5,
+  "shots_30d": 29,
+  "shots_total": 53,
   "queued": 4,
   "bags_settled": 2,
-  "bags_dialing": 11,
+  "bags_dialing": 12,
   "backflush": {
    "last": "2026-09-15",
    "cadence_days": 90,
@@ -2342,6 +2397,27 @@
  },
  "origin": {
   "provenance": [
+   {
+    "bag": "Kuma Hunapu",
+    "offering_id": 916,
+    "title": "Guatemala Hunapu",
+    "url": "https://kumacoffee.com/products/guatemala-hunapu-duenas-new",
+    "roaster": "Kuma Coffee",
+    "roaster_city": "Seattle, WA",
+    "roaster_country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://kumacoffee.com",
+    "producer_id": 5095,
+    "producer": "Hunapu",
+    "producer_country": "Guatemala",
+    "producer_region": null,
+    "also_roasted_by": null,
+    "origin": {
+     "country": "Guatemala",
+     "farm": "Hunapu"
+    }
+   },
    {
     "bag": "Luna Victor Florez",
     "offering_id": 27675,
@@ -2481,6 +2557,17 @@
     "website": "https://proudmarycoffee.com",
     "offerings": 34,
     "producers": 17,
+    "in_my_bags": true
+   },
+   {
+    "name": "Kuma Coffee",
+    "city": "Seattle, WA",
+    "country": "USA",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "website": "https://kumacoffee.com",
+    "offerings": 18,
+    "producers": 6,
     "in_my_bags": true
    },
    {
@@ -2660,17 +2747,6 @@
     "in_my_bags": false
    },
    {
-    "name": "Kuma Coffee",
-    "city": "Seattle, WA",
-    "country": "USA",
-    "lat": 47.6062,
-    "lng": -122.3321,
-    "website": "https://kumacoffee.com",
-    "offerings": 18,
-    "producers": 6,
-    "in_my_bags": false
-   },
-   {
     "name": "POMA Coffee Research Lab",
     "city": "Copenhagen",
     "country": "Denmark",
@@ -2715,17 +2791,6 @@
     "in_my_bags": false
    },
    {
-    "name": "La Cabra",
-    "city": "Copenhagen (HQ Aarhus) + NYC",
-    "country": "Denmark",
-    "lat": 56.1572,
-    "lng": 10.2107,
-    "website": "https://www.lacabra.dk",
-    "offerings": 11,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
     "name": "Sweven Coffee",
     "city": "Bristol",
     "country": "UK",
@@ -2737,14 +2802,14 @@
     "in_my_bags": false
    },
    {
-    "name": "Heart Coffee Roasters",
-    "city": "Portland, OR",
-    "country": "USA",
-    "lat": 45.5231,
-    "lng": -122.6765,
-    "website": "https://www.heartroasters.com",
-    "offerings": 10,
-    "producers": 5,
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "country": "Denmark",
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 11,
+    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -2756,6 +2821,17 @@
     "website": "https://meritcoffee.com",
     "offerings": 10,
     "producers": 4,
+    "in_my_bags": false
+   },
+   {
+    "name": "Heart Coffee Roasters",
+    "city": "Portland, OR",
+    "country": "USA",
+    "lat": 45.5231,
+    "lng": -122.6765,
+    "website": "https://www.heartroasters.com",
+    "offerings": 10,
+    "producers": 5,
     "in_my_bags": false
    },
    {
@@ -2940,7 +3016,7 @@
     "producers": 25,
     "roasters": 12,
     "offerings": 31,
-    "my_bags": 0
+    "my_bags": 1
    },
    {
     "country": "Kenya",
@@ -3143,6 +3219,7 @@
    "Brazil",
    "Colombia",
    "Ethiopia",
+   "Guatemala",
    "Kenya",
    "Mexico"
   ],
