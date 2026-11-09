@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T12:50-08:00",
+ "generated_at": "2026-11-09T13:51-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -502,24 +502,42 @@
     "roaster": "Kuma Coffee",
     "roast_date": "2026-10-05"
    },
-   "shots": 1,
+   "shots": 2,
    "last_shot": {
-    "id": 87,
-    "shot_at": "2026-11-09T07:43:27.024842-08:00",
+    "id": 88,
+    "shot_at": "2026-11-09T13:29:25.691884-08:00",
     "burrs": "SSP Lab Sweet",
-    "microns": 600,
-    "rpm": 600,
-    "dose_g": null,
-    "yield_g": null,
-    "time_s": null,
-    "ratio": null,
+    "microns": 208,
+    "rpm": 1200,
+    "dose_g": 18,
+    "yield_g": 38.5,
+    "time_s": 25.4,
+    "ratio": 2.14,
     "taste": null,
-    "verdict": null,
-    "next_change": null,
+    "verdict": "fast (25.4 s): started nice and slow, sped up; needs a little finer",
+    "next_change": "→ 200 @ 1200",
     "by_whom": null
    },
-   "queued": null,
-   "queue": []
+   "queued": {
+    "id": 89,
+    "shot_at": "2026-11-09T13:29:25.814924-08:00",
+    "burrs": "SSP Lab Sweet",
+    "microns": 200,
+    "rpm": 1200,
+    "dose_g": 18,
+    "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s."
+   },
+   "queue": [
+    {
+     "id": 89,
+     "shot_at": "2026-11-09T13:29:25.814924-08:00",
+     "burrs": "SSP Lab Sweet",
+     "microns": 200,
+     "rpm": 1200,
+     "dose_g": 18,
+     "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s."
+    }
+   ]
   },
   {
    "id": 17,
@@ -1094,6 +1112,49 @@
   }
  ],
  "shots": [
+  {
+   "id": 89,
+   "shot_at": "2026-11-09 13:29:25.814924-08:00",
+   "bag": "Kuma Hunapu",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": "SSP Lab Sweet",
+   "microns": 200,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s.",
+   "by_whom": null,
+   "data": {
+    "grinder": "Zerno Z2"
+   }
+  },
+  {
+   "id": 88,
+   "shot_at": "2026-11-09 13:29:25.691884-08:00",
+   "bag": "Kuma Hunapu",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": "SSP Lab Sweet",
+   "microns": 208,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "38.5",
+   "time_s": "25.4",
+   "ratio": "2.14",
+   "taste": null,
+   "verdict": "fast (25.4 s): started nice and slow, sped up; needs a little finer",
+   "next_change": "→ 200 @ 1200",
+   "by_whom": null,
+   "data": {
+    "grinder": "Zerno Z2",
+    "microns_exact": 207.5
+   }
+  },
   {
    "id": 87,
    "shot_at": "2026-11-09 07:43:27.024842-08:00",
@@ -2380,11 +2441,11 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-09 07:43:27.024842-08:00",
+  "last_shot_at": "2026-11-09 13:29:25.691884-08:00",
   "shots_7d": 5,
-  "shots_30d": 27,
-  "shots_total": 53,
-  "queued": 4,
+  "shots_30d": 28,
+  "shots_total": 54,
+  "queued": 5,
   "bags_settled": 2,
   "bags_dialing": 12,
   "backflush": {
