@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T06:47-08:00",
+ "generated_at": "2026-11-10T08:47-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -21,6 +21,13 @@
   },
   "burrs": {
    "rule": "every espresso shot carries the installed burr set (db.py fills it from here when --burrs is omitted); settled recipes are per burr set (bag data.dialin.by_burrs); a burr swap re-dials every bag from scratch",
+   "zero": {
+    "plan": "Then for each in-scope shot: keep the original in data.microns_logged, rewrite microns (and data.microns_exact) to the corrected value, and correct queued plans and any Lab Sweet settled recipe the same way.",
+    "noted": "2026-11-10 thinks the Z2 was not zeroed right on the Lab Sweet install",
+    "scope": "every Zerno Z2 shot logged with burrs = SSP Lab Sweet (espresso and pourover) since 2026-11-07",
+    "status": "suspect — re-zero pending",
+    "offset_um": null
+   },
    "owned": [
     "Core",
     "SSP Lab Sweet"
@@ -38,6 +45,13 @@
     }
    ],
    "installed": "SSP Lab Sweet",
+   "seasoning": {
+    "rule": "Shots on a burr set before its seasoned_on date are estimates for the NEXT shot only: use them to plan, never for long-term calibration (dial_model, rpm_rule, settled recipes as priors).",
+    "noted": "2026-11-10 new burrs not seasoned yet, numbers will swing",
+    "since": "2026-11-07",
+    "status": "seasoning",
+    "seasoned_on": null
+   },
    "installed_on": "2026-11-07",
    "seasoning_note": "Lab Sweet installed 2026-11-07 at 0 kg through it; expect the dial to drift finer over the first 2–7 kg (sections: STARTING POINTS)"
   },
@@ -350,7 +364,8 @@
    "source": "all pulled espresso shots in coffee_shots, within-bag pairs at fixed RPM + dose",
    "n_shots": 40,
    "per_variety": "unknown: too few bags per variety/process to separate; the window POSITION varies 125-225 um across bags, the near-window slope does not obviously",
-   "coarse_prior": "big steps (>=15 um) across all bags: median +3.2 s per 10 um finer (range -2.5..+7.5); use as the first-move estimate only"
+   "coarse_prior": "big steps (>=15 um) across all bags: median +3.2 s per 10 um finer (range -2.5..+7.5); use as the first-move estimate only",
+   "calibration_scope": "Exclude shots taken during a burr set's seasoning window (burrs.seasoning) and any shot whose zero is unresolved (burrs.zero). The as_of 2026-10-29 model is Core-burr data only."
   },
   "dial_rules": [
    "sour / gushing / fast → finer ~10 µm",
@@ -502,40 +517,40 @@
     "roaster": "Kuma Coffee",
     "roast_date": "2026-10-05"
    },
-   "shots": 2,
+   "shots": 3,
    "last_shot": {
-    "id": 88,
-    "shot_at": "2026-11-09T13:29:25.691884-08:00",
+    "id": 90,
+    "shot_at": "2026-11-10T08:34:22.086937-08:00",
     "burrs": "SSP Lab Sweet",
-    "microns": 208,
-    "rpm": 1200,
+    "microns": 203,
+    "rpm": 1400,
     "dose_g": 18,
-    "yield_g": 38.5,
-    "time_s": 25.4,
-    "ratio": 2.14,
+    "yield_g": 37,
+    "time_s": 26,
+    "ratio": 2.06,
     "taste": null,
-    "verdict": "fast (25.4 s): started nice and slow, sped up; needs a little finer",
-    "next_change": "→ 200 @ 1200",
+    "verdict": "fast (26 s); RPM set to 1400 by mistake (meant 1200)",
+    "next_change": "→ 197.5 @ 1200",
     "by_whom": null
    },
    "queued": {
-    "id": 89,
-    "shot_at": "2026-11-09T13:29:25.814924-08:00",
+    "id": 91,
+    "shot_at": "2026-11-10T08:34:22.203348-08:00",
     "burrs": "SSP Lab Sweet",
-    "microns": 200,
+    "microns": 198,
     "rpm": 1200,
     "dose_g": 18,
-    "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s."
+    "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this."
    },
    "queue": [
     {
-     "id": 89,
-     "shot_at": "2026-11-09T13:29:25.814924-08:00",
+     "id": 91,
+     "shot_at": "2026-11-10T08:34:22.203348-08:00",
      "burrs": "SSP Lab Sweet",
-     "microns": 200,
+     "microns": 198,
      "rpm": 1200,
      "dose_g": 18,
-     "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s."
+     "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this."
     }
    ]
   },
@@ -1113,13 +1128,13 @@
  ],
  "shots": [
   {
-   "id": 89,
-   "shot_at": "2026-11-09 13:29:25.814924-08:00",
+   "id": 91,
+   "shot_at": "2026-11-10 08:34:22.203348-08:00",
    "bag": "Kuma Hunapu",
    "method": "espresso",
    "status": "queued",
    "burrs": "SSP Lab Sweet",
-   "microns": 200,
+   "microns": 198,
    "rpm": 1200,
    "dose_g": "18",
    "yield_g": null,
@@ -1127,10 +1142,33 @@
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "200 @ 1200, 18 g, aim 37 g out. From 207.5 at 25.4 s; aiming for 30–32 s.",
+   "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this.",
    "by_whom": null,
    "data": {
-    "grinder": "Zerno Z2"
+    "grinder": "Zerno Z2",
+    "microns_exact": 197.5
+   }
+  },
+  {
+   "id": 90,
+   "shot_at": "2026-11-10 08:34:22.086937-08:00",
+   "bag": "Kuma Hunapu",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": "SSP Lab Sweet",
+   "microns": 203,
+   "rpm": 1400,
+   "dose_g": "18",
+   "yield_g": "37",
+   "time_s": "26",
+   "ratio": "2.06",
+   "taste": null,
+   "verdict": "fast (26 s); RPM set to 1400 by mistake (meant 1200)",
+   "next_change": "→ 197.5 @ 1200",
+   "by_whom": null,
+   "data": {
+    "grinder": "Zerno Z2",
+    "microns_exact": 202.5
    }
   },
   {
@@ -2441,10 +2479,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-09 13:29:25.691884-08:00",
-  "shots_7d": 5,
-  "shots_30d": 27,
-  "shots_total": 54,
+  "last_shot_at": "2026-11-10 08:34:22.086937-08:00",
+  "shots_7d": 6,
+  "shots_30d": 28,
+  "shots_total": 55,
   "queued": 5,
   "bags_settled": 2,
   "bags_dialing": 12,
