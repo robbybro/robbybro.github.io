@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-10T12:50-08:00",
+ "generated_at": "2026-11-10T14:51-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -506,7 +506,7 @@
    "id": 18,
    "short_name": "Kuma Hunapu",
    "label": "Kuma — Guatemala Hunapu",
-   "verdict": null,
+   "verdict": "meh",
    "noted_at": "2026-11-09 07:43:26.905827-08:00",
    "offering_id": 916,
    "data": {
@@ -515,42 +515,43 @@
     },
     "opened": "2026-11-09",
     "roaster": "Kuma Coffee",
-    "roast_date": "2026-10-05"
+    "roast_date": "2026-10-05",
+    "verdict_note": "harsh, almost acrid on espresso at 197.5 @ 1200 (30.4 s, in window)"
    },
-   "shots": 3,
+   "shots": 4,
    "last_shot": {
-    "id": 90,
-    "shot_at": "2026-11-10T08:34:22.086937-08:00",
-    "burrs": "SSP Lab Sweet",
-    "microns": 203,
-    "rpm": 1400,
-    "dose_g": 18,
-    "yield_g": 37,
-    "time_s": 26,
-    "ratio": 2.06,
-    "taste": null,
-    "verdict": "fast (26 s); RPM set to 1400 by mistake (meant 1200)",
-    "next_change": "→ 197.5 @ 1200",
-    "by_whom": null
-   },
-   "queued": {
-    "id": 91,
-    "shot_at": "2026-11-10T08:34:22.203348-08:00",
+    "id": 92,
+    "shot_at": "2026-11-10T13:54:46.389042-08:00",
     "burrs": "SSP Lab Sweet",
     "microns": 198,
     "rpm": 1200,
     "dose_g": 18,
-    "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this."
+    "yield_g": 37.7,
+    "time_s": 30.4,
+    "ratio": 2.09,
+    "taste": "pretty harsh, almost a little acrid",
+    "verdict": "time in window, taste off",
+    "next_change": "→ 197.5 @ 1000 (time in window → bracket RPM)",
+    "by_whom": null
+   },
+   "queued": {
+    "id": 93,
+    "shot_at": "2026-11-10T13:54:46.506005-08:00",
+    "burrs": "SSP Lab Sweet",
+    "microns": 198,
+    "rpm": 1000,
+    "dose_g": 18,
+    "next_change": "197.5 @ 1000: time is in window, so bracket RPM per the house rule. 37 g out, 30–32 s. If it runs fast, step ~5 µm finer."
    },
    "queue": [
     {
-     "id": 91,
-     "shot_at": "2026-11-10T08:34:22.203348-08:00",
+     "id": 93,
+     "shot_at": "2026-11-10T13:54:46.506005-08:00",
      "burrs": "SSP Lab Sweet",
      "microns": 198,
-     "rpm": 1200,
+     "rpm": 1000,
      "dose_g": 18,
-     "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this."
+     "next_change": "197.5 @ 1000: time is in window, so bracket RPM per the house rule. 37 g out, 30–32 s. If it runs fast, step ~5 µm finer."
     }
    ]
   },
@@ -1128,24 +1129,44 @@
  ],
  "shots": [
   {
-   "id": 91,
-   "shot_at": "2026-11-10 08:34:22.203348-08:00",
+   "id": 93,
+   "shot_at": "2026-11-10 13:54:46.506005-08:00",
    "bag": "Kuma Hunapu",
    "method": "espresso",
    "status": "queued",
    "burrs": "SSP Lab Sweet",
    "microns": 198,
-   "rpm": 1200,
+   "rpm": 1000,
    "dose_g": "18",
    "yield_g": null,
    "time_s": null,
    "ratio": null,
    "taste": null,
    "verdict": null,
-   "next_change": "197.5 @ 1200, 18 g, aim 37 g out, 30–32 s. Last 1200 shot: 207.5 at 25.4 s; fast rule = one ~10 µm step finer. The 1400 shot (202.5, 26 s) is a different dial and doesn't move this.",
+   "next_change": "197.5 @ 1000: time is in window, so bracket RPM per the house rule. 37 g out, 30–32 s. If it runs fast, step ~5 µm finer.",
    "by_whom": null,
    "data": {
-    "grinder": "Zerno Z2",
+    "microns_exact": 197.5
+   }
+  },
+  {
+   "id": 92,
+   "shot_at": "2026-11-10 13:54:46.389042-08:00",
+   "bag": "Kuma Hunapu",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": "SSP Lab Sweet",
+   "microns": 198,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "37.7",
+   "time_s": "30.4",
+   "ratio": "2.09",
+   "taste": "pretty harsh, almost a little acrid",
+   "verdict": "time in window, taste off",
+   "next_change": "→ 197.5 @ 1000 (time in window → bracket RPM)",
+   "by_whom": null,
+   "data": {
     "microns_exact": 197.5
    }
   },
@@ -2479,10 +2500,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-10 08:34:22.086937-08:00",
-  "shots_7d": 6,
-  "shots_30d": 27,
-  "shots_total": 55,
+  "last_shot_at": "2026-11-10 13:54:46.389042-08:00",
+  "shots_7d": 7,
+  "shots_30d": 28,
+  "shots_total": 56,
   "queued": 5,
   "bags_settled": 2,
   "bags_dialing": 12,
