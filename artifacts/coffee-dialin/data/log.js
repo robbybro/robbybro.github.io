@@ -1,5 +1,5 @@
 window.DIALIN = {
- "generated_at": "2026-11-10T00:47-08:00",
+ "generated_at": "2026-11-10T06:47-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -2453,8 +2453,8 @@ window.DIALIN = {
    "cadence_days": 90,
    "days_ago": 56
   },
-  "machine_shots_7d": 22,
-  "machine_telemetry_at": "2026-11-09T14:17:59+00:00"
+  "machine_shots_7d": 21,
+  "machine_telemetry_at": "2026-11-10T14:16:22+00:00"
  },
  "origin": {
   "provenance": [
@@ -2547,6 +2547,7 @@ window.DIALIN = {
     "producer_region": "Gedeo, Gedeb",
     "also_roasted_by": [
      "Friedhats",
+     "Hoppenworth & Ploch",
      "Luna Coffee",
      "Offshoot Coffee",
      "September Coffee",
@@ -2731,17 +2732,6 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "April Coffee Roasters",
-    "city": "Copenhagen",
-    "country": "Denmark",
-    "lat": 55.6867,
-    "lng": 12.57,
-    "website": "https://aprilcoffeeroasters.com",
-    "offerings": 27,
-    "producers": 5,
-    "in_my_bags": false
-   },
-   {
     "name": "Tim Wendelboe",
     "city": "Oslo",
     "country": "Norway",
@@ -2750,6 +2740,17 @@ window.DIALIN = {
     "website": "https://timwendelboe.no",
     "offerings": 27,
     "producers": 0,
+    "in_my_bags": false
+   },
+   {
+    "name": "April Coffee Roasters",
+    "city": "Copenhagen",
+    "country": "Denmark",
+    "lat": 55.6867,
+    "lng": 12.57,
+    "website": "https://aprilcoffeeroasters.com",
+    "offerings": 27,
+    "producers": 5,
     "in_my_bags": false
    },
    {
@@ -2852,6 +2853,17 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "La Cabra",
+    "city": "Copenhagen (HQ Aarhus) + NYC",
+    "country": "Denmark",
+    "lat": 56.1572,
+    "lng": 10.2107,
+    "website": "https://www.lacabra.dk",
+    "offerings": 11,
+    "producers": 0,
+    "in_my_bags": false
+   },
+   {
     "name": "Sweven Coffee",
     "city": "Bristol",
     "country": "UK",
@@ -2863,14 +2875,14 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "La Cabra",
-    "city": "Copenhagen (HQ Aarhus) + NYC",
-    "country": "Denmark",
-    "lat": 56.1572,
-    "lng": 10.2107,
-    "website": "https://www.lacabra.dk",
-    "offerings": 11,
-    "producers": 0,
+    "name": "Heart Coffee Roasters",
+    "city": "Portland, OR",
+    "country": "USA",
+    "lat": 45.5231,
+    "lng": -122.6765,
+    "website": "https://www.heartroasters.com",
+    "offerings": 10,
+    "producers": 5,
     "in_my_bags": false
    },
    {
@@ -2885,14 +2897,14 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Heart Coffee Roasters",
-    "city": "Portland, OR",
-    "country": "USA",
-    "lat": 45.5231,
-    "lng": -122.6765,
-    "website": "https://www.heartroasters.com",
-    "offerings": 10,
-    "producers": 5,
+    "name": "Hoppenworth & Ploch",
+    "city": "Frankfurt",
+    "country": "Germany",
+    "lat": 50.1236,
+    "lng": 8.6948,
+    "website": "https://www.hoppenworth-ploch.de",
+    "offerings": 8,
+    "producers": 7,
     "in_my_bags": false
    },
    {
@@ -2929,6 +2941,17 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Weathered Hands Coffee",
+    "city": "Texas Hill Country",
+    "country": "USA",
+    "lat": 30.1902,
+    "lng": -98.0867,
+    "website": "https://www.weatheredhandscoffee.com",
+    "offerings": 3,
+    "producers": 3,
+    "in_my_bags": false
+   },
+   {
     "name": "Mural Roasters",
     "city": "San Antonio, TX",
     "country": "USA",
@@ -2940,14 +2963,14 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Weathered Hands Coffee",
-    "city": "Texas Hill Country",
+    "name": "Akhanay Coffee Roasters",
+    "city": "San Antonio, TX",
     "country": "USA",
-    "lat": 30.1902,
-    "lng": -98.0867,
-    "website": "https://www.weatheredhandscoffee.com",
-    "offerings": 3,
-    "producers": 3,
+    "lat": null,
+    "lng": null,
+    "website": null,
+    "offerings": 0,
+    "producers": 0,
     "in_my_bags": false
    },
    {
@@ -2962,23 +2985,23 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Botz Coffee",
-    "city": "San Antonio, TX",
+    "name": "Coffee Project NY",
+    "city": "New York, NY",
     "country": "USA",
-    "lat": 29.4241,
-    "lng": -98.4936,
-    "website": "https://botz-coffee.com",
+    "lat": 40.7264,
+    "lng": -73.9878,
+    "website": "https://coffeeprojectny.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
    },
    {
-    "name": "Perdido Coffee",
+    "name": "Estate Coffee Company",
     "city": "San Antonio, TX",
     "country": "USA",
     "lat": null,
     "lng": null,
-    "website": null,
+    "website": "https://www.estatecoffeecompany.com",
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
@@ -3017,29 +3040,7 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
-    "name": "Coffee Project NY",
-    "city": "New York, NY",
-    "country": "USA",
-    "lat": 40.7264,
-    "lng": -73.9878,
-    "website": "https://coffeeprojectny.com",
-    "offerings": 0,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
-    "name": "Estate Coffee Company",
-    "city": "San Antonio, TX",
-    "country": "USA",
-    "lat": null,
-    "lng": null,
-    "website": "https://www.estatecoffeecompany.com",
-    "offerings": 0,
-    "producers": 0,
-    "in_my_bags": false
-   },
-   {
-    "name": "Akhanay Coffee Roasters",
+    "name": "Perdido Coffee",
     "city": "San Antonio, TX",
     "country": "USA",
     "lat": null,
@@ -3048,14 +3049,25 @@ window.DIALIN = {
     "offerings": 0,
     "producers": 0,
     "in_my_bags": false
+   },
+   {
+    "name": "Botz Coffee",
+    "city": "San Antonio, TX",
+    "country": "USA",
+    "lat": 29.4241,
+    "lng": -98.4936,
+    "website": "https://botz-coffee.com",
+    "offerings": 0,
+    "producers": 0,
+    "in_my_bags": false
    }
   ],
   "countries": [
    {
     "country": "Colombia",
-    "producers": 93,
-    "roasters": 19,
-    "offerings": 122,
+    "producers": 94,
+    "roasters": 20,
+    "offerings": 123,
     "my_bags": 1
    },
    {
@@ -3074,16 +3086,16 @@ window.DIALIN = {
    },
    {
     "country": "Guatemala",
-    "producers": 25,
-    "roasters": 12,
-    "offerings": 31,
+    "producers": 26,
+    "roasters": 13,
+    "offerings": 32,
     "my_bags": 1
    },
    {
     "country": "Kenya",
-    "producers": 21,
-    "roasters": 12,
-    "offerings": 32,
+    "producers": 22,
+    "roasters": 13,
+    "offerings": 34,
     "my_bags": 0
    },
    {
@@ -3115,6 +3127,13 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
+    "country": "Brazil",
+    "producers": 8,
+    "roasters": 3,
+    "offerings": 11,
+    "my_bags": 0
+   },
+   {
     "country": "Ecuador",
     "producers": 7,
     "roasters": 5,
@@ -3129,17 +3148,17 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
-    "country": "Brazil",
-    "producers": 6,
-    "roasters": 2,
-    "offerings": 8,
-    "my_bags": 0
-   },
-   {
     "country": "Nicaragua",
     "producers": 4,
     "roasters": 2,
     "offerings": 5,
+    "my_bags": 0
+   },
+   {
+    "country": "Tanzania",
+    "producers": 3,
+    "roasters": 1,
+    "offerings": 3,
     "my_bags": 0
    },
    {
@@ -3150,9 +3169,9 @@ window.DIALIN = {
     "my_bags": 0
    },
    {
-    "country": "Tanzania",
+    "country": "Rwanda",
     "producers": 3,
-    "roasters": 1,
+    "roasters": 3,
     "offerings": 3,
     "my_bags": 0
    },
@@ -3174,13 +3193,6 @@ window.DIALIN = {
     "country": "Burundi",
     "producers": 2,
     "roasters": 1,
-    "offerings": 2,
-    "my_bags": 0
-   },
-   {
-    "country": "Rwanda",
-    "producers": 2,
-    "roasters": 2,
     "offerings": 2,
     "my_bags": 0
    },
@@ -3304,6 +3316,23 @@ window.DIALIN = {
     "in_my_bags": false
    },
    {
+    "name": "Danche",
+    "country": "Ethiopia",
+    "region": "Gedeo, Gedeb",
+    "roasters": 7,
+    "offerings": 13,
+    "roasted_by": [
+     "Friedhats",
+     "Hoppenworth & Ploch",
+     "Luna Coffee",
+     "Makeworth Coffee",
+     "Offshoot Coffee",
+     "September Coffee",
+     "SEY"
+    ],
+    "in_my_bags": true
+   },
+   {
     "name": "Hacienda La Esmeralda",
     "country": "Panama",
     "region": "Jaramillo",
@@ -3318,22 +3347,6 @@ window.DIALIN = {
      "SEY"
     ],
     "in_my_bags": false
-   },
-   {
-    "name": "Danche",
-    "country": "Ethiopia",
-    "region": "Gedeo, Gedeb",
-    "roasters": 6,
-    "offerings": 12,
-    "roasted_by": [
-     "Friedhats",
-     "Luna Coffee",
-     "Makeworth Coffee",
-     "Offshoot Coffee",
-     "September Coffee",
-     "SEY"
-    ],
-    "in_my_bags": true
    },
    {
     "name": "Finca Soledad",
@@ -3793,11 +3806,11 @@ window.DIALIN = {
    }
   ],
   "totals": {
-   "roasters": 40,
-   "producers": 2064,
-   "offerings": 4248,
-   "offerings_available": 831,
-   "offerings_with_producer": 544,
+   "roasters": 41,
+   "producers": 2069,
+   "offerings": 4258,
+   "offerings_available": 839,
+   "offerings_with_producer": 552,
    "last_release": "2026-10-30 08:37:46-07:00"
   },
   "last_scrape": {
