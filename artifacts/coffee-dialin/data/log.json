@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-11T06:47-08:00",
+ "generated_at": "2026-11-11T07:49-08:00",
  "source": "postgres claude: coffee_bags, coffee_shots, coffee_experiments, kv coffee-dialin, coffee_* (untamped), kv marzocco-telemetry",
  "rules": {
   "_doc": "Espresso house rules for Balthamos (Linea Mini R) + Zerno Z2. SOURCE OF TRUTH since 2026-10-10 (the Coffee Dial-In sheet is retired; its Reference tab is preserved verbatim in `sections`). Shots live in coffee_shots, bags in coffee_bags (data.dialin). Edit `laws`/`priors`/`rules` here; the public page renders `sections` and these fields.",
@@ -465,40 +465,40 @@
     "process": "Brazil + Ethiopia, natural",
     "roaster": "Proud Mary"
    },
-   "shots": 17,
+   "shots": 18,
    "last_shot": {
-    "id": 85,
-    "shot_at": "2026-11-07T11:48:11.87693-08:00",
+    "id": 94,
+    "shot_at": "2026-11-11T07:40:12.420476-08:00",
     "burrs": "SSP Lab Sweet",
-    "microns": 220,
-    "rpm": 1000,
+    "microns": 215,
+    "rpm": 1200,
     "dose_g": 18,
-    "yield_g": 37.63,
-    "time_s": 20.1,
-    "ratio": 2.09,
-    "taste": "don't hate it; would not call it bitter",
-    "verdict": "fast (20.1 s) — went coarser by accident instead of finer",
-    "next_change": "→ 220 @ 1200 (RPM read at this grind)",
+    "yield_g": 39.58,
+    "time_s": 16.8,
+    "ratio": 2.2,
+    "taste": null,
+    "verdict": "fast (16.8 s); 215 @ 1000 ran 28.0 s on Nov 7, so the dial has moved while the burrs season",
+    "next_change": "→ 205 @ 1200",
     "by_whom": null
    },
    "queued": {
-    "id": 86,
-    "shot_at": "2026-11-07T11:48:11.99471-08:00",
+    "id": 95,
+    "shot_at": "2026-11-11T07:40:12.538741-08:00",
     "burrs": "SSP Lab Sweet",
-    "microns": 220,
+    "microns": 205,
     "rpm": 1200,
     "dose_g": 18,
-    "next_change": "220 @ 1200, 18 g, cut at 34. RPM read: +200 rpm has been worth +4–8 s at fixed grind, so expect 24–28 s — closer, probably still under 30. If the window is the goal, 215 @ 1200 predicts 32–36."
+    "next_change": "205 @ 1200, 18 g, cut at 34, aim 30–35 s total. 215 @ 1200 ran 16.8 s (2026-11-11). Still fast → 195; choked or over 40 s → 210. Burrs still seasoning and the zero is suspect, so this plans the next shot only."
    },
    "queue": [
     {
-     "id": 86,
-     "shot_at": "2026-11-07T11:48:11.99471-08:00",
+     "id": 95,
+     "shot_at": "2026-11-11T07:40:12.538741-08:00",
      "burrs": "SSP Lab Sweet",
-     "microns": 220,
+     "microns": 205,
      "rpm": 1200,
      "dose_g": 18,
-     "next_change": "220 @ 1200, 18 g, cut at 34. RPM read: +200 rpm has been worth +4–8 s at fixed grind, so expect 24–28 s — closer, probably still under 30. If the window is the goal, 215 @ 1200 predicts 32–36."
+     "next_change": "205 @ 1200, 18 g, cut at 34, aim 30–35 s total. 215 @ 1200 ran 16.8 s (2026-11-11). Still fast → 195; choked or over 40 s → 210. Burrs still seasoning and the zero is suspect, so this plans the next shot only."
     }
    ]
   },
@@ -1129,6 +1129,44 @@
  ],
  "shots": [
   {
+   "id": 95,
+   "shot_at": "2026-11-11 07:40:12.538741-08:00",
+   "bag": "Ghost Rider",
+   "method": "espresso",
+   "status": "queued",
+   "burrs": "SSP Lab Sweet",
+   "microns": 205,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": null,
+   "time_s": null,
+   "ratio": null,
+   "taste": null,
+   "verdict": null,
+   "next_change": "205 @ 1200, 18 g, cut at 34, aim 30–35 s total. 215 @ 1200 ran 16.8 s (2026-11-11). Still fast → 195; choked or over 40 s → 210. Burrs still seasoning and the zero is suspect, so this plans the next shot only.",
+   "by_whom": null,
+   "data": {}
+  },
+  {
+   "id": 94,
+   "shot_at": "2026-11-11 07:40:12.420476-08:00",
+   "bag": "Ghost Rider",
+   "method": "espresso",
+   "status": "pulled",
+   "burrs": "SSP Lab Sweet",
+   "microns": 215,
+   "rpm": 1200,
+   "dose_g": "18",
+   "yield_g": "39.58",
+   "time_s": "16.8",
+   "ratio": "2.20",
+   "taste": null,
+   "verdict": "fast (16.8 s); 215 @ 1000 ran 28.0 s on Nov 7, so the dial has moved while the burrs season",
+   "next_change": "→ 205 @ 1200",
+   "by_whom": null,
+   "data": {}
+  },
+  {
    "id": 93,
    "shot_at": "2026-11-10 13:54:46.506005-08:00",
    "bag": "Kuma Hunapu",
@@ -1234,25 +1272,6 @@
    "data": {
     "grinder": "Zerno Z2"
    }
-  },
-  {
-   "id": 86,
-   "shot_at": "2026-11-07 11:48:11.994710-08:00",
-   "bag": "Ghost Rider",
-   "method": "espresso",
-   "status": "queued",
-   "burrs": "SSP Lab Sweet",
-   "microns": 220,
-   "rpm": 1200,
-   "dose_g": "18",
-   "yield_g": null,
-   "time_s": null,
-   "ratio": null,
-   "taste": null,
-   "verdict": null,
-   "next_change": "220 @ 1200, 18 g, cut at 34. RPM read: +200 rpm has been worth +4–8 s at fixed grind, so expect 24–28 s — closer, probably still under 30. If the window is the goal, 215 @ 1200 predicts 32–36.",
-   "by_whom": null,
-   "data": {}
   },
   {
    "id": 85,
@@ -2500,10 +2519,10 @@
   }
  ],
  "health": {
-  "last_shot_at": "2026-11-10 13:54:46.389042-08:00",
-  "shots_7d": 7,
-  "shots_30d": 28,
-  "shots_total": 56,
+  "last_shot_at": "2026-11-11 07:40:12.420476-08:00",
+  "shots_7d": 8,
+  "shots_30d": 29,
+  "shots_total": 57,
   "queued": 5,
   "bags_settled": 2,
   "bags_dialing": 12,
