@@ -12,6 +12,9 @@ Built 2026-11-12 by the build engineer, alone (no subagents). The panel reviewed
 | `1d78316` | Fix pass: Eng items 1 to 9, UX items 11 to 16 |
 | `9014297` | Fix pass item 10: `artifacts/index.html` regenerated |
 | `cac021c` | Owner override: the intro plays through; back chip restyled |
+| `84fad67` | Five more photos replace the last placeholders |
+| `2dc018c` | `artifacts/index.html` regenerated |
+| `22381cf` | Follow-up review fixes: Eng 1 to 7, UX 8 and 9 |
 
 Live: all three are on https://robbybro.com/artifacts/extra-adventures/ . Parts 1 and 2 were live by 8:02pm; Part 3 was live at 8:04pm on 2026-11-12, about 100 seconds after the commit (the `git-push` job, then GitHub Pages), and the served page is byte-identical to the committed `index.html` (158,372 bytes). `shots/live-*.png` are from the live URL.
 
@@ -241,3 +244,29 @@ This makes the earlier lines about the picsum placeholders (the "Placeholders" n
 `python3 artifacts/extra-adventures/tests/run.py`: **338 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**.
 
 Screenshots (local, `shots/`): `photo-phone-390-<name>.png` and `photo-desktop-1440-<name>.png` for each of the five.
+
+## Follow-up review fixes (2026-11-13, fresh Eng and UX seats on `fb25bfa..2dc018c`)
+
+No P1, four P2. Commit `22381cf`.
+
+Live: `22381cf` was on https://robbybro.com/artifacts/extra-adventures/ at 11:21am on 2026-11-13, about five minutes after the commit; the served page is byte-identical to the committed `index.html` (165,562 bytes) and the re-encoded photo is served (250,624 bytes).
+
+| # | Seat | Sev | Item | Result | What was done, and the evidence |
+|---|---|---|---|---|---|
+| 1 | Eng | P2 | `begin()` could strand the page veiled, locked and inert | Done | `fit(); start();` run inside a try whose catch is `finish()`; the late-font `fit()` and the resize `fit()` are caught the same way. The visible-time cap is armed in the script body, in the same statement that makes the content inert, not in `start()`, so the page is back within 9 s of the script taking over whatever happens before the animation starts (it was up to about 10.5 s with the font wait, and unbounded on a throw). Probe: with `fit()` made to throw, the page is at rest at hand-over; with the start made never to come (font promise hangs, fallback timer lost), the cap lifts the veil at 9.00 s. Both rows, and the reduced-motion row in item 5, fail on the page as it was at `84fad67` and pass now |
+| 2 | Eng | P2 | `scrollRestoration = "manual"` never undone | Done | `finish()` sets it back to `"auto"`. Probe: after the animation, the Day Trips chip scrolls to 4913, Back returns to 0 with the hash gone. Refresh from mid-page still starts at the top with the animation playing (the head script sets `"manual"` again on each load that will play) |
+| 3 | Eng | P2 | Olympic caption about 121 px below its photo between 760 and 1000 px | Changed | Not `align-self: start`: from 760 px the figure is now a float (item 8), so it is no longer a grid item and cannot be stretched. Probe: caption 4.0 px under its frame for both portraits at 390, 700, 760, 1024 and 1440 |
+| 4 | Eng | P3 | A hash set during the intro ended at the top | Done | `finish()`: if the veil was up and `location.hash` names an element, `scrollIntoView()`. Probe: `#hikes` added mid-run, the run ends by itself, the page then sits with `#hikes` at the top |
+| 5 | Eng | P3 | Reduced motion turned on mid-intro | Done | A `change` listener on the media query (with the `addListener` fallback) updates `reduce` and calls `finish()` if the veil is up. Probe, with a stand-in media query in a doctored copy: ends at once, and the wheels then stay still on scroll |
+| 6 | Eng | P3 | Square portrait frame 680 px at 759 | Done | `.photo.tall { width: 100%; max-width: 22rem; justify-self: center }`. 326 px at 390 as before, 352 px centered at 700; from 760 px it is the float, 272 px at 760 and 320 px from about 830 |
+| 7 | Eng | P3 | `orcas-island.jpg` 481 KB | Changed | 1125x848, not 1200: `djpeg -scale 6/8` (a libjpeg scale, no resampling tool needed) then `cjpeg -quality 82` and `jpegtran -copy none`. 251 KB, JFIF header only, `width`/`height` updated. It is a second-generation encode of the Lead's 1500 px file |
+| 8 | UX | P2 | San Juan Island card: about 170 px of empty card at 1440 | Done | From 760 px the two portrait cards are `display: flow-root` with the figure floated right (`clamp(15rem, 40%, 20rem)` wide). What follows the heading block starts beside the photo while there is photo left and below it when there is not. Looked at, at 760, 1024 and 1440: San Juan Island has "What to do" beside the photo and the card ends with its text; Olympic has the heading block beside the photo and "What to do" full width under it, as before. Probe at those widths: "What to do" starts 12 px under the heading block, 0 px spare at the end of the card. `shots/portrait-<width>-san-juan.png`, `shots/portrait-<width>-olympic.png` |
+| 9 | UX | P3 | Resting bikes touch the top of "EXTRA" at 390 | Done | 6 px added to the stacked layout's bike margin; the title moves down 6 px, its right edge does not move. Probe: wheels 5.3 to 5.6 px above the letter tops at 360 and 390; title end still on the right content margin |
+
+Not changed, by instruction: no cancel, every-refresh play, release at rest, chip always visible, title right-aligned, captions, footer link.
+
+### Tests
+
+`python3 artifacts/extra-adventures/tests/run.py`, about two minutes: **389 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**. Two consecutive runs on the final code, the second after the commit.
+
+`shots-kept/phone-390x844-rest.png` was re-captured (the header is 6 px taller); the other three kept files came out byte-identical.
