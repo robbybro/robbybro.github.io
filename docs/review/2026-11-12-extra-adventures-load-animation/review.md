@@ -78,6 +78,7 @@ Fresh Eng and UX seats, 2026-11-13, on the no-cancel change, the chip restyle an
 | UX | P3 | Bikes touch "EXTRA" at phone width | Fixed `22381cf` |
 | UX | P3 | Olympic caption differs from the card heading | Kept: the caption is Robby's own comment on the photo |
 | UX | P3 | Square photo pushes the title down on phones; captions small; title right-aligned | Accepted; right alignment is Robby's spec |
-| UX | P3 | Two back links at page end with different wording | Open to Robby |
+| UX | P3 | Two back links at page end with different wording | Robby 2026-11-13: drop the footer link. Done `060b032` |
+| UX | P2 (first round) | Fixed chip sits over content on phones | Robby 2026-11-13: "It's fine if it's over content", provided the end of the page clears it. Done `060b032`: footer padding built from the chip's box; 15.5 to 16.5 px clear at 360, 390, 768, 1440 |
 | UX | P3 | Chip drawn 34 px tall | No change: the hit area is 44 px (probe hit test) |
 | Eng | P3 | iOS Safari scroll lock unverified; needs a real iPhone | Open: hardware check |
