@@ -145,6 +145,9 @@
   .photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.85); }
   .photo figcaption { font-family: "Gochi Hand", cursive; color: var(--olive); font-size: 17px; text-align: right; }
   .photo.wide .frame { aspect-ratio: 16 / 7; }
+  /* Two destinations have portrait photos of us. A 16:7 banner would cut us out, so those get a square frame, and from
+     760px it sits beside the heading (.head: title, chips, blurb, how to get there) instead of across the top. */
+  .photo.tall .frame { aspect-ratio: 1 / 1; }
   .hikes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 20px; align-items: start; }
 
   /* destinations */
@@ -154,7 +157,14 @@
   .dest .blurb { font-size: 17px; max-width: 66ch; }
   .dest .grp { padding-top: 6px; }
   .dest .grp ul { max-width: 70ch; }
-  @media (min-width: 760px) { .dest { padding: 20px 24px 26px; } .dest .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
+  .dest .head { display: grid; gap: 12px; align-content: start; }
+  @media (min-width: 760px) {
+    .dest { padding: 20px 24px 26px; } .dest .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dest.side { grid-template-columns: minmax(0, 1fr) 20rem; column-gap: 28px; }
+    .dest.side > .photo { grid-column: 2; grid-row: 1; }
+    .dest.side > .head { grid-column: 1; grid-row: 1; }
+    .dest.side > .grp { grid-column: 1 / -1; }
+  }
 
   footer { padding: 50px 0 calc(76px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; text-align: center; font-size: 14px; color: var(--muted); }
   footer .back { font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .06em; font-size: 20px; text-decoration: none; color: var(--olive); }
@@ -877,31 +887,35 @@
   <p class="lead">Worth building a few extra days around. Temps are typical late-July highs and lows.</p>
   <article class="dest" id="orcas">
   <figure class="photo wide">
-  <div class="frame"><img src="https://picsum.photos/seed/orcas/1200/800" alt="" loading="lazy"></div>
-  <figcaption>Mt Constitution, probably (photo coming)</figcaption>
+  <div class="frame"><img src="photos/orcas-island.jpg" alt="Two loaded touring bikes leaning on a white railing above the water, with a Washington State ferry at the dock behind them" width="1500" height="1130" loading="lazy" style="object-position: 50% 25%"></div>
+  <figcaption>Orcas Island</figcaption>
 </figure>
   <h3>Orcas Island</h3>
   <p class="meta"><span>recommend 2 nights</span><span><a href="https://usclimatedata.com/climate/friday-harbor/washington/united-states/uswa0660" target="_blank" rel="noopener">late July ~71°/49°F</a>, mild and dry</span></p>
   <p class="blurb">Orcas Island is our favorite of the San Juans. It’s also the hilliest!</p>
   <div class="grp"><h5>How to get there</h5><ul class=""><li>The ferry is a 90 min drive from Seattle and fills up quick, we recommend either biking on or getting a <a href="https://secureapps.wsdot.wa.gov/Ferries/Reservations/Vehicle/default.aspx" target="_blank" rel="noopener">ferry reservation</a>.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Drive/bike/hike <a href="https://www.wta.org/go-hiking/hikes/mount-constitution" target="_blank" rel="noopener">Mt Constitution</a> (there is hiking here)</li><li>Eat at <a href="https://www.houlme.com" target="_blank" rel="noopener">Houlme</a></li><li>Get pastries at <a href="https://www.instagram.com/seabirdbakeshop" target="_blank" rel="noopener">Seabird</a> (only open Saturdays. Get there early, they sell out fast!)</li><li>Paddle board on <a href="https://www.google.com/maps/search/?api=1&amp;query=Moran+State+Park&amp;query_place_id=ChIJjSm3xzyFhVQR0KZNENyj7s8" target="_blank" rel="noopener">Cascade Lake</a> and <a href="https://www.wta.org/go-hiking/hikes/cascade-lake" target="_blank" rel="noopener">walk the path that goes around the lake</a></li></ul></div>
-</article><article class="dest" id="san-juan">
-  <figure class="photo wide">
-  <div class="frame"><img src="https://picsum.photos/seed/san-juan/1200/800" alt="" loading="lazy"></div>
-  <figcaption>Lime Kiln, whale-less (photo coming)</figcaption>
+</article><article class="dest side" id="san-juan">
+  <figure class="photo tall">
+  <div class="frame"><img src="photos/san-juan-island.jpg" alt="Emily &amp; Robby in helmets and cycling kit, standing with their loaded bikes on a gravel pullout above hazy water" width="1130" height="1500" loading="lazy" style="object-position: 0% 100%; transform: scale(1.6); transform-origin: 0% 100%"></div>
+  <figcaption>San Juan Island</figcaption>
 </figure>
+  <div class="head">
   <h3>San Juan Island</h3>
   <p class="meta"><span>recommend 2 nights</span><span><a href="https://usclimatedata.com/climate/friday-harbor/washington/united-states/uswa0660" target="_blank" rel="noopener">late July ~71°/49°F</a>, mild and dry</span></p>
   <p class="blurb">San Juan Island has some heavy hitters.</p>
-  <div class="grp"><h5>How to get there</h5><ul class=""><li>Same ferry terminal and reservation rigamarole as Orcas.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Friday Harbor is a bit touristy but some very cute shops</li><li>Whale watching - plenty of options that leave from this island and one of the best areas for Orcas. If this is all you do you can walk onto the ferry as the town (Friday Harbor) is right off of the ferry and make this a day trip</li><li>Roche Harbor has some cute shops and good food</li><li>Scenic views of the San Juans, potential whale sightings, and hiking at <a href="https://www.sanjuancountywa.gov/Facilities/Facility/Details/San-Juan-County-Park-12" target="_blank" rel="noopener">San Juan County Park</a> (we’re 2 for 2 on whale sightings during bikepacking trips here), <a href="https://dnr.wa.gov/natural-areas/natural-resources-conservation-areas/cattle-point-natural-resources-conservation-area" target="_blank" rel="noopener">Cattle Point</a>, <a href="https://parks.wa.gov/find-parks/state-parks/lime-kiln-point-state-park" target="_blank" rel="noopener">Lime Kiln Point State Park</a></li></ul></div>
-</article><article class="dest" id="olympic">
-  <figure class="photo wide">
-  <div class="frame"><img src="https://picsum.photos/seed/olympic/1200/800" alt="" loading="lazy"></div>
-  <figcaption>the Hoh, dripping (photo coming)</figcaption>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li>Same ferry terminal and reservation rigamarole as Orcas.</li></ul></div>
+  </div><div class="grp"><h5>What to do</h5><ul class=""><li>Friday Harbor is a bit touristy but some very cute shops</li><li>Whale watching - plenty of options that leave from this island and one of the best areas for Orcas. If this is all you do you can walk onto the ferry as the town (Friday Harbor) is right off of the ferry and make this a day trip</li><li>Roche Harbor has some cute shops and good food</li><li>Scenic views of the San Juans, potential whale sightings, and hiking at <a href="https://www.sanjuancountywa.gov/Facilities/Facility/Details/San-Juan-County-Park-12" target="_blank" rel="noopener">San Juan County Park</a> (we’re 2 for 2 on whale sightings during bikepacking trips here), <a href="https://dnr.wa.gov/natural-areas/natural-resources-conservation-areas/cattle-point-natural-resources-conservation-area" target="_blank" rel="noopener">Cattle Point</a>, <a href="https://parks.wa.gov/find-parks/state-parks/lime-kiln-point-state-park" target="_blank" rel="noopener">Lime Kiln Point State Park</a></li></ul></div>
+</article><article class="dest side" id="olympic">
+  <figure class="photo tall">
+  <div class="frame"><img src="photos/olympic-national-park.jpg" alt="Emily &amp; Robby smiling at a camp table under a blue canopy in a mossy forest, mixing food in a large metal bowl" width="1125" height="1500" loading="lazy" style="object-position: 50% 72%"></div>
+  <figcaption>Olympic National Park</figcaption>
 </figure>
+  <div class="head">
   <h3>Olympic Peninsula</h3>
   <p class="meta"><span><a href="https://usclimatedata.com/climate/port-townsend/washington/united-states/uswa0351" target="_blank" rel="noopener">late July ~70°/53°F</a> in Port Townsend, <a href="https://www.usclimatedata.com/climate/forks/washington/united-states/uswa0149" target="_blank" rel="noopener">~72°/50°F</a> at the Hoh</span></p>
   <p class="blurb">Home to the only rainforest in the lower 48, one of our favorite national parks, lavender farms as far as the eye can see, and some of the <a href="https://www.google.com/maps/search/?api=1&amp;query=123+Thai+Food+Port+Townsend&amp;query_place_id=ChIJFQoInMvtj1QRF9eXGbF0Ay8" target="_blank" rel="noopener">best pad thai we’ve ever had</a>, the Olympic Peninsula is a vibe.</p>
-  <div class="grp"><h5>How to get there</h5><ul class=""><li><a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">Kingston or Bremerton Ferry</a> will cut some time off the drive.</li><li>You can also drive around - stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Hama+Hama+Oyster+Saloon&amp;query_place_id=ChIJ88qWuaDNkVQR3ptf1sFACEg" target="_blank" rel="noopener">Hama Hama Oysters</a> or <a href="https://www.google.com/maps/search/?api=1&amp;query=Union+City+Market&amp;query_place_id=ChIJSSa2iK24kVQR0p1KBGQSpss" target="_blank" rel="noopener">Union City Market</a> if you go this route. Also don’t watch <a href="https://www.youtube.com/watch?v=j-zczJXSxnw&amp;t=106s" target="_blank" rel="noopener">this Tacoma Narrows Bridge video</a> - that every Washington physics class uses to teach resonance and frequencies - until after you’ve driven over it.</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li><a href="https://www.nps.gov/olym/planyourvisit/visiting-the-hoh.htm" target="_blank" rel="noopener">Hoh Rainforest</a> - slaps</li><li><a href="https://www.nps.gov/olym/index.htm" target="_blank" rel="noopener">Olympic National Park</a> - slaps</li><li>Port Townsend - slaps (skip Port Angeles it kinda sucks)</li><li>Lavender Farms (if you’re into that)</li><li><a href="https://olygamefarm.com/" target="_blank" rel="noopener">Olympic Game Farm</a> - feed bison bread through your car window, expect enough saliva to need a car wash and a shower after. Slaps?</li></ul></div>
+  <div class="grp"><h5>How to get there</h5><ul class=""><li><a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">Kingston or Bremerton Ferry</a> will cut some time off the drive.</li><li>You can also drive around - stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Hama+Hama+Oyster+Saloon&amp;query_place_id=ChIJ88qWuaDNkVQR3ptf1sFACEg" target="_blank" rel="noopener">Hama Hama Oysters</a> or <a href="https://www.google.com/maps/search/?api=1&amp;query=Union+City+Market&amp;query_place_id=ChIJSSa2iK24kVQR0p1KBGQSpss" target="_blank" rel="noopener">Union City Market</a> if you go this route. Also don’t watch <a href="https://www.youtube.com/watch?v=j-zczJXSxnw&amp;t=106s" target="_blank" rel="noopener">this Tacoma Narrows Bridge video</a> - that every Washington physics class uses to teach resonance and frequencies - until after you’ve driven over it.</li></ul></div>
+  </div><div class="grp"><h5>What to do</h5><ul class=""><li><a href="https://www.nps.gov/olym/planyourvisit/visiting-the-hoh.htm" target="_blank" rel="noopener">Hoh Rainforest</a> - slaps</li><li><a href="https://www.nps.gov/olym/index.htm" target="_blank" rel="noopener">Olympic National Park</a> - slaps</li><li>Port Townsend - slaps (skip Port Angeles it kinda sucks)</li><li>Lavender Farms (if you’re into that)</li><li><a href="https://olygamefarm.com/" target="_blank" rel="noopener">Olympic Game Farm</a> - feed bison bread through your car window, expect enough saliva to need a car wash and a shower after. Slaps?</li></ul></div>
 </article><article class="dest" id="north-cascades">
   <figure class="photo wide">
   <div class="frame"><img src="photos/maple-pass.jpg" alt="A jagged, snow-dusted ridge line under a rippled sky, with golden larches on a snowy slope in the foreground" width="1024" height="768" loading="lazy" style="object-position: 50% 60%"></div>
@@ -913,8 +927,8 @@
   <div class="grp"><h5>What to do</h5><ul><li>Here are some of our favorite hikes<ul class="sub"><li><a href="https://www.wta.org/go-hiking/hikes/cutthroat-pass-via-pacific-crest-trail" target="_blank" rel="noopener">Cutthroat Pass</a></li><li><a href="https://www.wta.org/go-hiking/hikes/maple-pass" target="_blank" rel="noopener">Maple Pass</a></li><li><a href="https://www.wta.org/go-hiking/hikes/blue-lake" target="_blank" rel="noopener">Blue Lake</a></li><li><a href="https://www.wta.org/go-hiking/hikes/colchuck-lake" target="_blank" rel="noopener">Colchuck Lake</a></li><li><a href="https://www.wta.org/go-hiking/hikes/lake-ingalls" target="_blank" rel="noopener">Ingalls Lake</a></li></ul></li><li>Diablo Lake/Ross Lake - primarily for kayaking although there are some hiking trails from the lake. <a href="https://www.rosslakeresort.com/how-to-get-here" target="_blank" rel="noopener">Can only access Ross Lake via a 1 mile hike</a>. <a href="https://www.rosslakeresort.com/equipment-rentals" target="_blank" rel="noopener">Kayak rentals available on Ross Lake</a></li></ul></div><div class="grp"><h5>Where to stay</h5><ul><li><strong>Mazama</strong> is our favorite place to go and is where we got engaged. While it is home to some of the best XC skiing in the country, it can get pretty hot in the summer.<ul class="sub"><li>Accessible via North Cascades highway (very pretty drive and the shorter route of the two ways to get there) in the summer. I-5 north to Burlington, then <a href="https://wsdotblog.blogspot.com/2026/04/north-cascades-highway-2026-opening.html" target="_blank" rel="noopener">Highway 20</a> east over Rainy and Washington Passes. About 180 miles / 4 hours. <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Mazama,+WA&amp;waypoints=Marblemount,+WA%7CWashington+Pass" target="_blank" rel="noopener">Directions</a>.</li><li>If you want to stop in Leavenworth you can take Highway 2 and either Snoqualmie + Blewett Pass or Stevens Pass. If you take this route recommend a half way stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Anjou+Bakery&amp;query_place_id=ChIJoRUoRE-1m1QRdVid5P-N2Gs" target="_blank" rel="noopener">Anjou</a> (great french bakery). About 250 miles / 5 hours either way. <a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Mazama,+WA&amp;waypoints=Leavenworth,+WA%7CPateros,+WA" target="_blank" rel="noopener">Directions</a>.</li><li><a href="https://www.google.com/maps/search/?api=1&amp;query=Mazama+Store+%26+Bakery&amp;query_place_id=ChIJA3flf4BUg1QRzEroDoDfmk8" target="_blank" rel="noopener">Mazama Store</a> - a great bakery, grocery store, cafe in town. Highly recommend the baguette.</li><li><a href="https://www.innmazama.com/" target="_blank" rel="noopener">The Inn at Mazama</a>/<a href="https://cabinsofthemethow.com/" target="_blank" rel="noopener">Cabins of the Methow</a> - has a hotel but also rents many cabins. We have never stayed at the hotel but have rented through them many times for cabins</li></ul></li><li><strong>Leavenworth</strong> is kind of touristy, but it is a cute and walkable Bavarian town<ul class="sub"><li>You can float the Wenatchee River right through town! <a href="https://www.leavenworthoutdoorcenter.com" target="_blank" rel="noopener">Leavenworth Outdoor Center</a> rents tubes and shuttles you to the put-in (<a href="https://leavenworth.org/experience/river-tubing/" target="_blank" rel="noopener">more info</a>).</li></ul></li><li><strong>Winthrop</strong> while we’re on the subject of themed towns, this one is straight out of an Old Western. <a href="https://parks.wa.gov/find-parks/state-parks/pearrygin-lake-state-park" target="_blank" rel="noopener">Pearrygin Lake State Park</a> has good camping, and there is a lot of gravel biking in the area.</li></ul></div>
 </article><article class="dest" id="victoria">
   <figure class="photo wide">
-  <div class="frame"><img src="https://picsum.photos/seed/victoria/1200/800" alt="" loading="lazy"></div>
-  <figcaption>high tea, pinkies out (photo coming)</figcaption>
+  <div class="frame"><img src="photos/victoria.jpg" alt="Night view over Victoria’s Inner Harbour: a docked ferry in the foreground and the lit waterfront reflected in the water" width="1500" height="844" loading="lazy" style="object-position: 50% 100%"></div>
+  <figcaption>Victoria, BC</figcaption>
 </figure>
   <h3>Victoria, BC</h3>
   <p class="meta"><span>Recommend 2 nights</span><span><a href="https://www.currentresults.com/Weather/Canada/British-Columbia/Places/victoria-temperatures-by-month-average.php" target="_blank" rel="noopener">late July ~73°/53°F</a>, warm and dry</span></p>
@@ -922,8 +936,8 @@
   <div class="grp"><h5>How to get there</h5><ul class=""><li>You can take the <a href="https://www.frs-clipper.com/seattle-victoria-ferry" target="_blank" rel="noopener">Victoria Clipper</a> directly from downtown Seattle or check out the Tofino section if you want to bring a car</li></ul></div><div class="grp"><h5>What to do</h5><ul class=""><li>Explore <a href="https://butchartgardens.com/" target="_blank" rel="noopener">Butchart Gardens</a>, get high tea at the <a href="https://www.teaattheempress.com/" target="_blank" rel="noopener">Fairmont Empress</a>, explore a cute island town with <a href="https://www.google.com/maps/search/?api=1&amp;query=Bows+Coffee+Roasters&amp;query_place_id=ChIJs6axbXlzj1QRPyZm8y9U4D4" target="_blank" rel="noopener">good coffee</a> and <a href="https://www.google.com/maps/search/?api=1&amp;query=Jam+Cafe+Victoria&amp;query_place_id=ChIJB6epc4N0j1QRCZoubfE2Xr4" target="_blank" rel="noopener">breakfast</a>. If you want to drive, see the Tofino section for details.</li></ul></div>
 </article><article class="dest" id="tofino">
   <figure class="photo wide">
-  <div class="frame"><img src="https://picsum.photos/seed/tofino/1200/800" alt="" loading="lazy"></div>
-  <figcaption>Cox Bay, wetsuits on (photo coming)</figcaption>
+  <div class="frame"><img src="photos/tofino.jpg" alt="A wide, foggy beach with surf rolling in, a forested headland behind, and a surfer carrying a board across the wet sand" width="1500" height="844" loading="lazy" style="object-position: 50% 65%"></div>
+  <figcaption>Tofino, BC</figcaption>
 </figure>
   <h3>Tofino, BC</h3>
   <p class="meta"><span>Recommend 4+ nights</span><span><a href="https://weatherspark.com/y/307/Average-Weather-in-Tofino-British-Columbia-Canada-Year-Round" target="_blank" rel="noopener">late July ~66°/51°F</a>, cool and often foggy</span></p>
@@ -940,7 +954,7 @@
 
 <footer>
   <a class="back" href="https://emilyandrobby.wedding">← back to emilyandrobby.wedding</a>
-  <p>Photos of us in these places are on the way. Questions? Just ask us.</p>
+  <p>Questions? Just ask us.</p>
 </footer>
 
 </div>

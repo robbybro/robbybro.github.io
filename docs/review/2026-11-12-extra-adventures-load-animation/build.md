@@ -208,3 +208,36 @@ The dark hover figure fails 4.5:1. It is the section chips' own hover (`nav.jump
 The scroll lock on a real iPhone or Android phone (reasoned from `overflow: hidden` on the root plus `touch-action: none` on the veil; the scroll handler is the backstop). A real user wheel or touch scroll cannot be synthesized in the probe; it asserts the lock's computed style and that a scripted scroll is put back. `inert` needs Safari 15.5, Chrome 102 or Firefox 112; on older browsers focus can go behind the veil.
 
 `shots-kept/` was re-captured after this pass.
+
+## Five more photos: the last placeholders (2026-11-13)
+
+Five album photos, already downscaled and stripped by the Lead, replace the five picsum placeholders one for one. Commit: see the commit that adds this section.
+
+| File | Pixels | Where | Result | Frame and `object-position` |
+|---|---|---|---|---|
+| `orcas-island.jpg` | 1500x1130 | `#orcas` banner | Done | 16:7 banner, `50% 25%`: the ferry's lower decks along the top, both bikes below; the front bike's tire is trimmed at the bottom edge |
+| `san-juan-island.jpg` | 1130x1500 | `#san-juan` | Changed | Not a banner: a square frame, anchored bottom left and enlarged 1.6 times (`object-position: 0% 100%; transform: scale(1.6)` from the same corner), so the frame holds Emily & Robby and both bikes and leaves out the sky and the utility pole |
+| `olympic-national-park.jpg` | 1125x1500 | `#olympic` | Changed | Not a banner: a square frame, `50% 72%`: both faces, the canopy edge, the table and the bowl |
+| `victoria.jpg` | 1500x844 | `#victoria` banner | Done | 16:7 banner, `50% 100%`: the harbor lights and the docked ferry, the black sky cut |
+| `tofino.jpg` | 1500x844 | `#tofino` banner | Done | 16:7 banner, `50% 65%`: headland, surf and the surfer |
+
+**Frame choice for the two portraits.** One rule for both (`figure.photo.tall`, article class `side`): a square frame. Below 760 px it sits across the top of the card like the banners (326x326 at 390). From 760 px it sits at the right of the card, 320x320, beside a `.head` block holding the title, the chips, the blurb and "How to get there"; "What to do" runs full width underneath. Looked at, at 390 and 1440: both faces, the bikes and the table are in frame in all four.
+
+Also in this commit:
+
+- Captions are the plain place names; no "(photo coming)" is left.
+- The footer reads "Questions? Just ask us." The sentence about photos being on the way is gone.
+- `tests/run.py` no longer points picsum.photos at a dead port; its docstring says the page's only third party is Google Fonts.
+- Probe additions: 11 images, all `photos/*.jpg`, with alt text, `loading="lazy"`, and `width`/`height` equal to the file's own size (this also re-checks the resized Granite Mountain); no "picsum", "photo coming" or "on the way" anywhere in the page; the two portrait frames square and placed as above at 390 and 1440; the four banners 16:7.
+
+**Third parties.** The page source references two outside hosts, `fonts.googleapis.com` (the stylesheet) and `fonts.gstatic.com` (the font files it names). The probe reads the browser's own resource list after load at 390 and 1440 and finds those two and the page's own host, nothing else. Links a guest clicks are not requests the page makes.
+
+Not done: no smaller variants. `orcas-island.jpg` is 481 KB and `olympic-national-park.jpg` 402 KB; both are lazy-loaded and far down the page.
+
+This makes the earlier lines about the picsum placeholders (the "Placeholders" note and acceptance point 2.3's "five picsum figures") history.
+
+### Tests
+
+`python3 artifacts/extra-adventures/tests/run.py`: **338 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**.
+
+Screenshots (local, `shots/`): `photo-phone-390-<name>.png` and `photo-desktop-1440-<name>.png` for each of the five.

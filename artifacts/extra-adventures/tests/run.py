@@ -8,7 +8,7 @@ artifact folder itself on a free local port and the probe posts its table back.
 
 Needs Google Chrome (CHROME=/path/to/chrome to override), outside any sandbox that blocks it.
 --headless=new because the old mode delivers no animation frames or scroll events to a page it is not painting.
-picsum.photos (the placeholder photos) is pointed at a dead port so a slow third party cannot stall the run.
+The page's only third party is Google Fonts; the third pass points its two hosts at a dead port.
 
 Run:  python3 tests/run.py
 """
@@ -33,11 +33,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 def one_pass(port, query, *flags, dead_hosts=()):
     key = "/result" + query.replace("?", "-")
     profile = tempfile.mkdtemp(prefix="probe-")
-    dead = ["picsum.photos", *dead_hosts]
+    if dead_hosts:
+        flags += ("--host-resolver-rules=" + ", ".join(f"MAP {host} 127.0.0.1:9" for host in dead_hosts),)
     chrome = subprocess.Popen(
         [CHROME, "--headless=new", "--no-first-run", "--no-default-browser-check", f"--user-data-dir={profile}",
          "--remote-debugging-port=0", "--window-size=1600,1200",
-         "--host-resolver-rules=" + ", ".join(f"MAP {host} 127.0.0.1:9" for host in dead),
          *flags, f"http://127.0.0.1:{port}/tests/header_probe.html{query}"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     deadline = time.time() + TIMEOUT

@@ -12,7 +12,8 @@
                nothing overflowing sideways, the page locked at the top and inert under the veil; the resting page (#rest
                skips the animation); the live run (plays once, ends by itself, the page under it never moves, a key, tap,
                wheel or scroll does NOT end it, scrolling works afterwards and turns the wheels, a refresh from mid-page
-               plays it again from the top); the ?intro-t hook's limits; the back chip; regressions run against a doctored
+               plays it again from the top); the ?intro-t hook's limits; the back chip; the photos (local files, true
+               sizes, nobody cropped out of the two portraits, no third party but Google Fonts); regressions run against a doctored
                copy of the page (frame timestamps earlier than the clock, frames that never advance, a mark with a wheel
                missing, a tab hidden mid-run, a tab opened in the background); and a 700 px window that keeps its scrollbar.
    ?reduced    Chrome forced to prefers-reduced-motion: no animation, no hook, no lock, wheels still.
@@ -191,6 +192,36 @@ async function rest(w, h) {
   row(before !== null && near(after - before, want, 0.5) && near(turn(), before, 0.01), name + " wheels turn with the scroll, both ways", before + " -> " + after + " -> " + turn() + " (60px should be " + want.toFixed(1) + "deg)");
   var tr2 = title.getBoundingClientRect(), br2 = bikes.getBoundingClientRect();
   row(near(tr2.left, tr.left, 0.01) && near(br2.left, br.left, 0.01) && !title.style.transform && !bikes.style.transform, name + " nothing else moves with the scroll");
+  c.f.remove();
+}
+
+/* ---- photos: all local, sized as the files are, the two portraits framed square; nothing fetched from a third party but the fonts ---- */
+async function photos(w, h) {
+  var c = await frame("../index.html#rest", w, h), doc = c.doc, win = c.win, name = w + "px photos";
+  var imgs = Array.prototype.slice.call(doc.querySelectorAll("img")), bad = [];
+  await Promise.all(imgs.map(function (img) {
+    return new Promise(function (done) {
+      var probe = new win.Image();
+      probe.onload = function () { if (probe.naturalWidth !== +img.getAttribute("width") || probe.naturalHeight !== +img.getAttribute("height")) bad.push(img.getAttribute("src") + " is " + probe.naturalWidth + "x" + probe.naturalHeight); done(); };
+      probe.onerror = function () { bad.push(img.getAttribute("src") + " did not load"); done(); };
+      probe.src = img.src;
+    });
+  }));
+  var local = imgs.every(function (img) { return /^photos\/[a-z-]+\.jpg$/.test(img.getAttribute("src")) && img.alt.length > 20 && img.loading === "lazy"; });
+  row(imgs.length === 11 && local && bad.length === 0, name + " 11 photos, all local files with alt text, lazy, width and height matching the file", bad.join("; ") || imgs.length + " images");
+  row(!/picsum|photo coming|on the way/i.test(doc.documentElement.innerHTML), name + " no placeholder left: no picsum, no \"photo coming\", no \"on the way\"");
+  var hosts = {}; win.performance.getEntriesByType("resource").forEach(function (e) { hosts[new URL(e.name).host] = 1; });
+  var third = Object.keys(hosts).filter(function (x) { return x !== win.location.host && x !== "fonts.googleapis.com" && x !== "fonts.gstatic.com"; });
+  row(third.length === 0, name + " nothing fetched from a third party but Google Fonts", Object.keys(hosts).join(", "));
+  ["san-juan", "olympic"].forEach(function (id) {
+    var art = doc.getElementById(id), fr = art.querySelector(".photo .frame").getBoundingClientRect(), head = art.querySelector(".head").getBoundingClientRect(), box = art.getBoundingClientRect();
+    var square = near(fr.width, fr.height, 1), beside = fr.left > head.right && fr.top < head.bottom && fr.right <= box.right, above = fr.bottom <= head.top + 40 && near(fr.width, head.width, 2);
+    row(square && (w >= 760 ? beside : above), name + " #" + id + " portrait: square frame, " + (w >= 760 ? "beside the heading" : "above the heading, full width"), Math.round(fr.width) + "x" + Math.round(fr.height));
+  });
+  ["orcas", "north-cascades", "victoria", "tofino"].forEach(function (id) {
+    var fr = doc.getElementById(id).querySelector(".photo .frame").getBoundingClientRect();
+    row(near(fr.width / fr.height, 16 / 7, 0.02), name + " #" + id + " banner is 16:7", Math.round(fr.width) + "x" + Math.round(fr.height));
+  });
   c.f.remove();
 }
 
@@ -376,6 +407,7 @@ async function fontless(w, h) {
       for (var j = 0; j < HELD.length; j++) await held(w, h, HELD[j]);
       await late(w, h); await landed(w, h); await rest(w, h);
     }
+    await photos(390, 844); await photos(1440, 900);
     await contrast();
     await hook(390, 844);
     await scrollbar();
