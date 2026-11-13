@@ -283,3 +283,7 @@ From Robby. One commit (the one that adds this section).
 Looked at: `shots/phone-390x844-page-end.png`, `shots/desktop-1440x900-page-end.png` (local).
 
 `python3 artifacts/extra-adventures/tests/run.py`: **390 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**.
+
+## Orcas Island photo shown whole (2026-11-13)
+
+From Robby: "for orcas island don't crop vertically so hard you can barely see the ferry or the sky". That figure alone is now `figure.photo.whole`: the photo's own 4:3, nothing cropped (whole ferry, hills, sky, both bikes and the front tire), centered, no wider than 36rem and no taller than about half the screen (`max-width: min(36rem, 72vh)`). Frame: 326x245 at 390, 576x432 at 768 and at 1440, 553x415 on a 1024x768 screen. Victoria, Tofino and North Cascades keep the 16:7 banner. Looked at, at 390, 768 and 1440: `shots/photo-phone-390-orcas-island.png`, `shots/photo-tablet-768-orcas-island.png`, `shots/photo-desktop-1440-orcas-island.png` (local). The probe's 16:7 row for this figure is replaced by a whole-photo row at six sizes. Probe: **403 passed, 0 failed**; reduced motion **8 passed, 0 failed**; fonts blocked **11 passed, 0 failed**.

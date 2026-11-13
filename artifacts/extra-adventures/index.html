@@ -150,6 +150,11 @@
   .photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.85); }
   .photo figcaption { font-family: "Gochi Hand", cursive; color: var(--olive); font-size: 17px; text-align: right; }
   .photo.wide .frame { aspect-ratio: 16 / 7; }
+  /* Orcas Island: a 16:7 banner cut the ferry and the sky off the top and a tire off the bottom, so this one shows the
+     whole 4:3 photo, centered, no wider than 36rem (432px tall) and no taller than about half the screen (72vh wide is
+     54vh tall), so on a wide or a short screen the card is not a wall of photo. */
+  .photo.whole { width: 100%; max-width: min(36rem, 72vh); justify-self: center; }
+  .photo.whole .frame { aspect-ratio: 4 / 3; }
   /* Two destinations have portrait photos of us. A 16:7 banner would cut us out, so those get a square frame, no wider
      than 22rem. From 760px it floats at the right of the card (see .dest.side) and the text runs beside it and then under. */
   .photo.tall { width: 100%; max-width: 22rem; justify-self: center; }
@@ -893,8 +898,8 @@
   <h2 class="display">Multi day trips</h2>
   <p class="lead">Worth building a few extra days around. Temps are typical late-July highs and lows.</p>
   <article class="dest" id="orcas">
-  <figure class="photo wide">
-  <div class="frame"><img src="photos/orcas-island.jpg" alt="Two loaded touring bikes leaning on a white railing above the water, with a Washington State ferry at the dock behind them" width="1125" height="848" loading="lazy" style="object-position: 50% 25%"></div>
+  <figure class="photo whole">
+  <div class="frame"><img src="photos/orcas-island.jpg" alt="Two loaded touring bikes leaning on a white railing above the water, with a Washington State ferry at the dock behind them" width="1125" height="848" loading="lazy"></div>
   <figcaption>Orcas Island</figcaption>
 </figure>
   <h3>Orcas Island</h3>

@@ -235,10 +235,14 @@ async function photos(w, h) {
     var after = todo.top - head.bottom, tail = box.bottom - pad - Math.max(todo.bottom, fig.bottom);
     row(after >= 0 && after <= 24 && tail >= -1 && tail <= 14, name + " #" + id + " no empty band in the card", "\"What to do\" starts " + after.toFixed(0) + "px under the heading block" + (todo.top < fig.bottom ? ", beside the photo" : ", below the photo") + "; " + tail.toFixed(0) + "px spare at the end");
   });
-  ["orcas", "north-cascades", "victoria", "tofino"].forEach(function (id) {
+  ["north-cascades", "victoria", "tofino"].forEach(function (id) {
     var fr = doc.getElementById(id).querySelector(".photo .frame").getBoundingClientRect();
     row(near(fr.width / fr.height, 16 / 7, 0.02), name + " #" + id + " banner is 16:7", Math.round(fr.width) + "x" + Math.round(fr.height));
   });
+  // Orcas Island shows its whole 4:3 photo (ferry, sky and both bikes), capped so a wide card is not a wall of photo
+  var orcas = doc.getElementById("orcas"), of = orcas.querySelector(".photo .frame").getBoundingClientRect(), ob = orcas.getBoundingClientRect(), oi = orcas.querySelector("img");
+  row(near(of.width / of.height, 4 / 3, 0.01) && near(of.width / of.height, oi.getAttribute("width") / oi.getAttribute("height"), 0.01) && of.width <= 576.5 && near(of.left + of.width / 2, ob.left + ob.width / 2, 1) && of.height <= 0.55 * h,
+      name + " #orcas shows the whole 4:3 photo, centered, no wider than 576px and no taller than about half the screen", Math.round(of.width) + "x" + Math.round(of.height));
   c.f.remove();
 }
 
@@ -461,7 +465,7 @@ async function fontless(w, h) {
       for (var j = 0; j < HELD.length; j++) await held(w, h, HELD[j]);
       await late(w, h); await landed(w, h); await rest(w, h);
     }
-    await photos(390, 844); await photos(700, 800); await photos(760, 900); await photos(1024, 768); await photos(1440, 900);
+    await photos(390, 844); await photos(700, 800); await photos(768, 1024); await photos(760, 900); await photos(1024, 768); await photos(1440, 900);
     await contrast();
     await hook(390, 844);
     await scrollbar();
