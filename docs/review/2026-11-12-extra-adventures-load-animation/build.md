@@ -1,6 +1,6 @@
 # Build hand-back: extra-adventures content, photos, load animation
 
-Built 2026-11-12 by the build engineer, alone (no subagents). The panel reviewed `dd03df3` and found no P1; its fix pass is the last section here. Where that section and an earlier line disagree, the fix pass is the current state.
+Built 2026-11-12 by the build engineer, alone (no subagents). The panel reviewed `dd03df3` and found no P1; its fix pass and then Robby's override follow as later sections. Where sections disagree, the latest one is the current state.
 
 ## Commits (`9e102af..9014297`, plus the record commits)
 
@@ -11,6 +11,7 @@ Built 2026-11-12 by the build engineer, alone (no subagents). The panel reviewed
 | `5c16558` | Part 3: load animation, sun, back chip, `build_sun.py`, `tests/` |
 | `1d78316` | Fix pass: Eng items 1 to 9, UX items 11 to 16 |
 | `9014297` | Fix pass item 10: `artifacts/index.html` regenerated |
+| `cac021c` | Owner override: the intro plays through; back chip restyled |
 
 Live: all three are on https://robbybro.com/artifacts/extra-adventures/ . Parts 1 and 2 were live by 8:02pm; Part 3 was live at 8:04pm on 2026-11-12, about 100 seconds after the commit (the `git-push` job, then GitHub Pages), and the served page is byte-identical to the committed `index.html` (158,372 bytes). `shots/live-*.png` are from the live URL.
 
@@ -153,3 +154,57 @@ Not changed, by instruction: the chip stays visible over content, the bikes ride
 - The Day Trips lead, the classic-scrollbar overhang (with script), the 2048 px Granite Mountain file, the stale index card and the untracked `shots/` are all dealt with above.
 - The probe counts are 286, 8 and 11, not 154 and 6.
 - `index.html` is 161 KB.
+
+## Owner override: no cancel (2026-11-13)
+
+Robby: "if a user scrolls down, it cancels the animation. I don't think we let them cancel it. Let's have it play through every time they refresh." This reverses the brief's "scroll, tap or key finishes it" (acceptance point 3.5) and the UX seat's Skip intro control (fix pass item 11). Commit `cac021c`.
+
+Live: `cac021c` was on https://robbybro.com/artifacts/extra-adventures/ at 10:45am on 2026-11-13, about four and a half minutes after the commit; the served page is byte-identical to the committed `index.html` (162,546 bytes).
+
+| # | Item | Result | What was done, and the evidence |
+|---|---|---|---|
+| 1 | Remove every user-input cancel path and the Skip intro button | Done | The `wheel`, `touchstart`, `pointerdown` and `keydown` listeners, the scroll-ends-it branch, the button, its styles and its right safe-area inset are gone. Probe: four keys, pointer, mouse, touch, wheel and click events and a scripted scroll leave it running |
+| 2 | No scrolling under the veil; no shift when the scrollbar returns; wheel spin only afterwards | Done | `html.opening { overflow: hidden; overscroll-behavior: none; scroll-behavior: auto }`, `touch-action: none` on the veil, and the scroll handler puts anything that gets past them back at 0. `scrollbar-gutter: stable` on `html`. Probe at 700 px with a real 15px scrollbar: the page is 685px wide locked and at rest and the subtitle does not move. Probe: the page is at scroll 0 at every held moment; afterwards it scrolls and the wheels turn |
+| 3 | Every refresh plays it in full from the top; bfcache | Done | The head script sets `history.scrollRestoration = "manual"` whenever the animation will play, and `start()` scrolls to 0. Probe: scrolled to 1500, reloaded, back at 0 with the animation playing, 5.95 s to rest. A bfcache restore (Back from another page) is left showing the page as it was, at its old scroll position, with no replay: replaying would throw someone who came Back to mid-page up to the top and hold them there |
+| 4 | Keep the non-user endings | Done | Reduced motion and a #hash link still skip it; the head watchdog and the error path are unchanged. The 9 s cap changed form: see item 5 |
+| 5 | Hidden tab pauses; cap counts visible time; background tab plays from 0 | Done | `tick()` holds the clock while `document.hidden`. The cap is now a timer armed only while the tab is visible, with the visible time carried across pauses, so it no longer needs frames to arrive. Probe: hidden for 4 s mid-run, the title does not move, it carries on when shown and finishes by itself at 10.07 s on the wall. A tab loaded hidden sits on the first frame and plays in full (5.96 s) from the moment it is shown |
+| 6 | Accessibility while locked | Done | The content (`.wrap`) is `inert` from the moment the script takes over until `finish()`. The back chip is outside it and stays focusable and clickable on purpose: it is visible the whole time, and it is the one way to leave. So during the animation Tab reaches the chip and nothing else. Probe: content inert and chip live at every held moment, content live at rest |
+| 7 | Probe | Done | "Ends it" checks replaced by "does not end it, page stays at 0, scrolls afterwards"; added the hidden-tab and background-tab cases and refresh from mid-page; the cap, reduced-motion and font-less cases kept |
+| 8 | build.md | Done | This section |
+| 9 | Back chip dressed like the section chips | Done | Label and arrow in `var(--olive)`, Londrina Solid, uppercase, `.05em` letter-spacing, 15px, on `var(--paper)`, honey with ink text on hover and press: the same six computed values as `nav.jump a` (probe compares them). Kept: fixed bottom left, 32px, 44px target, safe-area insets, focus ring, 1px boundary |
+
+Chip contrast, measured by the probe from computed colors:
+
+| Theme | Label | Boundary on the page | Boundary on a card and against its own fill | Label on hover (ink on honey) |
+|---|---|---|---|---|
+| Light | 4.88:1 | 3.99:1 | 4.88:1 | 7.20:1 |
+| Dark | 7.42:1 | 5.71:1 | 4.88:1 | 1.52:1 |
+
+The dark hover figure fails 4.5:1. It is the section chips' own hover (`nav.jump a:hover`), copied as asked; the color was not changed. Nothing in the page turns the dark theme on.
+
+### Also changed in this pass
+
+- **A held `?intro-t=` frame is released after 9 s.** With no way to dismiss it, a held frame would otherwise hide the page for good. Probe: released at 9.05 s.
+- **The classic-scrollbar overhang is now fixed in CSS in Chrome.** With `scrollbar-gutter: stable` Chrome's `100vw` no longer includes the gutter, so the title fits at 700 px without `fit()` stepping in.
+
+### What a guest gets
+
+| Guest | What happens |
+|---|---|
+| Opens or refreshes the page | About 6 s of animation over a page-colored veil. Scrolling, tapping and keys do nothing; only the back chip works. Then the page |
+| Arrives on a link to a section (`#day-trips`) | No animation; the page opens at that section |
+| Has reduced motion turned on | No animation, ever; the resting header |
+| Comes Back to the page from another site | Usually the page exactly as they left it, no animation (the browser's back cache). If the browser reloads it instead, the animation plays from the top |
+| Switches tabs during it | It waits and carries on when they return |
+| Clicks a link in the last second, while the bikes roll in | Nothing: the page is visible by then but stays locked and inert until the bikes stop |
+| On a connection so slow that the page's own HTML takes more than 4 s | The head watchdog lifts the veil and the animation does not play on that load |
+
+### Tests
+
+`python3 artifacts/extra-adventures/tests/run.py`, about 105 s: **320 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**. Two consecutive runs on the final code, the second after the commit.
+
+### Not verified
+
+The scroll lock on a real iPhone or Android phone (reasoned from `overflow: hidden` on the root plus `touch-action: none` on the veil; the scroll handler is the backstop). A real user wheel or touch scroll cannot be synthesized in the probe; it asserts the lock's computed style and that a scripted scroll is put back. `inert` needs Safari 15.5, Chrome 102 or Firefox 112; on older browsers focus can go behind the veil.
+
+`shots-kept/` was re-captured after this pass.
