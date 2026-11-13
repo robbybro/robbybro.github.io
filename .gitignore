@@ -5,3 +5,6 @@
 .DS_Store
 .vscode/
 *.log
+
+# review screenshots that stay on this machine (four are kept, tracked, in shots-kept/)
+docs/review/2026-11-12-extra-adventures-load-animation/shots/

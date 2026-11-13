@@ -24,7 +24,7 @@ No seat constraint files were written for this run; the Lead's brief is the bind
 | 3.8 | Ground computed from measured title geometry; holds at 360, 390, 768, 1440; recomputed on resize | brief |
 | 3.9 | No horizontal scroll at any moment; zoomed title clipped by its stage (`overflow: clip`) | brief |
 | 3.10 | Sun absent at rest; frames inline SVG from a repo script, hand-drawn look | brief |
-| 3.11 | Screenshots at several timeline points, 390x844 and 1440x900, via a harmless `?t=` hook, saved to `shots/` | brief |
+| 3.11 | Screenshots at several timeline points, 390x844 and 1440x900, via a harmless hook (built as `?t=`, renamed `?intro-t=` in the fix pass), saved to `shots/` | brief |
 
 ## Files
 

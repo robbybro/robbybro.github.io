@@ -1,14 +1,16 @@
 # Build hand-back: extra-adventures content, photos, load animation
 
-Built 2026-11-12 by the build engineer, alone (no subagents). Not reviewed: a fresh panel does that.
+Built 2026-11-12 by the build engineer, alone (no subagents). The panel reviewed `dd03df3` and found no P1; its fix pass is the last section here. Where that section and an earlier line disagree, the fix pass is the current state.
 
-## Commits (`9e102af..5c16558`)
+## Commits (`9e102af..9014297`, plus the record commits)
 
 | Commit | What |
 |---|---|
 | `f8bfa41` | Part 1: Woodinville card, Boeing tour and Museum of Flight card, Seward Park, San Juan blurb |
 | `426a674` | Part 2: six photos placed, Golden Gardens Park in the parks list |
 | `5c16558` | Part 3: load animation, sun, back chip, `build_sun.py`, `tests/` |
+| `1d78316` | Fix pass: Eng items 1 to 9, UX items 11 to 16 |
+| `9014297` | Fix pass item 10: `artifacts/index.html` regenerated |
 
 Live: all three are on https://robbybro.com/artifacts/extra-adventures/ . Parts 1 and 2 were live by 8:02pm; Part 3 was live at 8:04pm on 2026-11-12, about 100 seconds after the commit (the `git-push` job, then GitHub Pages), and the served page is byte-identical to the committed `index.html` (158,372 bytes). `shots/live-*.png` are from the live URL.
 
@@ -104,3 +106,50 @@ Not verified anywhere: frame rate on real hardware (headless Chrome here paces a
 - **Title size step:** stacked below 760 px (title fills the width, up to 95 px), one row from 760 px (78 px rising to 96 px).
 - **Classic scrollbars below 760 px:** the title size comes from `100vw`, which includes the scrollbar, so on a narrow desktop window the title overhangs its left margin by the scrollbar width. Phones are unaffected.
 - **Page weight:** `index.html` went from 120 KB to 158 KB (24 KB of that is the four sun frames).
+
+## Fix pass (2026-11-12, after the panel's review of `dd03df3`)
+
+Live: `1d78316` and `9014297` were on https://robbybro.com/artifacts/extra-adventures/ at 8:35pm on 2026-11-12, about 160 seconds after the second commit; the served page is byte-identical to the committed `index.html` (161,129 bytes), the resized photo is served (102,426 bytes), and the artifacts index card reads "updated Nov 12, 2026".
+
+| # | Seat | Item | Result | What was done, and the evidence |
+|---|---|---|---|---|
+| 1 | Eng | Hook renamed, clamped, ignored under reduced motion or a hash, never an invisible overlay, NaN on purpose | Done | The parameter is `?intro-t=`. Only a plain number matches (`/[?&]intro-t=(\d+(?:\.\d+)?)(?:&|$)/`), anything else is `null` by an explicit `isFinite` test and the animation plays normally; values are capped just below the end of the timeline. The head script no longer reads it, so a hash or reduced motion always wins. Probe: `?t=1.5`, `?utm_source=x&t=2`, `?intro-t=abc`, `?intro-t=`, `?intro-t=1.2.3`, `?intro-t=-3`, `?intro-t=NaN` all play normally; `?intro-t=99` holds the last moment with nothing over the page; `?intro-t=1.5#rest` and reduced motion are at rest |
+| 2 | Eng | Wall-clock cap | Done | `wallStart` set in `start()`; a tick more than 9 s later calls `finish()`. Probe: with frame timestamps that advance half a millisecond per frame the animation ends at 8.98 to 9.04 s |
+| 3 | Eng | Title without Londrina Solid | Done | `fit()` runs once the fonts settle or time out, on resize, and again if the font lands late: if the title is wider than its row it sets `--fs` to fit. The bikes got `flex: none` (they were being squeezed to 31px instead). Probe pass with both Google Fonts hosts dead: the fallback is 10.39em wide against 7.57em, and the title sits inside both margins at 390, 768 and 1440. `shots/fonts-blocked-phone-390x844-rest.png`, `shots/fonts-blocked-phone-390x844-t2.2.png`. The wheel offsets at rest are tuned to Londrina Solid, so with the fallback the resting bikes overlap the first letters by a few pixels |
+| 4 | Eng | `finish()` order | Done | Classes off and transforms cleared first, wheels last. Probe: with a wheel that throws when turned, the page is back at rest (it fails on the old order) |
+| 5 | Eng | First click swallowed late in the intro | Changed | No script state: the stretched `.brand` is `pointer-events: none` for the whole animation and only the veil takes clicks, so the page becomes clickable exactly as the veil slides off it, not only once it has fully lifted. Probe: the veil blocks the page at 0.3 s, the page under the veil's edge takes clicks at 4.4 s, the whole page does at 5.4 s |
+| 6 | Eng | Chip out of the first tab stop; scroll padding | Done | The chip is the last element before the script at the end of the body; `scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom))` on `html`. Probe: first tab stop is a page link, last is the chip |
+| 7 | Eng | Four-wheel guard and the contract | Done | `start()` returns to rest unless there are four wheels; the order contract is a comment above `WHEELS` in `build_mark.py` (the mark block is byte-identical after re-running it). Probe: a page with the fourth wheel removed gets no animation and no error |
+| 8 | Eng | `granite-mountain.jpg` | Done | 1024x768, 102 KB (was 2048x1536, 484 KB), `width` and `height` updated. Made with `djpeg -scale 1/2`, `cjpeg -quality 86`, then `jpegtran -copy none` (sips was not needed); its only non-image segment is the JFIF header. The original is in git at `426a674` |
+| 9 | Eng | Probe additions | Done | Held moments at 3.5, 3.9, 4.4 and 5.4 s at all four widths (no sideways overflow, title's end pinned, bikes, sun and veil where each phase puts them). Deterministic regression for the early frame timestamp: every timestamp shifted a second back; it fails on a copy with the original bug put back and passes now. A 700 px frame that keeps its 15px scrollbar: the title sits inside both margins (19.6 to 669.0 in 16.0 to 669.0), fixed by `fit()` measuring the content box. Without script the old overhang remains |
+| 10 | Eng | Regenerate the artifacts index | Done | `9014297`; the card reads "updated Nov 12, 2026" |
+| 11 | UX | Skip intro control | Done | `<button class="chip skip" id="skip" type="button">Skip intro</button>`, first in the body, bottom right, shown only while the animation classes are on (so never under reduced motion or on a hash link), same finish path. Any key already ends the animation, so for a keyboard the first Tab does it; the click handler is for a screen reader's activate |
+| 12 | UX | Day Trips lead | Done | "A few options that can be part of a day trip (or overnight) from Seattle." |
+| 13 | UX | Boeing and Museum of Flight card | Changed | Now: "These are in opposite directions from downtown Seattle. The factory tour is at Boeing Future of Flight in Mukilteo, about 25 miles north: 80 minutes, 4-foot minimum height, no phones or cameras. The Museum of Flight is south of downtown." That is 237 characters against Woodinville's 96; the facts the brief said to keep do not fit in less. Pills are "Boeing tour" and "Museum of Flight" and share a line at 360, 390, 768 and 1440 (probe) |
+| 14 | UX | Chip boundary and contrast | Done | A solid 1px ring in both themes. Measured by the probe from computed colors. Light: label 13.34:1; boundary 3.99:1 on the page, 4.88:1 on a card. Dark: label 8.74:1; boundary 5.71:1 on the page, 4.88:1 on a card, 3.91:1 against the chip's own fill. Skip intro measures the same |
+| 15 | UX | Header top padding | Done | 16px above the highest ink at all four widths (probe: bikes top 16.0 stacked; last letter top 16.1 at 768 and 16.3 at 1440) |
+| 16 | UX | Day Trips pills at the card bottom | Done | Day Trips cards are flex columns with the pill row on `margin-top: auto` (probe: pill bottoms within 1px across each row of cards, four widths). The Quick Outings cards were not asked for and are unchanged |
+
+Not changed, by instruction: the chip stays visible over content, the bikes ride past the end of the title, the animation's length and that it plays on every load.
+
+### The UX seat's two claims, checked against the code
+
+| Claim | True? | Basis |
+|---|---|---|
+| The chip's hit target is under 44px | No | `.chip::before { content: ""; position: absolute; inset: -6px 0; }` adds 6px above and below the 32px drawing, and has since `5c16558`. The probe hit-tests it: the point 5px above and the point 5px below the drawing both resolve to the chip, the point 8px above does not. Width is the chip's own, about 203px |
+| There is no safe-area-inset handling | No | Since `5c16558` the chip is placed with `env(safe-area-inset-left)` and `env(safe-area-inset-bottom)`, the footer's bottom padding adds `env(safe-area-inset-bottom)`, and the viewport meta has `viewport-fit=cover`. The fix pass adds `env(safe-area-inset-right)` for Skip intro and the bottom inset in the scroll padding. None of it has been seen on a notched phone |
+
+### Tests after the fix pass
+
+`python3 artifacts/extra-adventures/tests/run.py`, about 80 s: **286 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**. Two consecutive runs on the final code, the second after the commit.
+
+### Screenshots
+
+`shots-kept/` (tracked): `phone-390x844-marquee.png`, `phone-390x844-rest.png`, `desktop-1440x900-marquee.png`, `desktop-1440x900-rest.png`, captured after the fixes. `shots/` is local only (in `.gitignore`): 40 files, all re-captured after the fixes, the four `live-*` ones from the live URL after it deployed.
+
+### Earlier lines this pass makes out of date
+
+- The hook is `?intro-t=`, not `?t=`.
+- The Day Trips lead, the classic-scrollbar overhang (with script), the 2048 px Granite Mountain file, the stale index card and the untracked `shots/` are all dealt with above.
+- The probe counts are 286, 8 and 11, not 154 and 6.
+- `index.html` is 161 KB.
