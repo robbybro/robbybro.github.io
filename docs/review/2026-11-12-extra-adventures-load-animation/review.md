@@ -56,4 +56,14 @@
 
 ## Owner overrides
 
-None yet. Open to Robby: the chip over content, the bikes' open-air exit, the "Skip intro" button, the five placeholders, the session trailer.
+| Date | Seat overridden | Seat's argument | Robby's decision | Outcome |
+|---|---|---|---|---|
+| 2026-11-13 | UX (skip must be visible), and the Lead's build constraint that scroll, tap or key ends the intro | A guest who came for information waits about 6 s behind a veil with no way out | "I don't think we let them cancel it. Let's have it play through every time they refresh, because it's great and people should see it." | `cac021c`: no cancel path, "Skip intro" removed, scroll locked and content inert until rest, every refresh plays from the top. Kept: reduced motion, hash deep links, the 9 s cap and watchdog |
+
+Also from Robby, 2026-11-13 (not overrides): back chip in the title green and the section chips' typeface (`cac021c`; label 4.88:1 light, 7.42:1 dark; dark hover 1.52:1, copied from the section chips, dark theme is never switched on); five more album photos replace the last placeholders (`84fad67`), so the page no longer calls picsum.photos.
+
+Still open to Robby: the chip over content, the bikes' open-air exit, the session trailer, and whether the page should unlock when the veil lifts instead of when the bikes finish rolling in (taps in that last second are dropped).
+
+## Follow-up range `fb25bfa..2dc018c`
+
+Fresh Eng and UX seats requested 2026-11-13 on the no-cancel change and the five photos; results to be appended here.
