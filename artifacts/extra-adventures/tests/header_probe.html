@@ -15,7 +15,8 @@
                plays it again from the top); the ?intro-t hook's limits; the back chip; the photos (local files, true
                sizes, nobody cropped out of the two portraits, no third party but Google Fonts); regressions run against a doctored
                copy of the page (frame timestamps earlier than the clock, frames that never advance, a mark with a wheel
-               missing, a tab hidden mid-run, a tab opened in the background); and a 700 px window that keeps its scrollbar.
+               missing, a failure before the animation starts, a start that never comes, reduced motion switched on mid-run,
+               a tab hidden mid-run, a tab opened in the background); and a 700 px window that keeps its scrollbar.
    ?reduced    Chrome forced to prefers-reduced-motion: no animation, no hook, no lock, wheels still.
    ?nofont     Google Fonts unreachable: the title still fits, the animation still stands the bikes on the letters.
 
@@ -153,7 +154,7 @@ async function rest(w, h) {
   row(tr.left >= wrap.left - 1, name + " title inside the left margin", tr.left.toFixed(1));
   row(win.getComputedStyle(doc.getElementById("sun")).display === "none" && win.getComputedStyle(doc.getElementById("veil")).display === "none" && !doc.getElementById("skip"), name + " sun and veil gone, no skip control in the page");
   var g = geometry(c);
-  row(Math.abs(g.rearGap) <= TOL || br.right < tr.left, name + " bikes rest on the letters or beside them", "rear gap " + g.rearGap.toFixed(2));
+  row(w < 760 ? near(g.rearGap, 6, 1) && near(g.frontGap, 6, 1) : br.right < tr.left, name + (w < 760 ? " bikes ride 6px clear of the tops of the letters" : " bikes stand beside the title"), "rear gap " + g.rearGap.toFixed(2) + "px");
   row(Math.min(g.lastLetterTop, br.top) >= 15.5, name + " 16px of air above the header", "last letter top " + g.lastLetterTop.toFixed(1) + ", bikes top " + br.top.toFixed(1));
   row(sideways(c) <= 0, name + " no sideways overflow", String(sideways(c)));
   row(near(cr.height, 32, 0.5) && cr.left <= 16 && near(h - cr.bottom, 12, 0.5) && chip.href === "https://emilyandrobby.wedding/", name + " chip at the bottom left", "left " + cr.left + ", gap " + (h - cr.bottom) + ", height " + cr.height);
@@ -209,14 +210,19 @@ async function photos(w, h) {
   }));
   var local = imgs.every(function (img) { return /^photos\/[a-z-]+\.jpg$/.test(img.getAttribute("src")) && img.alt.length > 20 && img.loading === "lazy"; });
   row(imgs.length === 11 && local && bad.length === 0, name + " 11 photos, all local files with alt text, lazy, width and height matching the file", bad.join("; ") || imgs.length + " images");
-  row(!/picsum|photo coming|on the way/i.test(doc.documentElement.innerHTML), name + " no placeholder left: no picsum, no \"photo coming\", no \"on the way\"");
+  row(!/picsum/i.test(doc.documentElement.innerHTML) && !/photo coming|on the way/i.test(doc.body.innerText), name + " no placeholder left: no picsum anywhere in the source, no \"photo coming\" or \"on the way\" in the text");
   var hosts = {}; win.performance.getEntriesByType("resource").forEach(function (e) { hosts[new URL(e.name).host] = 1; });
   var third = Object.keys(hosts).filter(function (x) { return x !== win.location.host && x !== "fonts.googleapis.com" && x !== "fonts.gstatic.com"; });
   row(third.length === 0, name + " nothing fetched from a third party but Google Fonts", Object.keys(hosts).join(", "));
   ["san-juan", "olympic"].forEach(function (id) {
-    var art = doc.getElementById(id), fr = art.querySelector(".photo .frame").getBoundingClientRect(), head = art.querySelector(".head").getBoundingClientRect(), box = art.getBoundingClientRect();
-    var square = near(fr.width, fr.height, 1), beside = fr.left > head.right && fr.top < head.bottom && fr.right <= box.right, above = fr.bottom <= head.top + 40 && near(fr.width, head.width, 2);
-    row(square && (w >= 760 ? beside : above), name + " #" + id + " portrait: square frame, " + (w >= 760 ? "beside the heading" : "above the heading, full width"), Math.round(fr.width) + "x" + Math.round(fr.height));
+    var art = doc.getElementById(id), fig = art.querySelector(".photo").getBoundingClientRect(), fr = art.querySelector(".photo .frame").getBoundingClientRect(), cap = art.querySelector("figcaption").getBoundingClientRect();
+    var head = art.querySelector(".head").getBoundingClientRect(), todo = art.querySelector(":scope > .grp").getBoundingClientRect(), box = art.getBoundingClientRect(), pad = parseFloat(win.getComputedStyle(art).paddingBottom);
+    var square = near(fr.width, fr.height, 1) && fr.width <= 352.5, beside = fr.left > head.right && fr.top < head.bottom && fr.right <= box.right, above = fr.bottom <= head.top + 40 && near(fr.left + fr.width / 2, box.left + box.width / 2, 1);
+    row(square && (w >= 760 ? beside : above), name + " #" + id + " portrait: square frame no wider than 352px, " + (w >= 760 ? "beside the heading" : "centered above the heading"), Math.round(fr.width) + "x" + Math.round(fr.height));
+    row(cap.top - fr.bottom >= 0 && cap.top - fr.bottom <= 8, name + " #" + id + " caption sits right under its photo", (cap.top - fr.bottom).toFixed(1) + "px below");
+    // no hole: "What to do" follows the heading block directly (beside the photo if the photo is still going), and the card ends where its content does
+    var after = todo.top - head.bottom, tail = box.bottom - pad - Math.max(todo.bottom, fig.bottom);
+    row(after >= 0 && after <= 24 && tail >= -1 && tail <= 14, name + " #" + id + " no empty band in the card", "\"What to do\" starts " + after.toFixed(0) + "px under the heading block" + (todo.top < fig.bottom ? ", beside the photo" : ", below the photo") + "; " + tail.toFixed(0) + "px spare at the end");
   });
   ["orcas", "north-cascades", "victoria", "tofino"].forEach(function (id) {
     var fr = doc.getElementById(id).querySelector(".photo .frame").getBoundingClientRect();
@@ -266,12 +272,13 @@ async function hook(w, h) {
 }
 
 /* ---- the live run ---- */
-async function live(w, h, refresh) {
+async function live(w, h, refresh, hashed) {
   var name = w + "px live", c = await frame("../index.html", w, h), win = c.win, doc = c.doc, t0 = performance.now();
-  row(await advancing(c), name + " animation plays on load and advances");
+  if (hashed) win.location.hash = "#hikes";       // the address gains a section while the veil is up
+  row(await advancing(c), name + " animation plays on load and advances" + (hashed ? " (with #hikes added to the address meanwhile)" : ""));
   var g = geometry(c);
   row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, name + " wheels on the letters mid-run", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px");
-  var before = doc.querySelector(".sub").getBoundingClientRect().top;
+  var place = function () { return doc.querySelector(".sub").getBoundingClientRect().top + win.scrollY; }, before = place();   // where the subtitle is on the page
   // nothing a visitor does ends it
   ["Tab", "Escape", " ", "PageDown"].forEach(function (k) { win.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true })); });
   ["pointerdown", "mousedown", "touchstart", "wheel", "click"].forEach(function (type) { doc.getElementById("veil").dispatchEvent(new Event(type, { bubbles: true })); });
@@ -280,12 +287,25 @@ async function live(w, h, refresh) {
   row(win.scrollY === 0 && locked(c) && await advancing(c), name + " keys, taps, wheel and a scroll do not end it; the page stays at the top", "scrollY " + win.scrollY);
   var took = await untilCleared(c, t0, 12000);
   row(cleared(c) && took > 5 && took < 7.5, name + " runs once and ends by itself in 5 to 7 seconds", took.toFixed(2) + "s");
-  row(doc.querySelector(".sub").getBoundingClientRect().top === before, name + " the page under it never moved", String(before));
-  // afterwards the page scrolls and the wheels follow
   var w1 = doc.getElementById("w1"), turned = w1.getAttribute("transform");
-  doc.documentElement.style.scrollBehavior = "auto";
-  win.scrollTo(0, 60); await pause(200);
-  row(win.scrollY === 60 && w1.getAttribute("transform") !== turned, name + " afterwards the page scrolls and the wheels turn with it");
+  if (hashed) {                                  // it ended at rest; the section the address names is then brought into view (a smooth scroll: wait it out)
+    for (var y0 = -1, n = 0; n < 40 && (win.scrollY !== y0 || n < 3); n++) { y0 = win.scrollY; await pause(120); }
+    var hikes = doc.getElementById("hikes").getBoundingClientRect().top;
+    row(win.scrollY > 500 && hikes > -2 && hikes < 60, name + " a #section added during the animation is scrolled to when it ends", "scrollY " + Math.round(win.scrollY) + ", #hikes " + hikes.toFixed(0) + "px from the top");
+  }
+  row(near(place(), before, 0.01), name + " the page under it never moved", String(before));
+  if (!hashed) {
+    // afterwards the page scrolls and the wheels follow
+    doc.documentElement.style.scrollBehavior = "auto";
+    win.scrollTo(0, 60); await pause(200);
+    row(win.scrollY === 60 && w1.getAttribute("transform") !== turned, name + " afterwards the page scrolls and the wheels turn with it");
+    // a section chip, then Back: Back returns to where the guest was (scroll restoration is the browser's again)
+    win.scrollTo(0, 0); await pause(150);
+    doc.querySelector('nav.jump a[href="#day-trips"]').click(); await pause(300);
+    var there = win.scrollY, mode = win.history.scrollRestoration;
+    win.history.back(); await pause(500);
+    row(there > 1000 && win.scrollY === 0 && win.location.hash === "" && mode === "auto", name + " section chip, then Back: back at the top", "went to " + Math.round(there) + ", Back to " + win.scrollY + ", scrollRestoration " + mode);
+  }
   if (refresh) {                                 // a refresh from the middle of the page plays the whole thing again from the top
     win.scrollTo(0, 1500); await pause(150);
     var was = win.scrollY, oldDoc = doc;
@@ -325,6 +345,29 @@ async function regressions() {
   c = await frame(null, 390, 844, { doctor: function (html) { return withScript("window.addEventListener('error',function(e){(window.__errs=window.__errs||[]).push(String(e.message));});")(html.replace(/<g id="w4"[^>]*>.*?<\/g>/, "")); } });
   await pause(200);
   row(c.doc.getElementById("w4") === null && cleared(c) && !(c.win.__errs || []).length, "regression: a mark with three wheels gets no animation and no error", String(c.win.__errs || "no errors"));
+  c.f.remove();
+  // 4. fit() throws on the way in (its first line is the page's only removeProperty call). Before the fix start() was never
+  //    reached, nothing was armed, and the page stayed veiled, locked and inert for good.
+  c = await frame(null, 390, 844, { doctor: withScript("CSSStyleDeclaration.prototype.removeProperty=function(){throw new Error('probe: fit refused');};") });
+  row(cleared(c), "regression: a failure before the animation starts still returns the page to rest");
+  c.f.remove();
+  // 5. the start never comes at all (the font promise hangs and the 1.5 s fallback timer is lost): the cap, armed when the
+  //    script takes over, lifts the veil at 9 s
+  var never = "document.fonts.load=function(){return new Promise(function(){});};(function(){var st=window.setTimeout.bind(window);window.setTimeout=function(f,ms){return ms===1500?0:st.apply(null,arguments);};})();";
+  c = await frame(null, 390, 844, { doctor: withScript(never) });
+  t0 = performance.now();
+  var stuckVeiled = locked(c) && !/opening-run/.test(c.doc.documentElement.className);
+  took = await untilCleared(c, t0, 12000);
+  row(stuckVeiled && cleared(c) && took > 8 && took < 10.5, "regression: a start that never comes is ended by the 9 s cap, counted from the script taking over", took.toFixed(2) + "s");
+  c.f.remove();
+  // 6. reduced motion switched on while it plays: it stops at once, and the wheels stay still afterwards
+  var fakeMotion = "(function(){var real=window.matchMedia.bind(window);window.matchMedia=function(q){if(q.indexOf('reduced-motion')<0)return real(q);var l=[],m={matches:false,media:q,addEventListener:function(t,f){l.push(f);},addListener:function(f){l.push(f);},removeEventListener:function(){}};window.__motion=function(on){m.matches=on;l.forEach(function(f){f({matches:on});});};return m;};})();";
+  c = await frame(null, 390, 844, { doctor: withScript(fakeMotion) });
+  var was = await advancing(c);
+  c.win.__motion(true);
+  var w1 = c.doc.getElementById("w1"), parked = w1.getAttribute("transform");
+  c.doc.documentElement.style.scrollBehavior = "auto"; c.win.scrollTo(0, 60); await pause(200);
+  row(was && cleared(c) && c.win.scrollY === 60 && w1.getAttribute("transform") === parked, "regression: reduced motion switched on mid-run ends it at once, and the wheels stay still");
   c.f.remove();
 }
 
@@ -407,11 +450,11 @@ async function fontless(w, h) {
       for (var j = 0; j < HELD.length; j++) await held(w, h, HELD[j]);
       await late(w, h); await landed(w, h); await rest(w, h);
     }
-    await photos(390, 844); await photos(1440, 900);
+    await photos(390, 844); await photos(700, 800); await photos(760, 900); await photos(1024, 768); await photos(1440, 900);
     await contrast();
     await hook(390, 844);
     await scrollbar();
-    await live(390, 844, true); await live(1440, 900, false);
+    await live(390, 844, true, false); await live(1440, 900, false, true);
     await regressions();
     await hiddenTab();
   } catch (e) { row(false, "probe crashed", String(e && e.stack || e)); }

@@ -57,11 +57,12 @@
   /* Header. At rest it is plain flow: the bikes small at the top left, the title with its end on the right content margin
      (stacked on narrow screens, where the title fills the width and the bikes sit on its first letters; one row from 760px).
      7.68 is the title's width in em (7.57 measured in Londrina Solid, plus slack); .1265 / .12 / .0188 are the cap-top and
-     baseline offsets inside the h1 box and the gap under the wheels inside the mark, so the wheels rest on the letters.
+     baseline offsets inside the h1 box and the gap under the wheels inside the mark: stacked, the wheels sit 6px clear
+     of the tops of the letters; in the row they stand on the title's baseline.
      The script's fit() overrides --fs when the title would not fit (another font drew it, or a scrollbar took the width). */
   .brand { position: relative; z-index: 5; margin-inline: -16px; overflow: hidden; overflow: clip; --bw: clamp(72px, 20vw, 100px); --fs: calc((100vw - 32px) / 7.68); }
   .brand .row { box-sizing: border-box; max-width: calc(64rem + 32px); margin: 0 auto; padding: 16px 16px 4px; display: flex; flex-direction: column; }
-  .bikes { position: relative; z-index: 3; flex: none; width: var(--bw); margin-bottom: calc(var(--fs) * -.1265 - var(--bw) * .0188); transform-origin: 0 0; }
+  .bikes { position: relative; z-index: 3; flex: none; width: var(--bw); margin-bottom: calc(6px - var(--fs) * .1265 - var(--bw) * .0188); transform-origin: 0 0; }
   .bikes svg.mark { display: block; width: 100%; height: auto; color: var(--olive); overflow: visible; }
   .brand h1 { position: relative; z-index: 2; align-self: flex-end; margin: 0 -.02em 0 0; white-space: nowrap; line-height: .95; font-size: var(--fs); transform-origin: 100% 100%; }
   @media (min-width: 760px) {
@@ -145,8 +146,9 @@
   .photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(.85); }
   .photo figcaption { font-family: "Gochi Hand", cursive; color: var(--olive); font-size: 17px; text-align: right; }
   .photo.wide .frame { aspect-ratio: 16 / 7; }
-  /* Two destinations have portrait photos of us. A 16:7 banner would cut us out, so those get a square frame, and from
-     760px it sits beside the heading (.head: title, chips, blurb, how to get there) instead of across the top. */
+  /* Two destinations have portrait photos of us. A 16:7 banner would cut us out, so those get a square frame, no wider
+     than 22rem. From 760px it floats at the right of the card (see .dest.side) and the text runs beside it and then under. */
+  .photo.tall { width: 100%; max-width: 22rem; justify-self: center; }
   .photo.tall .frame { aspect-ratio: 1 / 1; }
   .hikes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 20px; align-items: start; }
 
@@ -160,10 +162,11 @@
   .dest .head { display: grid; gap: 12px; align-content: start; }
   @media (min-width: 760px) {
     .dest { padding: 20px 24px 26px; } .dest .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .dest.side { grid-template-columns: minmax(0, 1fr) 20rem; column-gap: 28px; }
-    .dest.side > .photo { grid-column: 2; grid-row: 1; }
-    .dest.side > .head { grid-column: 1; grid-row: 1; }
-    .dest.side > .grp { grid-column: 1 / -1; }
+    /* a float, not grid columns: whatever comes after the heading block starts beside the photo if there is still photo
+       left, and below it if not, so neither a short card nor a long one is left with a hole */
+    .dest.side { display: flow-root; }
+    .dest.side > .photo { float: right; width: clamp(15rem, 40%, 20rem); margin: 0 0 12px 28px; }
+    .dest.side > .grp { margin-top: 12px; }
   }
 
   footer { padding: 50px 0 calc(76px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; text-align: center; font-size: 14px; color: var(--muted); }
@@ -887,7 +890,7 @@
   <p class="lead">Worth building a few extra days around. Temps are typical late-July highs and lows.</p>
   <article class="dest" id="orcas">
   <figure class="photo wide">
-  <div class="frame"><img src="photos/orcas-island.jpg" alt="Two loaded touring bikes leaning on a white railing above the water, with a Washington State ferry at the dock behind them" width="1500" height="1130" loading="lazy" style="object-position: 50% 25%"></div>
+  <div class="frame"><img src="photos/orcas-island.jpg" alt="Two loaded touring bikes leaning on a white railing above the water, with a Washington State ferry at the dock behind them" width="1125" height="848" loading="lazy" style="object-position: 50% 25%"></div>
   <figcaption>Orcas Island</figcaption>
 </figure>
   <h3>Orcas Island</h3>
@@ -970,7 +973,8 @@
      Rest is the stylesheet alone: finishing means removing every inline transform and the intro classes.
      It plays through. Nothing a visitor does ends it early; while it runs the page is held at the top (the stylesheet locks
      scrolling) and the content under the veil is inert, the back chip excepted. A hidden tab pauses it. What does end it
-     early are the fail-safes: an error while drawing, and MAX_WALL of visible time.
+     early are the fail-safes (an error on the way in or while drawing; MAX_WALL of visible time, counted from the moment this
+     script takes over) and reduced motion being switched on.
      ?intro-t=<seconds> holds the timeline at that moment (for screenshots and tests) until the same MAX_WALL releases it;
      it does nothing where the animation would not play (a #hash link, reduced motion). */
   (function () {
@@ -979,7 +983,8 @@
         svg = bikes.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g")),
         art = svg.querySelector(":scope > g:not(.spokes)"), sun = document.getElementById("sun"),
         sunFrames = Array.prototype.slice.call(sun.querySelectorAll(".sf"));
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var motion = window.matchMedia("(prefers-reduced-motion: reduce)"), reduce = motion.matches;
+    var veiled = root.classList.contains("opening");                   // the intro's hold on the page, from here until finish()
     var T_TEXT = 3.2, T_EASE = T_TEXT - 0.45, T_BIKES = 3.95, T_ZOOM0 = 4.0, T_ZOOM1 = 4.95, T_ROLL0 = 4.95, T_ROLL1 = 5.9;
     var MAX_WALL = 9000;                       // ms the tab has been visible: however the frames come, the intro is over by then
     // ?intro-t=<seconds>: only a plain number counts, and only inside the timeline; anything else plays the animation normally
@@ -1143,14 +1148,22 @@
       try { if (remeasure) measure(); render(hold !== null ? hold : clock); } catch (e) { finish(); }
     }
     function finish() {
+      var wasVeiled = veiled;
       if (raf) cancelAnimationFrame(raf);
-      raf = 0; running = false;
+      raf = 0; running = false; veiled = false;
       disarmCap();
-      // first the part that must never fail to happen: the page back to rest. Then the wheels, left where the ride ended.
+      // first the part that must never fail to happen: the page back to rest. Then the rest, least important last.
       root.classList.remove("opening", "opening-run");
       content.inert = false;
       title.style.transform = bikes.style.transform = veil.style.transform = sun.style.transform = "";
       lastY = window.scrollY || 0; headerEnd = brand.offsetHeight + 200;
+      try {
+        if ("scrollRestoration" in history) history.scrollRestoration = "auto";   // "manual" was only so a refresh starts at the top; Back should work as usual
+        if (wasVeiled && location.hash.length > 1) {                              // the address gained a #section while the veil was up: go there now
+          var target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+          if (target) target.scrollIntoView();
+        }
+      } catch (e) {}
       if (G && !reduce) { roll = (G.v * T_BIKES + G.acc * Math.pow(T_BIKES - T_EASE, 2) / 2) / (G.unit * G.sB) + (G.kx + G.kw + 24) / G.unit; spin(); }
     }
     function start() {
@@ -1158,18 +1171,19 @@
       if (wheels.length !== 4) return finish();                          // the timeline rides on wheels[0] (rear) and wheels[3] (front): see build_mark.py
       window.scrollTo(0, 0);                                             // it plays at the top of the page, whatever the browser restored
       running = true;
-      if (!document.hidden) armCap();                                    // a tab opened in the background starts counting when it is first shown
       root.classList.add("opening-run");
       draw(true);
       if (running && hold === null) raf = requestAnimationFrame(tick);
     }
 
     document.addEventListener("visibilitychange", function () {       // hidden: stop the fail-safe's clock too; shown again: carry on
-      if (!running) return;
+      if (!veiled) return;
       if (document.hidden) disarmCap(); else armCap();
     });
+    function motionChanged() { reduce = motion.matches; if (reduce && veiled) finish(); }   // reduced motion turned on mid-intro: stop now
+    if (motion.addEventListener) motion.addEventListener("change", motionChanged); else if (motion.addListener) motion.addListener(motionChanged);
     window.addEventListener("resize", function () {
-      fit();
+      try { fit(); } catch (e) { if (veiled) return finish(); }
       if (running) draw(true); else headerEnd = brand.offsetHeight + 200;
     }, { passive: true });
     window.addEventListener("scroll", function () {
@@ -1186,12 +1200,19 @@
     var fonts = document.fonts, ready = fonts && fonts.load
       ? Promise.all([fonts.load('400 1em "Londrina Solid"', "EXTRA ADVENTURES"), fonts.ready]).catch(function () {})
       : Promise.resolve();
-    var began = false, begin = function () { if (!began) { began = true; fit(); start(); } };
-    ready.then(function () { if (!began) return begin(); fit(); if (running) draw(true); });   // the font landed after the timeout: fit and measure again
+    // Anything that fails on the way in ends at rest, like anything that fails while drawing.
+    var began = false, begin = function () { if (began) return; began = true; try { fit(); start(); } catch (e) { finish(); } };
+    ready.then(function () {
+      if (!began) return begin();
+      try { fit(); } catch (e) { return finish(); }                    // the font landed after the timeout: fit and measure again
+      if (running) draw(true);
+    });
     setTimeout(begin, 1500);
-    // Last, so nothing above can fail after it: while the veil is up the content under it takes no focus and no clicks.
-    // Every way out of the intro goes through finish(), which gives it back. The back chip sits outside it and stays live.
-    if (root.classList.contains("opening")) content.inert = true;
+    // Last, so nothing above can fail after it: while the veil is up the content under it takes no focus and no clicks,
+    // and the visible-time cap is already counting, so whatever goes wrong before or after the animation starts, the page
+    // is back within MAX_WALL of this line. Every way out goes through finish(). The back chip sits outside the inert
+    // content and stays live.
+    if (veiled) { content.inert = true; if (!document.hidden) armCap(); }
     window.__openingUp = true;                                           // tells the head script's watchdog this script is in charge
   })();
 </script>
