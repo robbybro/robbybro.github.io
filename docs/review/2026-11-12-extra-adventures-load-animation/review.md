@@ -66,4 +66,18 @@ Still open to Robby: the chip over content, the bikes' open-air exit, the sessio
 
 ## Follow-up range `fb25bfa..2dc018c`
 
-Fresh Eng and UX seats requested 2026-11-13 on the no-cancel change and the five photos; results to be appended here.
+Fresh Eng and UX seats, 2026-11-13, on the no-cancel change, the chip restyle and the five photos. No P1. Fix pass `22381cf`; probe after it 389 passed, 0 failed (plus 8 of 8 reduced motion, 11 of 11 fonts blocked).
+
+| Seat | Sev | Finding | Disposition |
+|---|---|---|---|
+| Eng | P2 | A throw in `fit()` before `start()` left the page veiled, locked and inert for good (reproduced) | Fixed `22381cf`: try/catch to `finish()`, cap armed before `begin` |
+| Eng | P2 | `scrollRestoration = "manual"` never undone; Back after a section chip did not return to the top | Fixed `22381cf` |
+| Eng | P2 | Olympic caption 121 px below its photo at 760 to 1000 px | Fixed `22381cf` (photo floated; caption 4 px under its frame) |
+| UX | P2 | San Juan Island card had a 170 px hole at desktop | Fixed `22381cf` |
+| Eng | P3 | Hash set mid-intro lost; reduced motion toggled mid-intro ignored; square photo 680 px at 759; Orcas file weight | Fixed `22381cf` |
+| UX | P3 | Bikes touch "EXTRA" at phone width | Fixed `22381cf` |
+| UX | P3 | Olympic caption differs from the card heading | Kept: the caption is Robby's own comment on the photo |
+| UX | P3 | Square photo pushes the title down on phones; captions small; title right-aligned | Accepted; right alignment is Robby's spec |
+| UX | P3 | Two back links at page end with different wording | Open to Robby |
+| UX | P3 | Chip drawn 34 px tall | No change: the hit area is 44 px (probe hit test) |
+| Eng | P3 | iOS Safari scroll lock unverified; needs a real iPhone | Open: hardware check |
