@@ -1,0 +1,161 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>extra-adventures header probe</title>
+<body style="margin:0;font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap">
+<pre id="out">RUNNING</pre>
+<script>
+/* Checks the Extra Adventures header against the page itself, at four widths:
+     held moments of the load animation (?t=)  the wheels sit on the tops of the letters (level over "Extra", climbing over
+                                               the tilted "Adventures"), the sun is up, nothing overflows sideways
+     at rest (#rest skips the animation)       no transforms left, title end on the right content margin, bikes at the left,
+                                               sun and veil gone, chip at the bottom left, footer clear of the chip
+     live                                      it plays once, ends by itself in 5 to 7 s, the page under it never moves;
+                                               a key press, a tap or a scroll ends it; afterwards only the wheels follow the scroll
+     ?reduced (Chrome forced to reduced motion) no animation, wheels still
+   The ground here is re-derived from the browser's own transforms (probe elements dropped into the title), not from the
+   page script's numbers. Run with python3 tests/run.py (it serves the folder and collects the table); it runs in real time. */
+var WIDTHS = [[360, 780], [390, 844], [768, 1024], [1440, 900]], HELD = [0.3, 1.2, 2.2, 2.7, 3.1], TOL = 1.5;
+var out = document.getElementById("out"), rows = [], fails = 0;
+function row(ok, name, detail) { if (!ok) fails++; rows.push((ok ? "PASS " : "FAIL ") + name + (detail ? "  " + detail : "")); }
+function near(a, b, tol) { return Math.abs(a - b) <= tol; }
+function frame(src, w, h) {
+  return new Promise(function (done) {
+    var f = document.createElement("iframe"); f.width = w; f.height = h; f.style.cssText = "border:0;display:block"; f.src = src;
+    document.body.appendChild(f);
+    var poll = setInterval(function () {         // ready = the page's own script has run (not window.onload: a slow image must not hold the probe)
+      var win = f.contentWindow, doc = win && win.document;
+      if (!win || !win.__openingUp || !doc.body) return;
+      clearInterval(poll);
+      var st = doc.createElement("style"); st.textContent = "html{scrollbar-width:none}::-webkit-scrollbar{display:none}"; doc.head.appendChild(st);
+      win.dispatchEvent(new Event("resize"));    // the scrollbar just went away: let the page measure the width it will be judged at
+      (doc.fonts ? doc.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { done({ f: f, win: win, doc: doc }); }, 350); });
+    }, 25);
+  });
+}
+function probe(doc, parent, before) {            // an empty inline-block sits on the text baseline; where is it on screen?
+  var p = doc.createElement("span"); p.style.cssText = "display:inline-block;width:0;height:0";
+  parent.insertBefore(p, before); var r = p.getBoundingClientRect(); parent.removeChild(p); return { x: r.left, y: r.top };
+}
+function geometry(c) {
+  var doc = c.doc, win = c.win, title = doc.getElementById("title"), tilt = title.querySelector(".tilt"), svg = doc.querySelector("svg.mark");
+  var b0 = probe(doc, title, title.firstChild), s0 = probe(doc, tilt, tilt.firstChild), s1 = probe(doc, tilt, null);
+  var ts = win.getComputedStyle(title), tf = ts.transform === "none" ? 1 : new DOMMatrix(ts.transform).a;
+  var ctx = doc.createElement("canvas").getContext("2d"), L = "EXTRAADVENTURES", sum = 0;
+  ctx.font = "400 200px " + ts.fontFamily;
+  for (var i = 0; i < L.length; i++) sum += ctx.measureText(L[i]).actualBoundingBoxAscent;
+  var cap = sum / L.length / 200 * parseFloat(ts.fontSize) * tf, ang = Math.atan2(s0.y - s1.y, s1.x - s0.x);
+  var art = svg.querySelector(":scope > g:not(.spokes)").getBBox(), ctm = svg.getScreenCTM(), low = art.y + art.height;
+  var rear = new DOMPoint(+doc.getElementById("w1").dataset.cx, low).matrixTransform(ctm), front = new DOMPoint(+doc.getElementById("w4").dataset.cx, low).matrixTransform(ctm);
+  var kink = s0.x - cap * Math.sin(ang);         // where the tops of the letters stop being level: the tilted word's top left corner
+  function ground(x) { return x < kink ? b0.y - cap : s0.y - (x - s0.x) * Math.tan(ang) - cap / Math.cos(ang); }
+  return { zoom: tf, tiltDeg: ang * 180 / Math.PI, rear: rear, front: front, rearGap: ground(rear.x) - rear.y, frontGap: ground(front.x) - front.y,
+           pitchDeg: Math.atan2(rear.y - front.y, front.x - rear.x) * 180 / Math.PI, kink: kink };
+}
+function sideways(c) { var e = c.doc.documentElement; return e.scrollWidth - e.clientWidth; }
+
+async function held(w, h, t) {
+  var c = await frame("../index.html?t=" + t, w, h), g = geometry(c), name = w + "px t=" + t + "s";
+  var where = g.front.x <= g.kink ? "level" : g.rear.x >= g.kink ? "slope" : "crossing";
+  row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, name + " wheels on the letters (" + where + ")", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px, pitch " + g.pitchDeg.toFixed(2) + "deg, zoom " + g.zoom.toFixed(2));
+  if (where === "level") row(near(g.pitchDeg, 0, 0.05), name + " pitch level over Extra", g.pitchDeg.toFixed(3));
+  if (where === "slope") row(near(g.pitchDeg, g.tiltDeg, 0.05) && near(g.tiltDeg, 2.5, 0.01), name + " pitch matches the tilt", g.pitchDeg.toFixed(3) + " vs " + g.tiltDeg.toFixed(3));
+  if (where === "crossing") row(g.pitchDeg > 0 && g.pitchDeg < g.tiltDeg, name + " pitch between level and tilt", g.pitchDeg.toFixed(3));
+  row(sideways(c) <= 0, name + " no sideways overflow", String(sideways(c)));
+  var sun = c.doc.getElementById("sun"), sr = sun.getBoundingClientRect();
+  if (t < 2.7) row(c.win.getComputedStyle(sun).display !== "none" && sr.left >= 0 && sr.right <= w && sr.bottom < Math.min(g.rear.y, g.front.y), name + " sun in the sky", Math.round(sr.left) + ".." + Math.round(sr.right) + " x, bottom " + Math.round(sr.bottom));
+  var bx = (g.rear.x + g.front.x) / 2;
+  if (t < 2.7) row(near(bx, w / 2, w * 0.02 + 2), name + " bikes centered", bx.toFixed(1) + " vs " + w / 2);
+  c.f.remove();
+}
+async function landed(w, h) {                    // the last held moment before the bikes roll in: the title must already be home
+  var c = await frame("../index.html?t=4.95", w, h), d = await frame("../index.html#rest", w, h);
+  var a = c.doc.getElementById("title").getBoundingClientRect(), b = d.doc.getElementById("title").getBoundingClientRect();
+  row(near(a.left, b.left, 0.5) && near(a.right, b.right, 0.5) && near(a.top, b.top, 0.5) && near(a.bottom, b.bottom, 0.5), w + "px zoom-out lands on the resting title", [a.left, a.right, a.top, a.bottom].map(Math.round).join(",") + " vs " + [b.left, b.right, b.top, b.bottom].map(Math.round).join(","));
+  c.f.remove(); d.f.remove();
+}
+async function rest(w, h) {
+  var c = await frame("../index.html#rest", w, h), doc = c.doc, win = c.win, name = w + "px rest";
+  var title = doc.getElementById("title"), bikes = doc.getElementById("bikes"), wrap = doc.querySelector(".wrap").getBoundingClientRect(), chip = doc.querySelector(".chip");
+  var tr = title.getBoundingClientRect(), br = bikes.getBoundingClientRect(), cr = chip.getBoundingClientRect(), fs = parseFloat(win.getComputedStyle(title).fontSize);
+  row(!/opening/.test(doc.documentElement.className) && !title.style.transform && !bikes.style.transform, name + " no animation state left");
+  row(near(tr.right - 0.02 * fs, wrap.right, 1), name + " title ends on the right content margin", (tr.right - 0.02 * fs).toFixed(1) + " vs " + wrap.right.toFixed(1));
+  row(near(br.left, wrap.left, 1) && br.top < tr.bottom && br.width <= 100, name + " bikes small at the top left", br.left.toFixed(1) + " vs " + wrap.left.toFixed(1) + ", width " + br.width);
+  row(tr.left >= wrap.left - 1, name + " title inside the left margin", tr.left.toFixed(1));
+  row(win.getComputedStyle(doc.getElementById("sun")).display === "none" && win.getComputedStyle(doc.getElementById("veil")).display === "none", name + " sun and veil gone");
+  var g = geometry(c);
+  row(Math.abs(g.rearGap) <= TOL || br.right < tr.left, name + " bikes rest on the letters or beside them", "rear gap " + g.rearGap.toFixed(2));
+  row(sideways(c) <= 0, name + " no sideways overflow", String(sideways(c)));
+  row(near(cr.height, 32, 0.5) && cr.left <= 16 && near(h - cr.bottom, 12, 0.5) && chip.href === "https://emilyandrobby.wedding/", name + " chip at the bottom left", "left " + cr.left + ", gap " + (h - cr.bottom) + ", height " + cr.height);
+  var hit = win.getComputedStyle(chip, "::before"); row(cr.height + 2 * -parseFloat(hit.top) >= 44, name + " chip target at least 44px", String(cr.height - 2 * parseFloat(hit.top)));
+  doc.documentElement.style.scrollBehavior = "auto";
+  win.scrollTo(0, doc.documentElement.scrollHeight);
+  await new Promise(function (r) { setTimeout(r, 200); });
+  var last = doc.querySelector("footer p").getBoundingClientRect(), chipNow = chip.getBoundingClientRect();
+  row(last.bottom <= chipNow.top - 6, name + " footer text clears the chip at the end of the page", last.bottom.toFixed(0) + " vs chip top " + chipNow.top.toFixed(0));
+  var w1 = doc.getElementById("w1");
+  function turn() { var m = /rotate\(([-\d.]+)/.exec(w1.getAttribute("transform") || ""); return m ? parseFloat(m[1]) : null; }
+  var far = turn();
+  win.scrollTo(0, 0); await new Promise(function (r) { setTimeout(r, 200); });
+  var before = turn();
+  win.scrollTo(0, 60); await new Promise(function (r) { setTimeout(r, 200); });
+  var after = turn(), want = 60 / (br.width / 356) / 39 * 180 / Math.PI;      // 60px of road under a wheel of radius 39 units
+  win.scrollTo(0, 0); await new Promise(function (r) { setTimeout(r, 200); });
+  row(far === null, name + " wheels left alone while the header is out of sight", String(far));
+  row(before !== null && near(after - before, want, 0.5) && near(turn(), before, 0.01), name + " wheels turn with the scroll, both ways", before + " -> " + after + " -> " + turn() + " (60px should be " + want.toFixed(1) + "deg)");
+  var tr2 = title.getBoundingClientRect(), br2 = bikes.getBoundingClientRect();
+  row(near(tr2.left, tr.left, 0.01) && near(br2.left, br.left, 0.01) && !title.style.transform && !bikes.style.transform, name + " nothing else moves with the scroll");
+  c.f.remove();
+}
+function pause(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+function cleared(c) { return !/opening/.test(c.doc.documentElement.className) && !c.doc.getElementById("title").style.transform && !c.doc.getElementById("bikes").style.transform; }
+async function live(w, h) {
+  var name = w + "px live", c = await frame("../index.html", w, h), title = c.doc.getElementById("title"), t0 = performance.now();
+  var a = title.style.transform; await pause(300); var b = title.style.transform;
+  row(/opening-run/.test(c.doc.documentElement.className) && !!a && a !== b, name + " animation plays on load and advances");
+  var g = geometry(c);
+  row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, name + " wheels on the letters mid-run", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px");
+  var before = c.doc.querySelector(".sub").getBoundingClientRect().top;
+  while (!cleared(c) && performance.now() - t0 < 12000) await pause(50);
+  var took = (performance.now() - t0 + 350) / 1000;           // + the settle time frame() waited before handing over
+  row(cleared(c) && took > 5 && took < 7.5, name + " runs once and ends by itself in 5 to 7 seconds", took.toFixed(2) + "s");
+  row(c.doc.querySelector(".sub").getBoundingClientRect().top === before, name + " the page under it never moved", String(before));
+  c.f.remove();
+  c = await frame("../index.html", w, h);
+  c.win.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
+  row(cleared(c), name + " a key press finishes it at once");
+  c.f.remove();
+  c = await frame("../index.html", w, h);
+  c.win.dispatchEvent(new Event("pointerdown"));
+  row(cleared(c), name + " a tap finishes it at once");
+  c.f.remove();
+  c = await frame("../index.html", w, h);
+  c.doc.documentElement.style.scrollBehavior = "auto"; c.win.scrollTo(0, 40); await pause(150);
+  row(cleared(c), name + " a scroll finishes it at once");
+  c.f.remove();
+}
+async function quiet(w, h) {                     // only meaningful when Chrome runs with --force-prefers-reduced-motion (run.sh's second pass)
+  var name = w + "px reduced motion", c = await frame("../index.html", w, h), w1 = c.doc.getElementById("w1");
+  row(c.win.matchMedia("(prefers-reduced-motion: reduce)").matches, name + " is on in this run");
+  row(cleared(c) && c.win.getComputedStyle(c.doc.getElementById("sun")).display === "none", name + " no animation, resting header at once");
+  c.doc.documentElement.style.scrollBehavior = "auto"; c.win.scrollTo(0, 60); await pause(200);
+  row(w1.getAttribute("transform") === null, name + " wheels do not turn with the scroll", String(w1.getAttribute("transform")));
+  c.f.remove();
+}
+(async function () {
+  try {
+    if (/[?&]reduced/.test(location.search)) { await quiet(390, 844); await quiet(1440, 900); return report(); }
+    for (var i = 0; i < WIDTHS.length; i++) {
+      var w = WIDTHS[i][0], h = WIDTHS[i][1];
+      for (var j = 0; j < HELD.length; j++) await held(w, h, HELD[j]);
+      await landed(w, h); await rest(w, h);
+    }
+    await live(390, 844); await live(1440, 900);
+  } catch (e) { row(false, "probe crashed", String(e && e.stack || e)); }
+  report();
+})();
+function report() {
+  out.textContent = rows.join("\n") + "\nRESULT " + (rows.length - fails) + " passed, " + fails + " failed";
+  fetch("/result" + location.search.replace("?", "-"), { method: "POST", body: out.textContent }).catch(function () {});   // run.py is listening
+}
+</script>
