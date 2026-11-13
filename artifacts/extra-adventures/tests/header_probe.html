@@ -179,8 +179,19 @@ async function rest(w, h) {
   doc.documentElement.style.scrollBehavior = "auto";
   win.scrollTo(0, doc.documentElement.scrollHeight);
   await pause(200);
-  var last = doc.querySelector("footer p").getBoundingClientRect(), chipNow = chip.getBoundingClientRect();
-  row(last.bottom <= chipNow.top - 6, name + " footer text clears the chip at the end of the page", last.bottom.toFixed(0) + " vs chip top " + chipNow.top.toFixed(0));
+  // the end of the page: the chip's whole tap target (not just the 32px drawing) sits below the last content with at least 12px to spare
+  var reach = -parseFloat(win.getComputedStyle(chip, "::before").top), tail = Array.prototype.slice.call(content(c).querySelectorAll("p, li, a, figcaption, h2, h3, h4, h5")).pop();
+  function spare() { return chip.getBoundingClientRect().top - reach - tail.getBoundingClientRect().bottom; }
+  var atEnd = Math.abs(win.scrollY + h - doc.documentElement.scrollHeight) <= 1, gap0 = spare(), box = chip.getBoundingClientRect();
+  row(atEnd && tail.closest("footer") && gap0 >= 12 && box.bottom + reach <= h && doc.querySelectorAll('a[href^="https://emilyandrobby.wedding"]').length === 1 && !doc.querySelector("footer a"), name + " scrolled to the end, the chip's 44px target clears the last line by at least 12px; the chip is the only back link", gap0.toFixed(1) + "px between \"" + tail.textContent.trim().slice(0, 24) + "\" and the target's top");
+  if (w === 390) {                               // a phone with a home-indicator inset: both the chip and the footer padding take it, so the clearance holds
+    doc.documentElement.style.setProperty("--inset-bottom", "34px");
+    win.scrollTo(0, doc.documentElement.scrollHeight); await pause(200);
+    var b2 = chip.getBoundingClientRect();
+    row(near(h - b2.bottom, 46, 0.5) && near(spare(), gap0, 0.5) && Math.abs(win.scrollY + h - doc.documentElement.scrollHeight) <= 1, name + " with a 34px bottom inset the chip moves up and still clears the last line", (h - b2.bottom) + "px from the bottom edge, " + spare().toFixed(1) + "px spare");
+    doc.documentElement.style.removeProperty("--inset-bottom");
+    win.scrollTo(0, doc.documentElement.scrollHeight); await pause(150);
+  }
   var w1 = doc.getElementById("w1");
   function turn() { var m = /rotate\(([-\d.]+)/.exec(w1.getAttribute("transform") || ""); return m ? parseFloat(m[1]) : null; }
   var far = turn();

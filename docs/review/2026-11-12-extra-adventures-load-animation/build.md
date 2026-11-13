@@ -270,3 +270,16 @@ Not changed, by instruction: no cancel, every-refresh play, release at rest, chi
 `python3 artifacts/extra-adventures/tests/run.py`, about two minutes: **389 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**. Two consecutive runs on the final code, the second after the commit.
 
 `shots-kept/phone-390x844-rest.png` was re-captured (the header is 6 px taller); the other three kept files came out byte-identical.
+
+## Footer link removed; the page ends clear of the chip (2026-11-13)
+
+From Robby. One commit (the one that adds this section).
+
+| # | Item | Result | What was done, and the evidence |
+|---|---|---|---|
+| 1 | Remove the footer back link | Done | The `<a class="back">` and both `footer .back` rules are gone; the footer is "Questions? Just ask us." The chip is the page's only link to emilyandrobby.wedding (probe counts one) |
+| 2 | At the end of the page the chip overlaps nothing | Done | The chip's box is now four named lengths on `:root` (`--chip-h` 32px, `--chip-reach` 6px, `--chip-gap` 12px, `--inset-bottom` = `env(safe-area-inset-bottom)`), and the chip, its tap target, the scroll padding and the footer all use them. The footer's bottom padding is `gap + inset + height + reach + 16px`, so with the page scrolled to its end the last line is 16px above the top of the 44px tap target by construction, whatever the inset. Probe, scrolled to the end: 16.5px at 360, 15.5px at 390, 16.2px at 768, 15.8px at 1440 (the fractions are the scroll position rounding), and the whole target is inside the viewport. With `--inset-bottom` forced to 34px at 390 the chip sits 46px from the bottom edge and the clearance is still 15.5px. That forces the inset through the same custom property the real `env()` value feeds; a real device inset was not available |
+
+Looked at: `shots/phone-390x844-page-end.png`, `shots/desktop-1440x900-page-end.png` (local).
+
+`python3 artifacts/extra-adventures/tests/run.py`: **390 passed, 0 failed**; under forced reduced motion **8 passed, 0 failed**; with Google Fonts unreachable **11 passed, 0 failed**.
