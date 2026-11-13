@@ -14,11 +14,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Gochi+Hand&display=swap">
 <script>
   /* Before first paint: put the page-colored veil up if the load animation is going to play, so the page never flashes under it.
-     It never plays for a #hash link or under reduced motion. The watchdog takes the veil down again if the main script at the
-     end of the body never reports in. */
+     It never plays for a #hash link or under reduced motion. When it does play it plays from the top of the page, so the
+     browser is told not to restore a scroll position on refresh. The watchdog takes the veil down again if the main script
+     at the end of the body never reports in. */
   (function () {
     try {
       if (location.hash || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
       var root = document.documentElement;
       root.classList.add("opening");
       setTimeout(function () { if (!window.__openingUp) root.classList.remove("opening"); }, 4000);
@@ -37,7 +39,7 @@
     --peri-deep: #92AAC3;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  html { scroll-behavior: smooth; overflow-x: clip; scrollbar-gutter: stable; scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
   body { margin: 0; background: var(--butter); color: var(--ink); font-family: "Libre Baskerville", Georgia, serif; font-size: 16px; line-height: 1.6; padding-inline: 16px; -webkit-font-smoothing: antialiased; }
   a { color: var(--olive-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover { color: var(--persimmon); }
@@ -69,42 +71,42 @@
   }
   /* Load animation. The header box is stretched over the viewport by padding that an equal negative margin takes back, so the
      page under it never moves; a page-colored veil inside it hides the page until the title zooms out. Everything that moves
-     is a transform set by the script at the end of the body. */
+     is a transform set by the script at the end of the body. It plays through: nothing a visitor does ends it early, and the
+     page cannot scroll under it (scrollbar-gutter on html keeps the width the same when the scrollbar goes and comes back). */
   .brand .veil, .brand .sun { display: none; position: absolute; left: 0; top: 0; }
   .brand .veil { right: 0; bottom: 0; z-index: 0; background: linear-gradient(to bottom, var(--butter) calc(100% - 40px), transparent); }
   .brand .sun { z-index: 1; width: 100px; height: 100px; color: var(--olive); transform-origin: 0 0; }
   .sun .sf { display: none; }
   .sun .sf.on { display: inline; }
+  html.opening { overflow: hidden; overscroll-behavior: none; scroll-behavior: auto; }
   html.opening .brand { padding-bottom: 100vh; margin-bottom: -100vh; padding-bottom: 100lvh; margin-bottom: -100lvh; pointer-events: none; }
-  html.opening .brand .veil { display: block; pointer-events: auto; }   /* only the veil blocks clicks, and it slides off the page */
+  html.opening .brand .veil { display: block; pointer-events: auto; touch-action: none; }
   html.opening.opening-run .brand .sun { display: block; }
   html.opening:not(.opening-run) .brand h1, html.opening:not(.opening-run) .bikes { visibility: hidden; }
 
-  /* back to the wedding site: a Material-style clickable chip pinned to the bottom left. The 1px ring is its boundary:
-     at least 3:1 against the page and the cards in both themes (tests/header_probe.html measures it). */
-  :root { --chip-bg: #FFFDF7; --chip-bg-hover: #F6EDCF; --chip-bg-press: #EBDFB6; --chip-fg: #302F1A; --chip-icon: #5C5822;
-    --chip-ring: 0 0 0 1px #77722E;
+  /* back to the wedding site: a clickable chip pinned to the bottom left, Material's chip in shape (32px, round ends, a
+     leading icon, a little elevation) and the page's own section chips in dress (nav.jump a: Londrina Solid capitals in
+     the title green on paper, honey on hover). The 1px ring is its boundary: at least 3:1 against the page and the cards
+     in both themes (tests/header_probe.html measures it and the label). */
+  :root { --chip-ring: 0 0 0 1px #77722E;
     --chip-e1: 0 2px 1px -1px rgba(48,47,26,.20), 0 1px 1px 0 rgba(48,47,26,.14), 0 1px 3px 0 rgba(48,47,26,.12);
     --chip-e2: 0 3px 1px -2px rgba(48,47,26,.20), 0 2px 2px 0 rgba(48,47,26,.14), 0 1px 5px 0 rgba(48,47,26,.12);
     --chip-e4: 0 2px 4px -1px rgba(48,47,26,.20), 0 4px 5px 0 rgba(48,47,26,.14), 0 1px 10px 0 rgba(48,47,26,.12); }
-  :root[data-theme="dark"] { --chip-bg: #403E24; --chip-bg-hover: #4D4A2B; --chip-bg-press: #5A5633; --chip-fg: #F2E6C3; --chip-icon: #E0D99A;
-    --chip-ring: 0 0 0 1px #A39D62;
+  :root[data-theme="dark"] { --chip-ring: 0 0 0 1px #A39D62;
     --chip-e1: 0 2px 1px -1px rgba(0,0,0,.40), 0 1px 1px 0 rgba(0,0,0,.28), 0 1px 3px 0 rgba(0,0,0,.24);
     --chip-e2: 0 3px 1px -2px rgba(0,0,0,.40), 0 2px 2px 0 rgba(0,0,0,.28), 0 1px 5px 0 rgba(0,0,0,.24);
     --chip-e4: 0 2px 4px -1px rgba(0,0,0,.40), 0 4px 5px 0 rgba(0,0,0,.28), 0 1px 10px 0 rgba(0,0,0,.24); }
   .chip { position: fixed; z-index: 30; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px 0 8px; border-radius: 16px;
-    background: var(--chip-bg); color: var(--chip-fg); box-shadow: var(--chip-ring), var(--chip-e2);
-    font-size: 13px; line-height: 1; white-space: nowrap; text-decoration: none; -webkit-tap-highlight-color: transparent;
-    transition: background-color .2s, box-shadow .2s; }
+    background: var(--paper); color: var(--olive); box-shadow: var(--chip-ring), var(--chip-e2);
+    font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .05em; font-size: 15px; line-height: 1;
+    white-space: nowrap; text-decoration: none; -webkit-tap-highlight-color: transparent;
+    transition: background-color .2s, color .2s, box-shadow .2s; }
   .chip::before { content: ""; position: absolute; inset: -6px 0; }   /* the chip draws 32px; the target is 44px */
-  .chip svg { flex: none; width: 18px; height: 18px; fill: var(--chip-icon); }
-  .chip:hover { background: var(--chip-bg-hover); color: var(--chip-fg); box-shadow: var(--chip-ring), var(--chip-e4); }
-  .chip:focus-visible { background: var(--chip-bg-hover); outline: 2px solid var(--peri-deep); outline-offset: 2px; }
-  .chip:active { background: var(--chip-bg-press); box-shadow: var(--chip-ring), var(--chip-e1); }
-  /* Skip intro: the same chip at the bottom right, there only while the load animation is up */
-  .chip.skip { display: none; left: auto; right: calc(12px + env(safe-area-inset-right, 0px)); padding: 0 12px; border: 0; font-family: inherit; cursor: pointer; }
-  html.opening .chip.skip { display: inline-flex; }
+  .chip svg { flex: none; width: 18px; height: 18px; fill: currentColor; }
+  .chip:hover { background: var(--honey); color: var(--ink); box-shadow: var(--chip-ring), var(--chip-e4); }
+  .chip:focus-visible { outline: 2px solid var(--peri-deep); outline-offset: 2px; }
+  .chip:active { background: var(--honey); color: var(--ink); box-shadow: var(--chip-ring), var(--chip-e1); }
   header { padding: 14px 0 10px; display: grid; gap: 18px; }
   h1 .tilt { display: inline-block; color: var(--persimmon); transform: rotate(-2.5deg); transform-origin: left bottom; }
   .sub { font-style: italic; color: var(--muted); font-size: 15px; }
@@ -161,8 +163,6 @@
 </style>
 </head>
 <body>
-<button class="chip skip" id="skip" type="button">Skip intro</button>
-
 <div class="brand" id="brand">
   <div class="veil" id="veil"></div>
 <!-- sun:start -->
@@ -954,24 +954,28 @@
        T_ZOOM0-T_ZOOM1  the title zooms out about its right end, back into the header; the veil lifts off the page
        T_ROLL0-T_ROLL1  the bikes roll in from the left at their resting size
      Rest is the stylesheet alone: finishing means removing every inline transform and the intro classes.
-     ?intro-t=<seconds> holds the timeline at that moment (for screenshots and tests); a scroll, tap or key still dismisses
-     it, and it does nothing where the animation would not play (a #hash link, reduced motion). */
+     It plays through. Nothing a visitor does ends it early; while it runs the page is held at the top (the stylesheet locks
+     scrolling) and the content under the veil is inert, the back chip excepted. A hidden tab pauses it. What does end it
+     early are the fail-safes: an error while drawing, and MAX_WALL of visible time.
+     ?intro-t=<seconds> holds the timeline at that moment (for screenshots and tests) until the same MAX_WALL releases it;
+     it does nothing where the animation would not play (a #hash link, reduced motion). */
   (function () {
     var root = document.documentElement, brand = document.getElementById("brand"), veil = document.getElementById("veil"),
-        row = brand.querySelector(".row"), skipButton = document.getElementById("skip"), title = document.getElementById("title"), tilt = title.querySelector(".tilt"), bikes = document.getElementById("bikes"),
+        row = brand.querySelector(".row"), content = document.querySelector(".wrap"), title = document.getElementById("title"), tilt = title.querySelector(".tilt"), bikes = document.getElementById("bikes"),
         svg = bikes.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g")),
         art = svg.querySelector(":scope > g:not(.spokes)"), sun = document.getElementById("sun"),
         sunFrames = Array.prototype.slice.call(sun.querySelectorAll(".sf"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var T_TEXT = 3.2, T_EASE = T_TEXT - 0.45, T_BIKES = 3.95, T_ZOOM0 = 4.0, T_ZOOM1 = 4.95, T_ROLL0 = 4.95, T_ROLL1 = 5.9;
-    var MAX_WALL = 9000;                       // ms: however slowly the frames come, the intro is over by then
+    var MAX_WALL = 9000;                       // ms the tab has been visible: however the frames come, the intro is over by then
     // ?intro-t=<seconds>: only a plain number counts, and only inside the timeline; anything else plays the animation normally
     var hold = /[?&]intro-t=(\d+(?:\.\d+)?)(?:&|$)/.exec(location.search);
     hold = hold ? parseFloat(hold[1]) : NaN;
     hold = isFinite(hold) ? Math.min(hold, T_ROLL1 - 0.001) : null;
     var BOIL = 7;                              // sun frames per second
     var VB = svg.viewBox.baseVal;              // the mark's viewBox: x 38, y 112, 356 x 222
-    var G = null, running = false, raf = 0, clock = 0, lastStamp = 0, wallStart = 0, sunShown = 0;
+    var G = null, running = false, raf = 0, clock = 0, lastStamp = 0, sunShown = 0;
+    var capTimer = 0, visibleFor = 0, visibleSince = 0;
     var roll = 0, lastY = window.scrollY || 0, spinQueued = false;   // roll = distance ridden, in viewBox units
     var headerEnd = brand.offsetHeight + 200;                        // past this scroll position the wheels are out of sight
 
@@ -1100,13 +1104,25 @@
     }
 
     function tick(stamp) {
-      // real time, except that one long stall costs a quarter second, not the whole intro. The first frame only sets the
-      // reference: a frame's timestamp can be earlier than the performance.now() read just before it was requested.
+      raf = requestAnimationFrame(tick);
+      if (document.hidden) { lastStamp = 0; return; }                  // a hidden tab holds the timeline where it is
+      // real time, except that one long stall costs a quarter second, not the whole intro. The first frame (and the first
+      // after a pause) only sets the reference: a frame's timestamp can be earlier than the performance.now() read before it.
       if (lastStamp) clock += clamp((stamp - lastStamp) / 1000, 0, 0.25);
       lastStamp = stamp;
-      if (clock >= T_ROLL1 || performance.now() - wallStart > MAX_WALL) return finish();
-      raf = requestAnimationFrame(tick);
+      if (clock >= T_ROLL1) return finish();
       draw();
+    }
+    /* The fail-safe that does not depend on frames arriving: MAX_WALL of time with the tab visible, then rest. */
+    function armCap() {
+      if (capTimer) return;
+      visibleSince = performance.now();
+      capTimer = setTimeout(finish, Math.max(0, MAX_WALL - visibleFor));
+    }
+    function disarmCap() {
+      clearTimeout(capTimer); capTimer = 0;
+      if (visibleSince) visibleFor += performance.now() - visibleSince;
+      visibleSince = 0;
     }
     /* measure (when asked) and draw the current moment; anything that goes wrong ends the intro instead of leaving the veil up */
     function draw(remeasure) {
@@ -1115,34 +1131,36 @@
     function finish() {
       if (raf) cancelAnimationFrame(raf);
       raf = 0; running = false;
+      disarmCap();
       // first the part that must never fail to happen: the page back to rest. Then the wheels, left where the ride ended.
       root.classList.remove("opening", "opening-run");
+      content.inert = false;
       title.style.transform = bikes.style.transform = veil.style.transform = sun.style.transform = "";
       lastY = window.scrollY || 0; headerEnd = brand.offsetHeight + 200;
       if (G && !reduce) { roll = (G.v * T_BIKES + G.acc * Math.pow(T_BIKES - T_EASE, 2) / 2) / (G.unit * G.sB) + (G.kx + G.kw + 24) / G.unit; spin(); }
     }
     function start() {
-      if (!root.classList.contains("opening")) return;                   // the head script decided against it, or its watchdog fired
-      if ((window.scrollY || 0) > 2 && hold === null) return finish(); // the browser restored a scroll position: nothing to watch
+      if (!root.classList.contains("opening")) return finish();          // the head script decided against it, or its watchdog fired
       if (wheels.length !== 4) return finish();                          // the timeline rides on wheels[0] (rear) and wheels[3] (front): see build_mark.py
+      window.scrollTo(0, 0);                                             // it plays at the top of the page, whatever the browser restored
       running = true;
-      wallStart = performance.now();
+      if (!document.hidden) armCap();                                    // a tab opened in the background starts counting when it is first shown
       root.classList.add("opening-run");
       draw(true);
       if (running && hold === null) raf = requestAnimationFrame(tick);
     }
-    function skip() { if (running) finish(); }
 
-    ["wheel", "touchstart", "pointerdown", "keydown"].forEach(function (type) { window.addEventListener(type, skip, { passive: true }); });
-    skipButton.addEventListener("click", skip);                         // for a screen reader's activate, which sends none of the above
-    document.addEventListener("visibilitychange", function () { if (document.hidden && hold === null) skip(); });
+    document.addEventListener("visibilitychange", function () {       // hidden: stop the fail-safe's clock too; shown again: carry on
+      if (!running) return;
+      if (document.hidden) disarmCap(); else armCap();
+    });
     window.addEventListener("resize", function () {
       fit();
       if (running) draw(true); else headerEnd = brand.offsetHeight + 200;
     }, { passive: true });
     window.addEventListener("scroll", function () {
       var y = window.scrollY || 0, dy = y - lastY; lastY = y;
-      if (running) return finish();
+      if (running) { if (y) window.scrollTo(0, 0); lastY = 0; return; }   // the stylesheet locks scrolling; this is for whatever gets past it
       if (reduce) return;
       roll += dy / (bikes.clientWidth / VB.width || 1);                // the wheels turn as far as the page moves
       if (spinQueued || y > headerEnd) return;
@@ -1157,6 +1175,9 @@
     var began = false, begin = function () { if (!began) { began = true; fit(); start(); } };
     ready.then(function () { if (!began) return begin(); fit(); if (running) draw(true); });   // the font landed after the timeout: fit and measure again
     setTimeout(begin, 1500);
+    // Last, so nothing above can fail after it: while the veil is up the content under it takes no focus and no clicks.
+    // Every way out of the intro goes through finish(), which gives it back. The back chip sits outside it and stays live.
+    if (root.classList.contains("opening")) content.inert = true;
     window.__openingUp = true;                                           // tells the head script's watchdog this script is in charge
   })();
 </script>

@@ -3,7 +3,7 @@
 
 Three passes: the page as is, then with Chrome forced to prefers-reduced-motion, then with Google Fonts
 unreachable. Exit code 0 only if every check in all three passed. The probe runs in real time (it watches the
-load animation play, and waits out the 9 s wall-clock cap once), so a run takes about two minutes. It serves the
+load animation play several times, and waits out the 9 s cap twice), so a run takes about two and a half minutes. It serves the
 artifact folder itself on a free local port and the probe posts its table back.
 
 Needs Google Chrome (CHROME=/path/to/chrome to override), outside any sandbox that blocks it.
