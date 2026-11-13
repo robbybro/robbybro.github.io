@@ -14,12 +14,11 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Gochi+Hand&display=swap">
 <script>
   /* Before first paint: put the page-colored veil up if the load animation is going to play, so the page never flashes under it.
-     The watchdog takes it down again if the main script at the end of the body never reports in. */
+     It never plays for a #hash link or under reduced motion. The watchdog takes the veil down again if the main script at the
+     end of the body never reports in. */
   (function () {
     try {
-      var frozen = /[?&]t=[\d.]+/.test(location.search);
-      if (location.hash && !frozen) return;
-      if (!frozen && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (location.hash || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       var root = document.documentElement;
       root.classList.add("opening");
       setTimeout(function () { if (!window.__openingUp) root.classList.remove("opening"); }, 4000);
@@ -38,7 +37,7 @@
     --peri-deep: #92AAC3;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; overflow-x: clip; }
+  html { scroll-behavior: smooth; overflow-x: clip; scroll-padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
   body { margin: 0; background: var(--butter); color: var(--ink); font-family: "Libre Baskerville", Georgia, serif; font-size: 16px; line-height: 1.6; padding-inline: 16px; -webkit-font-smoothing: antialiased; }
   a { color: var(--olive-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; }
   a:hover { color: var(--persimmon); }
@@ -56,15 +55,16 @@
   /* Header. At rest it is plain flow: the bikes small at the top left, the title with its end on the right content margin
      (stacked on narrow screens, where the title fills the width and the bikes sit on its first letters; one row from 760px).
      7.68 is the title's width in em (7.57 measured in Londrina Solid, plus slack); .1265 / .12 / .0188 are the cap-top and
-     baseline offsets inside the h1 box and the gap under the wheels inside the mark, so the wheels rest on the letters. */
+     baseline offsets inside the h1 box and the gap under the wheels inside the mark, so the wheels rest on the letters.
+     The script's fit() overrides --fs when the title would not fit (another font drew it, or a scrollbar took the width). */
   .brand { position: relative; z-index: 5; margin-inline: -16px; overflow: hidden; overflow: clip; --bw: clamp(72px, 20vw, 100px); --fs: calc((100vw - 32px) / 7.68); }
-  .brand .row { box-sizing: border-box; max-width: calc(64rem + 32px); margin: 0 auto; padding: 12px 16px 4px; display: flex; flex-direction: column; }
-  .bikes { position: relative; z-index: 3; width: var(--bw); margin-bottom: calc(var(--fs) * -.1265 - var(--bw) * .0188); transform-origin: 0 0; }
+  .brand .row { box-sizing: border-box; max-width: calc(64rem + 32px); margin: 0 auto; padding: 16px 16px 4px; display: flex; flex-direction: column; }
+  .bikes { position: relative; z-index: 3; flex: none; width: var(--bw); margin-bottom: calc(var(--fs) * -.1265 - var(--bw) * .0188); transform-origin: 0 0; }
   .bikes svg.mark { display: block; width: 100%; height: auto; color: var(--olive); overflow: visible; }
   .brand h1 { position: relative; z-index: 2; align-self: flex-end; margin: 0 -.02em 0 0; white-space: nowrap; line-height: .95; font-size: var(--fs); transform-origin: 100% 100%; }
   @media (min-width: 760px) {
     .brand { --fs: min(96px, calc((100vw - 160px) / 7.68)); }
-    .brand .row { flex-direction: row; align-items: flex-end; justify-content: space-between; padding-top: 16px; }
+    .brand .row { flex-direction: row; align-items: flex-end; justify-content: space-between; padding-top: calc(16px + var(--fs) * .1); }
     .bikes { margin-bottom: calc(var(--fs) * .12 - var(--bw) * .0188); }
   }
   /* Load animation. The header box is stretched over the viewport by padding that an equal negative margin takes back, so the
@@ -75,19 +75,20 @@
   .brand .sun { z-index: 1; width: 100px; height: 100px; color: var(--olive); transform-origin: 0 0; }
   .sun .sf { display: none; }
   .sun .sf.on { display: inline; }
-  html.opening .brand { padding-bottom: 100vh; margin-bottom: -100vh; padding-bottom: 100lvh; margin-bottom: -100lvh; }
-  html.opening .brand .veil { display: block; }
+  html.opening .brand { padding-bottom: 100vh; margin-bottom: -100vh; padding-bottom: 100lvh; margin-bottom: -100lvh; pointer-events: none; }
+  html.opening .brand .veil { display: block; pointer-events: auto; }   /* only the veil blocks clicks, and it slides off the page */
   html.opening.opening-run .brand .sun { display: block; }
   html.opening:not(.opening-run) .brand h1, html.opening:not(.opening-run) .bikes { visibility: hidden; }
 
-  /* back to the wedding site: a Material-style clickable chip pinned to the bottom left */
+  /* back to the wedding site: a Material-style clickable chip pinned to the bottom left. The 1px ring is its boundary:
+     at least 3:1 against the page and the cards in both themes (tests/header_probe.html measures it). */
   :root { --chip-bg: #FFFDF7; --chip-bg-hover: #F6EDCF; --chip-bg-press: #EBDFB6; --chip-fg: #302F1A; --chip-icon: #5C5822;
-    --chip-ring: 0 0 0 1px rgba(48,47,26,.10);
+    --chip-ring: 0 0 0 1px #77722E;
     --chip-e1: 0 2px 1px -1px rgba(48,47,26,.20), 0 1px 1px 0 rgba(48,47,26,.14), 0 1px 3px 0 rgba(48,47,26,.12);
     --chip-e2: 0 3px 1px -2px rgba(48,47,26,.20), 0 2px 2px 0 rgba(48,47,26,.14), 0 1px 5px 0 rgba(48,47,26,.12);
     --chip-e4: 0 2px 4px -1px rgba(48,47,26,.20), 0 4px 5px 0 rgba(48,47,26,.14), 0 1px 10px 0 rgba(48,47,26,.12); }
   :root[data-theme="dark"] { --chip-bg: #403E24; --chip-bg-hover: #4D4A2B; --chip-bg-press: #5A5633; --chip-fg: #F2E6C3; --chip-icon: #E0D99A;
-    --chip-ring: 0 0 0 1px rgba(242,230,195,.16);
+    --chip-ring: 0 0 0 1px #A39D62;
     --chip-e1: 0 2px 1px -1px rgba(0,0,0,.40), 0 1px 1px 0 rgba(0,0,0,.28), 0 1px 3px 0 rgba(0,0,0,.24);
     --chip-e2: 0 3px 1px -2px rgba(0,0,0,.40), 0 2px 2px 0 rgba(0,0,0,.28), 0 1px 5px 0 rgba(0,0,0,.24);
     --chip-e4: 0 2px 4px -1px rgba(0,0,0,.40), 0 4px 5px 0 rgba(0,0,0,.28), 0 1px 10px 0 rgba(0,0,0,.24); }
@@ -101,6 +102,9 @@
   .chip:hover { background: var(--chip-bg-hover); color: var(--chip-fg); box-shadow: var(--chip-ring), var(--chip-e4); }
   .chip:focus-visible { background: var(--chip-bg-hover); outline: 2px solid var(--peri-deep); outline-offset: 2px; }
   .chip:active { background: var(--chip-bg-press); box-shadow: var(--chip-ring), var(--chip-e1); }
+  /* Skip intro: the same chip at the bottom right, there only while the load animation is up */
+  .chip.skip { display: none; left: auto; right: calc(12px + env(safe-area-inset-right, 0px)); padding: 0 12px; border: 0; font-family: inherit; cursor: pointer; }
+  html.opening .chip.skip { display: inline-flex; }
   header { padding: 14px 0 10px; display: grid; gap: 18px; }
   h1 .tilt { display: inline-block; color: var(--persimmon); transform: rotate(-2.5deg); transform-origin: left bottom; }
   .sub { font-style: italic; color: var(--muted); font-size: 15px; }
@@ -125,6 +129,8 @@
   .pill { justify-self: start; font-family: "Londrina Solid", sans-serif; text-transform: uppercase; letter-spacing: .05em; font-size: 14px; text-decoration: none; color: var(--ink); background: var(--honey); padding: 5px 12px; border-radius: 999px; }
   .pill:hover { background: var(--persimmon); color: #fff; }
   .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  #day-trips .card { display: flex; flex-direction: column; }           /* so the pill row can sit at the bottom of uneven cards */
+  #day-trips .card > .pill, #day-trips .card > .pills { margin-top: auto; align-self: flex-start; }
   ol.chain { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 15px; line-height: 1.5; }
   ol.chain li { padding-left: 1.5em; position: relative; }
   ol.chain li::before { content: "→"; position: absolute; left: 0; top: -.05em; color: var(--persimmon); font-family: "Gochi Hand", cursive; font-size: 20px; line-height: 1.3; }
@@ -155,7 +161,7 @@
 </style>
 </head>
 <body>
-<a class="chip" href="https://emilyandrobby.wedding"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>back to the wedding site</a>
+<button class="chip skip" id="skip" type="button">Skip intro</button>
 
 <div class="brand" id="brand">
   <div class="veil" id="veil"></div>
@@ -843,7 +849,7 @@
 
 <section id="day-trips">
   <h2 class="display">Day Trips</h2>
-  <p class="lead">A few options that can be part of a day trip (or overnight) on the way north.</p>
+  <p class="lead">A few options that can be part of a day trip (or overnight) from Seattle.</p>
   <div class="grid">
     <article class="card"><figure class="photo">
   <div class="frame"><img src="photos/oyster-dome.jpg" alt="View from a forested bluff over a wide bay dotted with low islands, under a blue sky with scattered clouds" width="1024" height="768" loading="lazy"></div>
@@ -851,7 +857,7 @@
 </figure><h4>Bellingham out and back</h4><p class="">Start with a hike to <a href="https://www.wta.org/go-hiking/hikes/oyster-dome" target="_blank" rel="noopener">Oyster Dome</a> for a fabulous view, stop at <a href="https://www.google.com/maps/search/?api=1&amp;query=Taylor+Shellfish+Farms+Samish&amp;query_place_id=ChIJWdB_KDt1hVQRKzIPl5S-Zoo" target="_blank" rel="noopener">Taylor Shellfish Farms</a> for oysters, then venture into town for amazing coffee at <a href="https://www.google.com/maps/search/?api=1&amp;query=Makeworth+Coffee&amp;query_place_id=ChIJ26VzqZ2jhVQRwL_lcHum6rs" target="_blank" rel="noopener">Makeworth</a> and even more good food. Top it off with a beer at <a href="https://www.google.com/maps/search/?api=1&amp;query=Structures+Brewing&amp;query_place_id=ChIJ2UVV3r2jhVQRbE0vjylD_Ys" target="_blank" rel="noopener">Structures</a>.</p><a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle%2C+WA&amp;destination=Structures+Brewing%2C+Bellingham&amp;destination_place_id=ChIJ2UVV3r2jhVQRbE0vjylD_Ys&amp;waypoints=Oyster+Dome+Trailhead%2C+Chuckanut+Drive%2C+Bow%2C+WA%7CTaylor+Shellfish+Farms%2C+Bow%2C+WA%7CMakeworth+Coffee%2C+Bellingham&amp;travelmode=driving" target="_blank" rel="noopener">Route map ↗</a></article><article class="card"><figure class="photo">
   <div class="frame"><img src="photos/deception-pass.jpg" alt="Teal water running between rocky, tree-topped cliffs" width="768" height="1024" loading="lazy" style="object-position: 50% 80%"></div>
   <figcaption>Deception Pass State Park</figcaption>
-</figure><h4>Whidbey Island Loop</h4><p class="">Drive up to <a href="https://parks.wa.gov/find-parks/state-parks/deception-pass-state-park" target="_blank" rel="noopener">Deception Pass</a> (great short hikes with beautiful views), and stop in Edison along the way for <a href="https://www.google.com/maps/search/?api=1&amp;query=Breadfarm+Edison&amp;query_place_id=ChIJOYLDvXp0hVQRtcE4_D4vXIA" target="_blank" rel="noopener">great bread (and weirdly good peanut butter)</a>, and a <a href="https://www.google.com/maps/search/?api=1&amp;query=Tweets+Cafe+Edison&amp;query_place_id=ChIJiU6Kmnp0hVQRFO4KI4GlmE8" target="_blank" rel="noopener">lovely diner</a>. Take the Deception Pass bridge and work your way down to <a href="https://www.google.com/maps/search/?api=1&amp;query=Greenbank+Farm&amp;query_place_id=ChIJH3HFEN7wj1QR86Vdh2EYg8s" target="_blank" rel="noopener">Greenbank Farm</a> (very tasty loganberry pies) and Coupeville (fun town to explore) before taking the <a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">ferry back to Mukilteo</a> and driving back to Seattle.</p><a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Seattle,+WA&amp;waypoints=Breadfarm%2C+Edison%2C+WA%7CDeception+Pass+State+Park%7CGreenbank+Farm%2C+Greenbank%2C+WA%7CCoupeville%2C+WA%7CClinton+Ferry+Terminal%2C+Clinton%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">Route map ↗</a></article><article class="card"><h4>Float the Snoqualmie River</h4><p class="">We do this with friends every year! <a href="https://www.google.com/maps?q=Plum%20%231%20River%20Access%20Point%2C%2037198%20SE%20Fish%20Hatchery%20Rd%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a2b8dae640f%3A0x8d65ca26e019bd0" target="_blank" rel="noopener">Start here</a> and <a href="https://www.google.com/maps?q=33723%20Redmond-Fall%20City%20Rd%20SE%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a0d99c04081%3A0xeae9badd63772214" target="_blank" rel="noopener">end here</a>. You can rent floaties and get a ride back to your car through <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">this service</a>. Heads up: the start-point lot needs a <a href="https://store.discoverpass.wa.gov" target="_blank" rel="noopener">Discover Pass</a> and fills by about 10:30 AM on weekends, so carpool and leave most cars at the end point. The <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">Fall City Floating shuttle</a> drops you 0.2 miles from the put-in. Plan on 3–5 hours on the water.<strong> </strong></p></article><article class="card"><h4><a href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Mt Rainier National Park</a></h4><p class="">Our tallest mountain and one of 5 volcanoes over 10,000 feet. Ok, ok TECHNICALLY Mt St Helens is a little shorter than that now but that’s sorta recent. The park has all levels of hikes from leisurely strolls to ice-axe-and-crampon rope lines. <a href="https://www.wta.org/go-outside/seasonal-hikes/regional/mount-rainier-hikes" target="_blank" rel="noopener">Choose your own adventure</a>.</p><a class="pill" href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Park website ↗</a></article><article class="card"><h4>Woodinville Wine Country</h4><p class="">More than 130 wineries across four districts, about a 30-minute drive from downtown Seattle.</p><a class="pill" href="https://woodinvillewinecountry.com/" target="_blank" rel="noopener">Wine country website ↗</a></article><article class="card"><h4>Boeing Factory Tour &amp; The Museum of Flight</h4><p class="">These two are in opposite directions from downtown Seattle. Boeing Future of Flight in Mukilteo is about 25 miles north. Its Boeing Everett Factory Tour is an 80-minute guided tour that looks at airplane production from the factory balcony. You must be at least 4 feet tall, and phones and cameras are not allowed. The Museum of Flight is south of downtown on East Marginal Way.</p><p class="pills"><a class="pill" href="https://www.boeingfutureofflight.com/tour" target="_blank" rel="noopener">Boeing factory tour ↗</a><a class="pill" href="https://www.museumofflight.org/" target="_blank" rel="noopener">The Museum of Flight ↗</a></p></article>
+</figure><h4>Whidbey Island Loop</h4><p class="">Drive up to <a href="https://parks.wa.gov/find-parks/state-parks/deception-pass-state-park" target="_blank" rel="noopener">Deception Pass</a> (great short hikes with beautiful views), and stop in Edison along the way for <a href="https://www.google.com/maps/search/?api=1&amp;query=Breadfarm+Edison&amp;query_place_id=ChIJOYLDvXp0hVQRtcE4_D4vXIA" target="_blank" rel="noopener">great bread (and weirdly good peanut butter)</a>, and a <a href="https://www.google.com/maps/search/?api=1&amp;query=Tweets+Cafe+Edison&amp;query_place_id=ChIJiU6Kmnp0hVQRFO4KI4GlmE8" target="_blank" rel="noopener">lovely diner</a>. Take the Deception Pass bridge and work your way down to <a href="https://www.google.com/maps/search/?api=1&amp;query=Greenbank+Farm&amp;query_place_id=ChIJH3HFEN7wj1QR86Vdh2EYg8s" target="_blank" rel="noopener">Greenbank Farm</a> (very tasty loganberry pies) and Coupeville (fun town to explore) before taking the <a href="https://wsdot.wa.gov/travel/washington-state-ferries/schedules" target="_blank" rel="noopener">ferry back to Mukilteo</a> and driving back to Seattle.</p><a class="pill" href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Seattle,+WA&amp;waypoints=Breadfarm%2C+Edison%2C+WA%7CDeception+Pass+State+Park%7CGreenbank+Farm%2C+Greenbank%2C+WA%7CCoupeville%2C+WA%7CClinton+Ferry+Terminal%2C+Clinton%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">Route map ↗</a></article><article class="card"><h4>Float the Snoqualmie River</h4><p class="">We do this with friends every year! <a href="https://www.google.com/maps?q=Plum%20%231%20River%20Access%20Point%2C%2037198%20SE%20Fish%20Hatchery%20Rd%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a2b8dae640f%3A0x8d65ca26e019bd0" target="_blank" rel="noopener">Start here</a> and <a href="https://www.google.com/maps?q=33723%20Redmond-Fall%20City%20Rd%20SE%2C%20Fall%20City%2C%20WA%2098024&amp;ftid=0x54907a0d99c04081%3A0xeae9badd63772214" target="_blank" rel="noopener">end here</a>. You can rent floaties and get a ride back to your car through <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">this service</a>. Heads up: the start-point lot needs a <a href="https://store.discoverpass.wa.gov" target="_blank" rel="noopener">Discover Pass</a> and fills by about 10:30 AM on weekends, so carpool and leave most cars at the end point. The <a href="https://www.fallcityfloating.com/" target="_blank" rel="noopener">Fall City Floating shuttle</a> drops you 0.2 miles from the put-in. Plan on 3–5 hours on the water.<strong> </strong></p></article><article class="card"><h4><a href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Mt Rainier National Park</a></h4><p class="">Our tallest mountain and one of 5 volcanoes over 10,000 feet. Ok, ok TECHNICALLY Mt St Helens is a little shorter than that now but that’s sorta recent. The park has all levels of hikes from leisurely strolls to ice-axe-and-crampon rope lines. <a href="https://www.wta.org/go-outside/seasonal-hikes/regional/mount-rainier-hikes" target="_blank" rel="noopener">Choose your own adventure</a>.</p><a class="pill" href="https://www.nps.gov/mora/index.htm" target="_blank" rel="noopener">Park website ↗</a></article><article class="card"><h4>Woodinville Wine Country</h4><p class="">More than 130 wineries across four districts, about a 30-minute drive from downtown Seattle.</p><a class="pill" href="https://woodinvillewinecountry.com/" target="_blank" rel="noopener">Wine country website ↗</a></article><article class="card"><h4>Boeing Factory Tour &amp; The Museum of Flight</h4><p class="">These are in opposite directions from downtown Seattle. The factory tour is at Boeing Future of Flight in Mukilteo, about 25 miles north: 80 minutes, 4-foot minimum height, no phones or cameras. The Museum of Flight is south of downtown.</p><p class="pills"><a class="pill" href="https://www.boeingfutureofflight.com/tour" target="_blank" rel="noopener">Boeing tour ↗</a><a class="pill" href="https://www.museumofflight.org/" target="_blank" rel="noopener">Museum of Flight ↗</a></p></article>
   </div>
 </section>
 
@@ -860,7 +866,7 @@
   <div class="hikes">
     <ul class=""><li><a href="https://www.wta.org/go-hiking/hikes/snow-lake" target="_blank" rel="noopener">Snow Lake</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Snow+Lake+Trailhead%2C+Alpental%2C+Snoqualmie+Pass%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr from Seattle</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/kendall-katwalk" target="_blank" rel="noopener">Kendall Katwalk</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Pacific+Crest+Trail+North+Trailhead%2C+Snoqualmie+Pass%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/granite-mountain" target="_blank" rel="noopener">Granite Mountain</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Granite+Mountain+Trailhead%2C+North+Bend%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~50 min</a>)</li><li><a href="https://www.wta.org/go-hiking/hikes/thunder-mountain-lakes" target="_blank" rel="noopener">Thunder Mountain Lakes</a> (<a href="https://www.google.com/maps/dir/?api=1&amp;origin=Seattle,+WA&amp;destination=Surprise+Creek+Trailhead%2C+Skykomish%2C+WA&amp;travelmode=driving" target="_blank" rel="noopener">~1 hr 45 min</a>)</li></ul>
     <figure class="photo">
-  <div class="frame"><img src="photos/granite-mountain.jpg" alt="Forested ridges with low clouds below a rocky summit, and a snow-covered peak on the horizon under a clear blue sky" width="2048" height="1536" loading="lazy" style="object-position: 50% 100%"></div>
+  <div class="frame"><img src="photos/granite-mountain.jpg" alt="Forested ridges with low clouds below a rocky summit, and a snow-covered peak on the horizon under a clear blue sky" width="1024" height="768" loading="lazy" style="object-position: 50% 100%"></div>
   <figcaption>Granite Mountain</figcaption>
 </figure>
   </div>
@@ -938,6 +944,7 @@
 </footer>
 
 </div>
+<a class="chip" href="https://emilyandrobby.wedding"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>back to the wedding site</a>
 <script>
   /* Header: a load animation, then wheels that turn with the scroll.
 
@@ -947,19 +954,24 @@
        T_ZOOM0-T_ZOOM1  the title zooms out about its right end, back into the header; the veil lifts off the page
        T_ROLL0-T_ROLL1  the bikes roll in from the left at their resting size
      Rest is the stylesheet alone: finishing means removing every inline transform and the intro classes.
-     ?t=<seconds> holds the timeline at that moment (for screenshots); a scroll, tap or key still dismisses it. */
+     ?intro-t=<seconds> holds the timeline at that moment (for screenshots and tests); a scroll, tap or key still dismisses
+     it, and it does nothing where the animation would not play (a #hash link, reduced motion). */
   (function () {
     var root = document.documentElement, brand = document.getElementById("brand"), veil = document.getElementById("veil"),
-        title = document.getElementById("title"), tilt = title.querySelector(".tilt"), bikes = document.getElementById("bikes"),
+        row = brand.querySelector(".row"), skipButton = document.getElementById("skip"), title = document.getElementById("title"), tilt = title.querySelector(".tilt"), bikes = document.getElementById("bikes"),
         svg = bikes.querySelector("svg.mark"), wheels = Array.prototype.slice.call(svg.querySelectorAll(".spokes > g")),
         art = svg.querySelector(":scope > g:not(.spokes)"), sun = document.getElementById("sun"),
         sunFrames = Array.prototype.slice.call(sun.querySelectorAll(".sf"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var hold = /[?&]t=([\d.]+)/.exec(location.search); hold = hold ? parseFloat(hold[1]) : null;
     var T_TEXT = 3.2, T_EASE = T_TEXT - 0.45, T_BIKES = 3.95, T_ZOOM0 = 4.0, T_ZOOM1 = 4.95, T_ROLL0 = 4.95, T_ROLL1 = 5.9;
+    var MAX_WALL = 9000;                       // ms: however slowly the frames come, the intro is over by then
+    // ?intro-t=<seconds>: only a plain number counts, and only inside the timeline; anything else plays the animation normally
+    var hold = /[?&]intro-t=(\d+(?:\.\d+)?)(?:&|$)/.exec(location.search);
+    hold = hold ? parseFloat(hold[1]) : NaN;
+    hold = isFinite(hold) ? Math.min(hold, T_ROLL1 - 0.001) : null;
     var BOIL = 7;                              // sun frames per second
     var VB = svg.viewBox.baseVal;              // the mark's viewBox: x 38, y 112, 356 x 222
-    var G = null, running = false, raf = 0, clock = 0, lastStamp = 0, sunShown = 0;
+    var G = null, running = false, raf = 0, clock = 0, lastStamp = 0, wallStart = 0, sunShown = 0;
     var roll = 0, lastY = window.scrollY || 0, spinQueued = false;   // roll = distance ridden, in viewBox units
     var headerEnd = brand.offsetHeight + 200;                        // past this scroll position the wheels are out of sight
 
@@ -973,6 +985,16 @@
         var deg = roll / w.dataset.r * 180 / Math.PI;
         w.setAttribute("transform", "rotate(" + deg.toFixed(2) + " " + w.dataset.cx + " " + w.dataset.cy + ")");
       });
+    }
+
+    /* The stylesheet sizes the title for Londrina Solid from the viewport width. If it would not fit its row anyway (the
+       font did not load and a wider one is drawing it, or a scrollbar took some of the width), shrink --fs until it does. */
+    function fit() {
+      brand.style.removeProperty("--fs");
+      var rs = getComputedStyle(row), fs = parseFloat(getComputedStyle(title).fontSize);
+      var room = row.clientWidth - parseFloat(rs.paddingLeft) - parseFloat(rs.paddingRight) - (rs.flexDirection === "row" ? bikes.offsetWidth + 28 : 0);
+      var wide = title.offsetWidth - 0.02 * fs;            // the last letter's trailing letter-spacing hangs outside on purpose
+      if (wide > room + 0.5 && room > 0) brand.style.setProperty("--fs", (fs * room / wide * 0.995).toFixed(2) + "px");
     }
 
     /* Everything the timeline needs, measured from the resting layout with the transforms off. Coordinates are the brand box's
@@ -1082,7 +1104,7 @@
       // reference: a frame's timestamp can be earlier than the performance.now() read just before it was requested.
       if (lastStamp) clock += clamp((stamp - lastStamp) / 1000, 0, 0.25);
       lastStamp = stamp;
-      if (clock >= T_ROLL1) return finish();
+      if (clock >= T_ROLL1 || performance.now() - wallStart > MAX_WALL) return finish();
       raf = requestAnimationFrame(tick);
       draw();
     }
@@ -1093,15 +1115,18 @@
     function finish() {
       if (raf) cancelAnimationFrame(raf);
       raf = 0; running = false;
-      if (G && !reduce) { roll = (G.v * T_BIKES + G.acc * Math.pow(T_BIKES - T_EASE, 2) / 2) / (G.unit * G.sB) + (G.kx + G.kw + 24) / G.unit; spin(); }
-      title.style.transform = bikes.style.transform = veil.style.transform = sun.style.transform = "";
+      // first the part that must never fail to happen: the page back to rest. Then the wheels, left where the ride ended.
       root.classList.remove("opening", "opening-run");
+      title.style.transform = bikes.style.transform = veil.style.transform = sun.style.transform = "";
       lastY = window.scrollY || 0; headerEnd = brand.offsetHeight + 200;
+      if (G && !reduce) { roll = (G.v * T_BIKES + G.acc * Math.pow(T_BIKES - T_EASE, 2) / 2) / (G.unit * G.sB) + (G.kx + G.kw + 24) / G.unit; spin(); }
     }
     function start() {
       if (!root.classList.contains("opening")) return;                   // the head script decided against it, or its watchdog fired
       if ((window.scrollY || 0) > 2 && hold === null) return finish(); // the browser restored a scroll position: nothing to watch
+      if (wheels.length !== 4) return finish();                          // the timeline rides on wheels[0] (rear) and wheels[3] (front): see build_mark.py
       running = true;
+      wallStart = performance.now();
       root.classList.add("opening-run");
       draw(true);
       if (running && hold === null) raf = requestAnimationFrame(tick);
@@ -1109,8 +1134,10 @@
     function skip() { if (running) finish(); }
 
     ["wheel", "touchstart", "pointerdown", "keydown"].forEach(function (type) { window.addEventListener(type, skip, { passive: true }); });
+    skipButton.addEventListener("click", skip);                         // for a screen reader's activate, which sends none of the above
     document.addEventListener("visibilitychange", function () { if (document.hidden && hold === null) skip(); });
     window.addEventListener("resize", function () {
+      fit();
       if (running) draw(true); else headerEnd = brand.offsetHeight + 200;
     }, { passive: true });
     window.addEventListener("scroll", function () {
@@ -1127,8 +1154,8 @@
     var fonts = document.fonts, ready = fonts && fonts.load
       ? Promise.all([fonts.load('400 1em "Londrina Solid"', "EXTRA ADVENTURES"), fonts.ready]).catch(function () {})
       : Promise.resolve();
-    var began = false, begin = function () { if (!began) { began = true; start(); } };
-    ready.then(function () { if (began && running) draw(true); else begin(); });   // re-measure if the font landed after the timeout
+    var began = false, begin = function () { if (!began) { began = true; fit(); start(); } };
+    ready.then(function () { if (!began) return begin(); fit(); if (running) draw(true); });   // the font landed after the timeout: fit and measure again
     setTimeout(begin, 1500);
     window.__openingUp = true;                                           // tells the head script's watchdog this script is in charge
   })();

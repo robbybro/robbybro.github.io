@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Run tests/header_probe.html in headless Chrome and print its table.
 
-Two passes: the page as is, then with Chrome forced to prefers-reduced-motion. Exit code 0 only if every
-check in both passed. The probe runs in real time (it watches the load animation play), so a run takes
-about a minute. It serves the artifact folder itself on a free local port and the probe posts its table back.
+Three passes: the page as is, then with Chrome forced to prefers-reduced-motion, then with Google Fonts
+unreachable. Exit code 0 only if every check in all three passed. The probe runs in real time (it watches the
+load animation play, and waits out the 9 s wall-clock cap once), so a run takes about two minutes. It serves the
+artifact folder itself on a free local port and the probe posts its table back.
 
 Needs Google Chrome (CHROME=/path/to/chrome to override), outside any sandbox that blocks it.
 --headless=new because the old mode delivers no animation frames or scroll events to a page it is not painting.
@@ -15,7 +16,7 @@ import functools, http.server, os, pathlib, re, shutil, subprocess, sys, tempfil
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
-TIMEOUT = 180
+TIMEOUT = 300
 posted = {}
 
 
@@ -29,12 +30,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-def one_pass(port, query, *flags):
+def one_pass(port, query, *flags, dead_hosts=()):
     key = "/result" + query.replace("?", "-")
     profile = tempfile.mkdtemp(prefix="probe-")
+    dead = ["picsum.photos", *dead_hosts]
     chrome = subprocess.Popen(
         [CHROME, "--headless=new", "--no-first-run", "--no-default-browser-check", f"--user-data-dir={profile}",
-         "--remote-debugging-port=0", "--window-size=1600,1200", "--host-resolver-rules=MAP picsum.photos 127.0.0.1:9",
+         "--remote-debugging-port=0", "--window-size=1600,1200",
+         "--host-resolver-rules=" + ", ".join(f"MAP {host} 127.0.0.1:9" for host in dead),
          *flags, f"http://127.0.0.1:{port}/tests/header_probe.html{query}"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     deadline = time.time() + TIMEOUT
@@ -54,6 +57,7 @@ def main():
     port = server.server_address[1]
     ok = one_pass(port, "")
     ok = one_pass(port, "?reduced", "--force-prefers-reduced-motion") and ok
+    ok = one_pass(port, "?nofont", dead_hosts=("fonts.googleapis.com", "fonts.gstatic.com")) and ok
     server.shutdown()
     sys.exit(0 if ok else 1)
 

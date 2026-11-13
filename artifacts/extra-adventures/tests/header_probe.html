@@ -5,31 +5,49 @@
 <body style="margin:0;font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap">
 <pre id="out">RUNNING</pre>
 <script>
-/* Checks the Extra Adventures header against the page itself, at four widths:
-     held moments of the load animation (?t=)  the wheels sit on the tops of the letters (level over "Extra", climbing over
-                                               the tilted "Adventures"), the sun is up, nothing overflows sideways
-     at rest (#rest skips the animation)       no transforms left, title end on the right content margin, bikes at the left,
-                                               sun and veil gone, chip at the bottom left, footer clear of the chip
-     live                                      it plays once, ends by itself in 5 to 7 s, the page under it never moves;
-                                               a key press, a tap or a scroll ends it; afterwards only the wheels follow the scroll
-     ?reduced (Chrome forced to reduced motion) no animation, wheels still
-   The ground here is re-derived from the browser's own transforms (probe elements dropped into the title), not from the
-   page script's numbers. Run with python3 tests/run.py (it serves the folder and collects the table); it runs in real time. */
+/* Checks the Extra Adventures header against the page itself. Three passes, chosen by run.py:
+
+   (no query)  held moments of the load animation (?intro-t=) at 360, 390, 768 and 1440 px: wheels on the tops of the letters
+               (level over "Extra", climbing over the tilted "Adventures"), sun, veil and bikes where each phase puts them,
+               nothing overflowing sideways; the resting page (#rest skips the animation); the live run (plays once, ends by
+               itself, the page under it never moves, a key / tap / scroll / Skip intro ends it, afterwards only the wheels
+               follow the scroll); the ?intro-t hook's limits; the chip and the Skip intro button; three regressions run
+               against a doctored copy of the page (frame timestamps earlier than the clock, frames that never advance,
+               a mark with a wheel missing); and a 700 px window that keeps its scrollbar.
+   ?reduced    Chrome forced to prefers-reduced-motion: no animation, no hook, wheels still.
+   ?nofont     Google Fonts unreachable: the title still fits, the animation still stands the bikes on the letters.
+
+   The ground is re-derived here from the browser's own transforms (probe elements dropped into the title), not from the
+   page script's numbers. Run with python3 tests/run.py (it serves the folder and collects the tables); it runs in real time. */
 var WIDTHS = [[360, 780], [390, 844], [768, 1024], [1440, 900]], HELD = [0.3, 1.2, 2.2, 2.7, 3.1], TOL = 1.5;
-var out = document.getElementById("out"), rows = [], fails = 0;
-function row(ok, name, detail) { if (!ok) fails++; rows.push((ok ? "PASS " : "FAIL ") + name + (detail ? "  " + detail : "")); }
+var out = document.getElementById("out"), rows = [], fails = 0, passes = 0;
+function row(ok, name, detail) { if (ok) passes++; else fails++; rows.push((ok ? "PASS " : "FAIL ") + name + (detail ? "  " + detail : "")); }
+function note(name, detail) { rows.push("SKIP " + name + "  " + detail); }
 function near(a, b, tol) { return Math.abs(a - b) <= tol; }
-function frame(src, w, h) {
+function pause(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+/* Load the page in an iframe and hand it over once its own script has run and its fonts have settled.
+   opts.keepScrollbar  leave the frame's scrollbar alone (by default it is hidden, as on a phone)
+   opts.doctor         a function (html) -> html: load a doctored copy through srcdoc instead of the URL */
+var pageSource = null;
+async function frame(src, w, h, opts) {
+  opts = opts || {};
+  var f = document.createElement("iframe"); f.width = w; f.height = h; f.style.cssText = "border:0;display:block";
+  if (opts.doctor) {
+    if (pageSource === null) pageSource = await (await fetch("../index.html")).text();
+    f.srcdoc = opts.doctor(pageSource.replace("<head>", '<head><base href="' + new URL("../", location.href).href + '">'));
+  } else f.src = src;
+  document.body.appendChild(f);
   return new Promise(function (done) {
-    var f = document.createElement("iframe"); f.width = w; f.height = h; f.style.cssText = "border:0;display:block"; f.src = src;
-    document.body.appendChild(f);
     var poll = setInterval(function () {         // ready = the page's own script has run (not window.onload: a slow image must not hold the probe)
       var win = f.contentWindow, doc = win && win.document;
       if (!win || !win.__openingUp || !doc.body) return;
       clearInterval(poll);
-      var st = doc.createElement("style"); st.textContent = "html{scrollbar-width:none}::-webkit-scrollbar{display:none}"; doc.head.appendChild(st);
-      win.dispatchEvent(new Event("resize"));    // the scrollbar just went away: let the page measure the width it will be judged at
-      (doc.fonts ? doc.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { done({ f: f, win: win, doc: doc }); }, 350); });
+      if (!opts.keepScrollbar) {
+        var st = doc.createElement("style"); st.textContent = "html{scrollbar-width:none}::-webkit-scrollbar{display:none}"; doc.head.appendChild(st);
+        win.dispatchEvent(new Event("resize"));  // the scrollbar just went away: let the page measure the width it will be judged at
+      }
+      (doc.fonts ? doc.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { done({ f: f, win: win, doc: doc, w: w, h: h }); }, 350); });
     }, 25);
   });
 }
@@ -50,12 +68,17 @@ function geometry(c) {
   var kink = s0.x - cap * Math.sin(ang);         // where the tops of the letters stop being level: the tilted word's top left corner
   function ground(x) { return x < kink ? b0.y - cap : s0.y - (x - s0.x) * Math.tan(ang) - cap / Math.cos(ang); }
   return { zoom: tf, tiltDeg: ang * 180 / Math.PI, rear: rear, front: front, rearGap: ground(rear.x) - rear.y, frontGap: ground(front.x) - front.y,
-           pitchDeg: Math.atan2(rear.y - front.y, front.x - rear.x) * 180 / Math.PI, kink: kink };
+           pitchDeg: Math.atan2(rear.y - front.y, front.x - rear.x) * 180 / Math.PI, kink: kink, lastLetterTop: s1.y - cap / Math.cos(ang) };
 }
 function sideways(c) { var e = c.doc.documentElement; return e.scrollWidth - e.clientWidth; }
+function inBrand(c, x, y) { var e = c.doc.elementFromPoint(x, y); return !!(e && e.closest("#brand")); }
+function cleared(c) { return !/opening/.test(c.doc.documentElement.className) && !c.doc.getElementById("title").style.transform && !c.doc.getElementById("bikes").style.transform; }
+async function advancing(c) { var t = c.doc.getElementById("title"), a = t.style.transform; await pause(300); return /opening-run/.test(c.doc.documentElement.className) && !!a && a !== t.style.transform; }
+async function frozen(c) { var t = c.doc.getElementById("title"), a = t.style.transform; await pause(300); return /opening-run/.test(c.doc.documentElement.className) && !!a && a === t.style.transform; }
 
+/* ---- the animation, held ---- */
 async function held(w, h, t) {
-  var c = await frame("../index.html?t=" + t, w, h), g = geometry(c), name = w + "px t=" + t + "s";
+  var c = await frame("../index.html?intro-t=" + t, w, h), g = geometry(c), name = w + "px t=" + t + "s";
   var where = g.front.x <= g.kink ? "level" : g.rear.x >= g.kink ? "slope" : "crossing";
   row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, name + " wheels on the letters (" + where + ")", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px, pitch " + g.pitchDeg.toFixed(2) + "deg, zoom " + g.zoom.toFixed(2));
   if (where === "level") row(near(g.pitchDeg, 0, 0.05), name + " pitch level over Extra", g.pitchDeg.toFixed(3));
@@ -66,53 +89,146 @@ async function held(w, h, t) {
   if (t < 2.7) row(c.win.getComputedStyle(sun).display !== "none" && sr.left >= 0 && sr.right <= w && sr.bottom < Math.min(g.rear.y, g.front.y), name + " sun in the sky", Math.round(sr.left) + ".." + Math.round(sr.right) + " x, bottom " + Math.round(sr.bottom));
   var bx = (g.rear.x + g.front.x) / 2;
   if (t < 2.7) row(near(bx, w / 2, w * 0.02 + 2), name + " bikes centered", bx.toFixed(1) + " vs " + w / 2);
+  if (t < 1) row(inBrand(c, w / 2, h / 2) && inBrand(c, 20, h - 120), name + " veil blocks the page under it");
   c.f.remove();
 }
+async function late(w, h) {                      // the second half: bikes leaving, zoom-out, roll-in
+  var home = await frame("../index.html#rest", w, h), doc0 = home.doc;
+  var restTitle = doc0.getElementById("title").getBoundingClientRect(), restBikes = doc0.getElementById("bikes").getBoundingClientRect();
+  home.f.remove();
+  for (var t of [3.5, 3.9, 4.4, 5.4]) {
+    var c = await frame("../index.html?intro-t=" + t, w, h), doc = c.doc, name = w + "px t=" + t + "s", g = geometry(c);
+    var title = doc.getElementById("title").getBoundingClientRect(), bikes = doc.getElementById("bikes").getBoundingClientRect(), veil = doc.getElementById("veil").getBoundingClientRect(), sun = doc.getElementById("sun").getBoundingClientRect();
+    row(sideways(c) <= 0, name + " no sideways overflow", String(sideways(c)));
+    row(near(title.right, restTitle.right, 1), name + " title's end pinned to its resting place", title.right.toFixed(1) + " vs " + restTitle.right.toFixed(1));
+    if (t === 3.5) {
+      row((g.rear.x + g.front.x) / 2 > w / 2 + 10 && near(g.pitchDeg, g.tiltDeg, 0.05), name + " bikes right of center, still on the slope", ((g.rear.x + g.front.x) / 2).toFixed(0) + " vs center " + w / 2 + ", pitch " + g.pitchDeg.toFixed(2));
+      row(veil.top <= 0 && veil.bottom >= h, name + " veil still covers the viewport", Math.round(veil.top) + ".." + Math.round(veil.bottom));
+    }
+    if (t === 3.9) {
+      row(bikes.right > w && bikes.left > w / 2, name + " bikes leaving by the right edge", Math.round(bikes.left) + ".." + Math.round(bikes.right) + " of " + w);
+      row(sun.left + sun.width / 2 < w * 0.25, name + " sun leaving by the left", Math.round(sun.left) + ".." + Math.round(sun.right));
+      row(veil.top <= 0 && veil.bottom >= h, name + " veil still covers the viewport", Math.round(veil.top) + ".." + Math.round(veil.bottom));
+    }
+    if (t === 4.4) {
+      row(g.zoom > 1.02 && bikes.left >= w, name + " title zooming out, bikes out of sight", "zoom " + g.zoom.toFixed(2) + ", bikes from " + Math.round(bikes.left));
+      row(veil.bottom > 0 && veil.bottom < h, name + " veil part of the way up", Math.round(veil.bottom) + " of " + h);
+      if (veil.bottom < h - 60) row(!inBrand(c, w / 2, veil.bottom + 30), name + " page below the veil takes clicks");
+    }
+    if (t === 5.4) {
+      row(near(title.left, restTitle.left, 0.5) && near(title.top, restTitle.top, 0.5) && near(g.zoom, 1, 0.001), name + " title home", "zoom " + g.zoom.toFixed(3));
+      row(veil.bottom <= 0.5, name + " veil gone", String(Math.round(veil.bottom)));
+      row(near(bikes.width, restBikes.width, 0.5) && near(bikes.top, restBikes.top, 0.5) && bikes.left < restBikes.left && bikes.right > 0, name + " bikes rolling in at resting size", Math.round(bikes.left) + " -> " + Math.round(restBikes.left));
+      row(!inBrand(c, w / 2, h / 2) && !inBrand(c, w / 2, h - 80), name + " page takes clicks while the bikes roll in");
+    }
+    c.f.remove();
+  }
+}
 async function landed(w, h) {                    // the last held moment before the bikes roll in: the title must already be home
-  var c = await frame("../index.html?t=4.95", w, h), d = await frame("../index.html#rest", w, h);
+  var c = await frame("../index.html?intro-t=4.95", w, h), d = await frame("../index.html#rest", w, h);
   var a = c.doc.getElementById("title").getBoundingClientRect(), b = d.doc.getElementById("title").getBoundingClientRect();
   row(near(a.left, b.left, 0.5) && near(a.right, b.right, 0.5) && near(a.top, b.top, 0.5) && near(a.bottom, b.bottom, 0.5), w + "px zoom-out lands on the resting title", [a.left, a.right, a.top, a.bottom].map(Math.round).join(",") + " vs " + [b.left, b.right, b.top, b.bottom].map(Math.round).join(","));
   c.f.remove(); d.f.remove();
 }
+
+/* ---- the page at rest ---- */
 async function rest(w, h) {
   var c = await frame("../index.html#rest", w, h), doc = c.doc, win = c.win, name = w + "px rest";
-  var title = doc.getElementById("title"), bikes = doc.getElementById("bikes"), wrap = doc.querySelector(".wrap").getBoundingClientRect(), chip = doc.querySelector(".chip");
+  var title = doc.getElementById("title"), bikes = doc.getElementById("bikes"), wrap = doc.querySelector(".wrap").getBoundingClientRect(), chip = doc.querySelector("a.chip");
   var tr = title.getBoundingClientRect(), br = bikes.getBoundingClientRect(), cr = chip.getBoundingClientRect(), fs = parseFloat(win.getComputedStyle(title).fontSize);
   row(!/opening/.test(doc.documentElement.className) && !title.style.transform && !bikes.style.transform, name + " no animation state left");
   row(near(tr.right - 0.02 * fs, wrap.right, 1), name + " title ends on the right content margin", (tr.right - 0.02 * fs).toFixed(1) + " vs " + wrap.right.toFixed(1));
   row(near(br.left, wrap.left, 1) && br.top < tr.bottom && br.width <= 100, name + " bikes small at the top left", br.left.toFixed(1) + " vs " + wrap.left.toFixed(1) + ", width " + br.width);
   row(tr.left >= wrap.left - 1, name + " title inside the left margin", tr.left.toFixed(1));
-  row(win.getComputedStyle(doc.getElementById("sun")).display === "none" && win.getComputedStyle(doc.getElementById("veil")).display === "none", name + " sun and veil gone");
+  row(win.getComputedStyle(doc.getElementById("sun")).display === "none" && win.getComputedStyle(doc.getElementById("veil")).display === "none" && win.getComputedStyle(doc.getElementById("skip")).display === "none", name + " sun, veil and Skip intro gone");
   var g = geometry(c);
   row(Math.abs(g.rearGap) <= TOL || br.right < tr.left, name + " bikes rest on the letters or beside them", "rear gap " + g.rearGap.toFixed(2));
+  row(Math.min(g.lastLetterTop, br.top) >= 15.5, name + " 16px of air above the header", "last letter top " + g.lastLetterTop.toFixed(1) + ", bikes top " + br.top.toFixed(1));
   row(sideways(c) <= 0, name + " no sideways overflow", String(sideways(c)));
   row(near(cr.height, 32, 0.5) && cr.left <= 16 && near(h - cr.bottom, 12, 0.5) && chip.href === "https://emilyandrobby.wedding/", name + " chip at the bottom left", "left " + cr.left + ", gap " + (h - cr.bottom) + ", height " + cr.height);
-  var hit = win.getComputedStyle(chip, "::before"); row(cr.height + 2 * -parseFloat(hit.top) >= 44, name + " chip target at least 44px", String(cr.height - 2 * parseFloat(hit.top)));
+  var above = doc.elementFromPoint(cr.left + 30, cr.top - 5), below = doc.elementFromPoint(cr.left + 30, cr.bottom + 5);
+  row(above === chip && below === chip && doc.elementFromPoint(cr.left + 30, cr.top - 8) !== chip, name + " chip target is 44px tall (hit-tested 5px above and below the 32px drawing)");
+  var stops = Array.prototype.filter.call(doc.querySelectorAll("a[href], button"), function (e) { return win.getComputedStyle(e).display !== "none"; });
+  row(stops[0] !== chip && stops[stops.length - 1] === chip, name + " chip is the last tab stop, not the first", "first: " + stops[0].textContent.trim().slice(0, 24));
+  row(parseFloat(win.getComputedStyle(doc.documentElement).scrollPaddingBottom) >= 44, name + " scroll padding keeps a focused element clear of the chip", win.getComputedStyle(doc.documentElement).scrollPaddingBottom);
+  // Day Trips cards: pills line up along the bottom of each row of cards; the two-pill card keeps them on one line
+  var byRow = {}, uneven = [];
+  doc.querySelectorAll("#day-trips .card").forEach(function (card) {
+    var pill = card.querySelector(":scope > .pill, :scope > .pills"); if (!pill) return;
+    var top = Math.round(card.getBoundingClientRect().top + win.scrollY); (byRow[top] = byRow[top] || []).push(pill.getBoundingClientRect().bottom - card.getBoundingClientRect().bottom);
+  });
+  Object.keys(byRow).forEach(function (k) { if (Math.max.apply(null, byRow[k]) - Math.min.apply(null, byRow[k]) > 1) uneven.push(k); });
+  row(uneven.length === 0, name + " Day Trips pills line up along the bottom of each row", Object.keys(byRow).map(function (k) { return byRow[k].length; }).join("+") + " cards with a pill");
+  var pair = doc.querySelectorAll("#day-trips .pills .pill");
+  row(pair.length === 2 && near(pair[0].getBoundingClientRect().top, pair[1].getBoundingClientRect().top, 0.5), name + " the two-pill card keeps both pills on one line");
+  // the end of the page, then the wheels
   doc.documentElement.style.scrollBehavior = "auto";
   win.scrollTo(0, doc.documentElement.scrollHeight);
-  await new Promise(function (r) { setTimeout(r, 200); });
+  await pause(200);
   var last = doc.querySelector("footer p").getBoundingClientRect(), chipNow = chip.getBoundingClientRect();
   row(last.bottom <= chipNow.top - 6, name + " footer text clears the chip at the end of the page", last.bottom.toFixed(0) + " vs chip top " + chipNow.top.toFixed(0));
   var w1 = doc.getElementById("w1");
   function turn() { var m = /rotate\(([-\d.]+)/.exec(w1.getAttribute("transform") || ""); return m ? parseFloat(m[1]) : null; }
   var far = turn();
-  win.scrollTo(0, 0); await new Promise(function (r) { setTimeout(r, 200); });
+  win.scrollTo(0, 0); await pause(200);
   var before = turn();
-  win.scrollTo(0, 60); await new Promise(function (r) { setTimeout(r, 200); });
+  win.scrollTo(0, 60); await pause(200);
   var after = turn(), want = 60 / (br.width / 356) / 39 * 180 / Math.PI;      // 60px of road under a wheel of radius 39 units
-  win.scrollTo(0, 0); await new Promise(function (r) { setTimeout(r, 200); });
+  win.scrollTo(0, 0); await pause(200);
   row(far === null, name + " wheels left alone while the header is out of sight", String(far));
   row(before !== null && near(after - before, want, 0.5) && near(turn(), before, 0.01), name + " wheels turn with the scroll, both ways", before + " -> " + after + " -> " + turn() + " (60px should be " + want.toFixed(1) + "deg)");
   var tr2 = title.getBoundingClientRect(), br2 = bikes.getBoundingClientRect();
   row(near(tr2.left, tr.left, 0.01) && near(br2.left, br.left, 0.01) && !title.style.transform && !bikes.style.transform, name + " nothing else moves with the scroll");
   c.f.remove();
 }
-function pause(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-function cleared(c) { return !/opening/.test(c.doc.documentElement.className) && !c.doc.getElementById("title").style.transform && !c.doc.getElementById("bikes").style.transform; }
+
+/* ---- chips: boundary and label contrast, measured from the computed colors, both themes ---- */
+function rgb(s) { var m = /rgba?\(([^)]+)\)/.exec(s).pop().split(",").map(parseFloat); return m; }
+function lum(c) { var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); }
+function ratio(a, b) { var x = lum(rgb(a)), y = lum(rgb(b)); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+async function contrast() {
+  for (var theme of ["light", "dark"]) {
+    var c = await frame("../index.html?intro-t=1", 390, 844), doc = c.doc, win = c.win;
+    if (theme === "dark") doc.documentElement.setAttribute("data-theme", "dark");
+    await pause(450);                            // the chip's own color transition
+    var swatch = doc.createElement("i"); swatch.style.cssText = "background:var(--paper)"; doc.body.appendChild(swatch);
+    var page = win.getComputedStyle(doc.body).backgroundColor, paper = win.getComputedStyle(swatch).backgroundColor;
+    for (var chip of [doc.querySelector("a.chip"), doc.getElementById("skip")]) {
+      var cs = win.getComputedStyle(chip), which = theme + " " + (chip.id === "skip" ? "Skip intro" : "back chip");
+      var label = ratio(cs.color, cs.backgroundColor), ring = /rgba?\([^)]+\)/.exec(cs.boxShadow)[0];
+      row(label >= 4.5, which + " label contrast at least 4.5:1", label.toFixed(2) + ":1 (" + cs.color + " on " + cs.backgroundColor + ")");
+      row(ratio(ring, page) >= 3 && ratio(ring, paper) >= 3, which + " boundary contrast at least 3:1", ratio(ring, page).toFixed(2) + ":1 on the page, " + ratio(ring, paper).toFixed(2) + ":1 on a card, " + ratio(ring, cs.backgroundColor).toFixed(2) + ":1 against its own fill (" + ring + ")");
+    }
+    c.f.remove();
+  }
+}
+
+/* ---- the Skip intro button and the ?intro-t hook ---- */
+async function skipAndHook(w, h) {
+  var name = w + "px", c = await frame("../index.html?intro-t=1.5", w, h), skip = c.doc.getElementById("skip"), sr = skip.getBoundingClientRect();
+  row(skip.tagName === "BUTTON" && skip.textContent === "Skip intro" && c.win.getComputedStyle(skip).display !== "none" && near(w - sr.right, 12, 0.5) && near(h - sr.bottom, 12, 0.5) && near(sr.height, 32, 0.5), name + " Skip intro button at the bottom right during the animation", "right gap " + (w - sr.right) + ", bottom gap " + (h - sr.bottom));
+  row(await frozen(c), name + " ?intro-t=1.5 holds the timeline");
+  skip.click();
+  row(cleared(c) && c.win.getComputedStyle(skip).display === "none", name + " Skip intro ends it and goes away (so a held frame is dismissible too)");
+  c.f.remove();
+  for (var q of ["?t=1.5", "?intro-t=abc", "?intro-t=", "?intro-t=1.2.3", "?intro-t=-3", "?intro-t=NaN", "?utm_source=x&t=2"]) {
+    c = await frame("../index.html" + q, w, h);
+    row(await advancing(c), name + " " + q + " is ignored: the animation plays normally");
+    c.f.remove();
+  }
+  c = await frame("../index.html?intro-t=99", w, h);
+  var veil = c.doc.getElementById("veil").getBoundingClientRect();
+  row(await frozen(c) && veil.bottom <= 0.5 && !inBrand(c, w / 2, h / 2) && !inBrand(c, w / 2, 200), name + " ?intro-t=99 is clamped to the last moment and leaves nothing over the page");
+  c.f.remove();
+  c = await frame("../index.html?intro-t=1.5#rest", w, h);
+  row(cleared(c), name + " ?intro-t with a #hash: the hash wins, page at rest");
+  c.f.remove();
+}
+
+/* ---- the live run ---- */
 async function live(w, h) {
-  var name = w + "px live", c = await frame("../index.html", w, h), title = c.doc.getElementById("title"), t0 = performance.now();
-  var a = title.style.transform; await pause(300); var b = title.style.transform;
-  row(/opening-run/.test(c.doc.documentElement.className) && !!a && a !== b, name + " animation plays on load and advances");
+  var name = w + "px live", c = await frame("../index.html", w, h), t0 = performance.now();
+  row(await advancing(c), name + " animation plays on load and advances");
   var g = geometry(c);
   row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, name + " wheels on the letters mid-run", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px");
   var before = c.doc.querySelector(".sub").getBoundingClientRect().top;
@@ -133,29 +249,99 @@ async function live(w, h) {
   c.doc.documentElement.style.scrollBehavior = "auto"; c.win.scrollTo(0, 40); await pause(150);
   row(cleared(c), name + " a scroll finishes it at once");
   c.f.remove();
+  c = await frame("../index.html", w, h);           // the wheels fail mid-run: the page must still come back to rest
+  c.doc.getElementById("w1").setAttribute = function () { throw new Error("probe: wheel refused to turn"); };
+  await pause(250);
+  row(cleared(c), name + " a failure while drawing still returns the page to rest (classes off before the wheels are touched)");
+  c.f.remove();
 }
-async function quiet(w, h) {                     // only meaningful when Chrome runs with --force-prefers-reduced-motion (run.sh's second pass)
+
+/* ---- regressions, each against a doctored copy of the page ---- */
+function withScript(js) { return function (html) { return html.replace("<head>", "<head><script>" + js + "<\/script>"); }; }
+async function regressions() {
+  // 1. a frame's timestamp can be earlier than the performance.now() read before it was requested (here: a full second earlier).
+  //    Before the fix the clock went negative on the first frame, the draw threw, and the animation was silently skipped.
+  var early = "(function(){var raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=function(cb){return raf(function(ts){cb(ts-1000);});};})();";
+  var c = await frame(null, 390, 844, { doctor: withScript(early) });
+  row(await advancing(c), "regression: frame timestamps a second behind the clock, the animation still plays");
+  var g = geometry(c);
+  row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL, "regression: and the wheels are on the letters", "rear " + g.rearGap.toFixed(2) + "px");
+  c.f.remove();
+  // 2. frames whose timestamps barely advance: the timeline would never finish; the wall clock ends it at 9 s
+  var stuck = "(function(){var raf=window.requestAnimationFrame.bind(window),n=0,base=0;window.requestAnimationFrame=function(cb){return raf(function(ts){if(!base)base=ts;cb(base+(n++)*0.5);});};})();";
+  c = await frame(null, 390, 844, { doctor: withScript(stuck) });
+  var t0 = performance.now(), running = /opening-run/.test(c.doc.documentElement.className);
+  while (!cleared(c) && performance.now() - t0 < 12000) await pause(50);
+  var took = (performance.now() - t0 + 350) / 1000;
+  row(running && cleared(c) && took > 8 && took < 10.5, "regression: a timeline that will not advance is ended by the 9 s wall clock", took.toFixed(2) + "s");
+  c.f.remove();
+  // 3. a mark without its fourth wheel: no animation, page at rest, nothing thrown
+  c = await frame(null, 390, 844, { doctor: function (html) { return withScript("window.addEventListener('error',function(e){(window.__errs=window.__errs||[]).push(String(e.message));});")(html.replace(/<g id="w4"[^>]*>.*?<\/g>/, "")); } });
+  await pause(200);
+  row(c.doc.getElementById("w4") === null && cleared(c) && !(c.win.__errs || []).length, "regression: a mark with three wheels gets no animation and no error", String(c.win.__errs || "no errors"));
+  c.f.remove();
+}
+
+/* ---- a narrow desktop window that keeps its scrollbar ---- */
+async function scrollbar() {
+  var c = await frame("../index.html#rest", 700, 800, { keepScrollbar: true }), doc = c.doc, bar = c.win.innerWidth - doc.documentElement.clientWidth;
+  if (bar <= 0) { note("700px with a real scrollbar", "this browser draws overlay scrollbars, nothing to check"); c.f.remove(); return; }
+  var tr = doc.getElementById("title").getBoundingClientRect(), wrap = doc.querySelector(".wrap").getBoundingClientRect(), fs = parseFloat(c.win.getComputedStyle(doc.getElementById("title")).fontSize);
+  row(tr.left >= wrap.left - 0.5 && near(tr.right - 0.02 * fs, wrap.right, 1) && sideways(c) <= 0, "700px with a " + bar + "px scrollbar: title inside both content margins", tr.left.toFixed(1) + ".." + (tr.right - 0.02 * fs).toFixed(1) + " in " + wrap.left.toFixed(1) + ".." + wrap.right.toFixed(1));
+  c.f.remove();
+  c = await frame("../index.html?intro-t=2.2", 700, 800, { keepScrollbar: true });
+  var g = geometry(c);
+  row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL && sideways(c) <= 0, "700px with a scrollbar: wheels on the letters, no sideways overflow", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px");
+  c.f.remove();
+}
+
+/* ---- pass: reduced motion (Chrome started with --force-prefers-reduced-motion) ---- */
+async function quiet(w, h) {
   var name = w + "px reduced motion", c = await frame("../index.html", w, h), w1 = c.doc.getElementById("w1");
   row(c.win.matchMedia("(prefers-reduced-motion: reduce)").matches, name + " is on in this run");
-  row(cleared(c) && c.win.getComputedStyle(c.doc.getElementById("sun")).display === "none", name + " no animation, resting header at once");
+  row(cleared(c) && c.win.getComputedStyle(c.doc.getElementById("sun")).display === "none" && c.win.getComputedStyle(c.doc.getElementById("skip")).display === "none", name + " no animation, no Skip intro, resting header at once");
   c.doc.documentElement.style.scrollBehavior = "auto"; c.win.scrollTo(0, 60); await pause(200);
   row(w1.getAttribute("transform") === null, name + " wheels do not turn with the scroll", String(w1.getAttribute("transform")));
   c.f.remove();
+  c = await frame("../index.html?intro-t=1.5", w, h);
+  row(cleared(c) && c.win.getComputedStyle(c.doc.getElementById("veil")).display === "none", name + " ?intro-t is ignored too");
+  c.f.remove();
 }
+
+/* ---- pass: Google Fonts unreachable (run.py points both font hosts at a dead port) ---- */
+async function fontless(w, h) {
+  var name = w + "px without Londrina", c = await frame("../index.html#rest", w, h), doc = c.doc, win = c.win, title = doc.getElementById("title");
+  var fs = parseFloat(win.getComputedStyle(title).fontSize), tr = title.getBoundingClientRect(), wrap = doc.querySelector(".wrap").getBoundingClientRect(), bikes = doc.getElementById("bikes").getBoundingClientRect();
+  var em = (tr.width - 0.02 * fs) / fs, rowMode = win.getComputedStyle(doc.querySelector(".brand .row")).flexDirection === "row";
+  row(!near(em, 7.57, 0.1), name + " a fallback font is drawing the title in this run", "title is " + em.toFixed(2) + "em wide (7.57 in Londrina Solid)");
+  row(tr.left >= wrap.left - 0.5 && near(tr.right - 0.02 * fs, wrap.right, 1) && sideways(c) <= 0, name + " title fits between the content margins", tr.left.toFixed(1) + ".." + (tr.right - 0.02 * fs).toFixed(1) + " in " + wrap.left.toFixed(1) + ".." + wrap.right.toFixed(1) + ", font-size " + fs.toFixed(1) + "px");
+  if (rowMode) row(tr.left >= bikes.right + 20, name + " title clear of the bikes", tr.left.toFixed(0) + " vs bikes right " + bikes.right.toFixed(0));
+  c.f.remove();
+  c = await frame("../index.html?intro-t=2.2", w, h);
+  var g = geometry(c);
+  row(Math.abs(g.rearGap) <= TOL && Math.abs(g.frontGap) <= TOL && sideways(c) <= 0, name + " held animation: wheels on the letters, no sideways overflow", "rear " + g.rearGap.toFixed(2) + "px, front " + g.frontGap.toFixed(2) + "px");
+  c.f.remove();
+}
+
 (async function () {
   try {
     if (/[?&]reduced/.test(location.search)) { await quiet(390, 844); await quiet(1440, 900); return report(); }
+    if (/[?&]nofont/.test(location.search)) { await fontless(390, 844); await fontless(768, 1024); await fontless(1440, 900); return report(); }
     for (var i = 0; i < WIDTHS.length; i++) {
       var w = WIDTHS[i][0], h = WIDTHS[i][1];
       for (var j = 0; j < HELD.length; j++) await held(w, h, HELD[j]);
-      await landed(w, h); await rest(w, h);
+      await late(w, h); await landed(w, h); await rest(w, h);
     }
+    await contrast();
+    await skipAndHook(390, 844);
+    await scrollbar();
     await live(390, 844); await live(1440, 900);
+    await regressions();
   } catch (e) { row(false, "probe crashed", String(e && e.stack || e)); }
   report();
 })();
 function report() {
-  out.textContent = rows.join("\n") + "\nRESULT " + (rows.length - fails) + " passed, " + fails + " failed";
+  out.textContent = rows.join("\n") + "\nRESULT " + passes + " passed, " + fails + " failed";
   fetch("/result" + location.search.replace("?", "-"), { method: "POST", body: out.textContent }).catch(function () {});   // run.py is listening
 }
 </script>

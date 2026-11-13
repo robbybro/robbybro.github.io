@@ -15,6 +15,11 @@ SRC = HERE / "mark-trace.svg"
 HTML = HERE / "index.html"
 
 # Rim centres measured from the trace (viewBox units); r = outer tyre radius.
+# Contract with index.html's header script and tests/header_probe.html: exactly four wheels, listed rear to front,
+# emitted in this order as <g id="w1">..<g id="w4"> with data-cx / data-cy / data-r inside <g class="spokes">.
+# The load animation stands the drawing on the first wheel's cx (rear contact) and the last wheel's cx (front contact),
+# and every wheel turns by distance / its own r. Reorder or add wheels and the bikes will sit or pitch wrongly
+# (the script refuses to run the animation unless it finds four).
 WHEELS = [
     dict(id="w1", cx=78.4, cy=286.6, r=39),   # Emily rear
     dict(id="w2", cx=185.8, cy=286.9, r=41),  # Emily front
