@@ -8,3 +8,8 @@
 
 # review screenshots that stay on this machine (four are kept, tracked, in shots-kept/)
 docs/review/2026-11-12-extra-adventures-load-animation/shots/
+
+# video never enters this repo (artifacts/bike-fit keeps every video and measurement on the device)
+*.mp4
+*.mov
+*.webm

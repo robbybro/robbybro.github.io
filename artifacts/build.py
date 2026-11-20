@@ -7,8 +7,11 @@ Every artifacts/<slug>/index.html becomes one card. Title comes from the page's
 <title>; blurb from its <meta name="description"> or, failing that, from
 artifacts/blurbs.json (slug -> text). Dates come from git: first commit = made,
 last commit = updated. Newest first. Commit the regenerated index.html.
+
+A page that carries <meta name="artifact-index" content="unlisted"> gets no card.
+The build stops, and writes nothing, if an unlisted slug still shows up in the index.
 """
-import html, json, os, re, subprocess
+import html, json, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(ROOT)
@@ -18,13 +21,21 @@ def git_dates(rel):
     log = subprocess.run(["git", "-C", REPO, "log", "--format=%as", "--", rel], capture_output=True, text=True).stdout.split()
     return (log[-1], log[0]) if log else ("", "")
 
+UNLISTED = re.compile(r'<meta\s+name="artifact-index"\s+content="unlisted"')
+# Kept out of the index even if its marker is ever lost: the page handles personal fit data.
+NEVER_LISTED = {"bike-fit"}
+
 cards = []
+unlisted = []
 for slug in sorted(os.listdir(ROOT)):
     page = os.path.join(ROOT, slug, "index.html")
     if not os.path.isfile(page):
         continue
     src = open(page, encoding="utf-8", errors="replace").read()
     if re.search(r'http-equiv="refresh"', src):   # a redirect stub for a moved artifact, not a page
+        continue
+    if UNLISTED.search(src):
+        unlisted.append(slug)
         continue
     title = re.search(r"<title>(.*?)</title>", src, re.S)
     title = html.unescape(title.group(1).strip()) if title else slug
@@ -104,5 +115,10 @@ page = f"""<!doctype html>
 </body>
 </html>
 """
+# An unlisted page must leave no trace in the index: not as a card, not inside another card's text.
+leaked = sorted(slug for slug in NEVER_LISTED.union(unlisted) if slug in page)
+if leaked:
+    sys.exit(f"refusing to write artifacts/index.html: unlisted artifact appears in it: {', '.join(leaked)}")
+
 open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8").write(page)
 print(f"wrote artifacts/index.html ({len(cards)} artifacts)")
