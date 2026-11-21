@@ -1141,34 +1141,42 @@ function renderFitSheet() {
   const minX = Math.floor((Math.min(...xs) - pad) / 100) * 100, maxX = Math.ceil((Math.max(...xs) + pad) / 100) * 100;
   const minY = Math.floor((Math.min(...ys) - pad) / 100) * 100, maxY = Math.ceil((Math.max(...ys) + pad) / 100) * 100;
   const margin = { left: 40, right: 10, top: 10, bottom: 34 };
-  const width = 600, unit = (width - margin.left - margin.right) / (maxX - minX);
+  // Drawn at the figure's own width, so the 11 px labels stay 11 px on a phone.
+  const width = Math.max(300, Math.min(640, document.querySelector('.fit-figure').clientWidth - 16));
+  const unit = (width - margin.left - margin.right) / (maxX - minX);
+  const gridStep = unit * 200 >= 75 ? 200 : 400;
   const height = margin.top + (maxY - minY) * unit + margin.bottom;
   diagram.setAttribute('viewBox', `0 0 ${width} ${height.toFixed(0)}`);
   const x = (mm) => margin.left + (mm - minX) * unit, y = (mm) => margin.top + (maxY - mm) * unit;
-  for (let mm = Math.ceil(minX / 200) * 200; mm <= maxX; mm += 200) {
+  for (let mm = Math.ceil(minX / gridStep) * gridStep; mm <= maxX; mm += gridStep) {
     diagram.append(svg('line', { class: 'grid', x1: x(mm), x2: x(mm), y1: y(maxY), y2: y(minY) }));
     diagram.append(svg('text', { class: 'tick', x: x(mm), y: y(minY) + 14, 'text-anchor': 'middle' }, mm === 0 ? '0' : `${Math.abs(mm)} ${mm < 0 ? 'behind' : 'ahead'}`));
   }
-  for (let mm = Math.ceil(minY / 200) * 200; mm <= maxY; mm += 200) {
+  for (let mm = Math.ceil(minY / gridStep) * gridStep; mm <= maxY; mm += gridStep) {
     diagram.append(svg('line', { class: 'grid', x1: x(minX), x2: x(maxX), y1: y(mm), y2: y(mm) }));
     diagram.append(svg('text', { class: 'tick', x: margin.left - 6, y: y(mm) + 4, 'text-anchor': 'end' }, String(mm)));
   }
   diagram.append(svg('text', { x: margin.left + (width - margin.left - margin.right) / 2, y: height - 4, 'text-anchor': 'middle' }, 'Millimeters from the bottom bracket'));
   diagram.append(svg('path', { class: 'origin', d: `M${x(0) - 8},${y(0)}H${x(0) + 8}M${x(0)},${y(0) - 8}V${y(0) + 8}` }));
   diagram.append(svg('text', { class: 'strong', x: x(0) + 12, y: y(0) + 4 }, 'Bottom bracket'));
-  let labelRow = 0;
   for (const g of groups) {
     const layer = svg('g', { class: `rider-${g.rider + 1}` });
     const kindClass = g.kind === 'sheet' ? 'sheet' : g.kind;
     layer.append(svg('path', { class: `link ${kindClass}`, d: `M${g.points.map(([px, py]) => `${x(px).toFixed(1)},${y(py).toFixed(1)}`).join('L')}` }));
     for (const [px, py] of g.points) layer.append(svg('circle', { class: g.kind === 'sheet' ? 'hollow' : 'filled', cx: x(px), cy: y(py), r: 6 }));
     diagram.append(layer);
-    if (g.label) {
-      // One direct label per rider, under that rider's first fit sheet point, stepped down so two never overlap.
-      const [px, py] = g.points[0];
-      diagram.append(svg('text', { class: 'strong', x: x(px), y: y(py) + 22 + 14 * labelRow, 'text-anchor': 'middle' }, g.label));
-      labelRow++;
-    }
+  }
+  // One direct label per rider: a short stroke of the rider's color, then the name in ink. The names
+  // are stacked under the lowest saddle point so two riders' labels never land on each other.
+  const named = groups.filter((g) => g.label);
+  if (named.length) {
+    const left = Math.max(margin.left + 4, Math.min(...named.map((g) => x(g.points[0][0]))) - 8);
+    const top = Math.max(...named.map((g) => y(g.points[0][1]))) + 24;
+    named.forEach((g, row) => {
+      const key = svg('g', { class: `rider-${g.rider + 1}` });
+      key.append(svg('path', { class: 'name-key', d: `M${left},${top + 14 * row - 4}h14` }));
+      diagram.append(key, svg('text', { class: 'strong', x: left + 20, y: top + 14 * row }, g.label));
+    });
   }
 }
 
@@ -1242,6 +1250,11 @@ function renderReport() {
 function wireReport() {
   buildCharts();
   buildFitControls();
+  let figureWidth = 0;
+  new ResizeObserver(([entry]) => {
+    const now = Math.round(entry.contentRect.width);
+    if (now && now !== figureWidth && currentComparison) { figureWidth = now; renderFitSheet(); }
+  }).observe(document.querySelector('.fit-figure'));
   $('delete-all').addEventListener('click', () => askDelete(true));
   $('delete-cancel').addEventListener('click', () => askDelete(false));
   $('delete-confirm').addEventListener('click', () => deleteEverything().catch(crash));

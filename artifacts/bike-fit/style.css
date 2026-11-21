@@ -198,9 +198,8 @@ table.pinned th:first-child { position: sticky; left: 0; background: var(--surfa
 .sw.kickr { border-top-color: var(--series-kickr); }
 .sw.open { border-top-color: var(--series-open); }
 .sw.band { height: 10px; border-top: 0; background: var(--ink-muted); opacity: 0.3; }
-.sw.ink { width: 34px; border-top-width: 2px; }
-.sw.dash { border-top-style: dashed; }
-.sw.dot { border-top-style: dotted; }
+/* Line-style keys are drawn with the same strokes as the diagram, in ink. */
+.line-key { width: 36px; height: 6px; flex: none; --rider: var(--ink-2); }
 .mark { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink-2); }
 .mark.filled { background: var(--ink-2); }
 .chart-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -240,6 +239,7 @@ svg .link { fill: none; stroke: var(--rider); stroke-width: 2; stroke-linecap: r
 svg .link.sheet { stroke-dasharray: 1 5; }
 svg .link.open-video { stroke-dasharray: 7 5; }
 svg .origin { stroke: var(--ink-1); stroke-width: 2; stroke-linecap: round; }
+svg .name-key { stroke: var(--rider); stroke-width: 4; stroke-linecap: round; }
 .check { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding-right: 8px; font-size: 0.92rem; cursor: pointer; }
 .check input { width: 22px; height: 22px; accent-color: var(--ink-1); }
 .check .sw { border-top-width: 4px; }
