@@ -119,3 +119,16 @@ above the video answer says so and links to where they can be typed.
 - The screen wake lock was exercised through a stub; a real phone's behavior is not confirmed.
 - Absolute millimeters from a video have no ground truth; the page now says so instead of implying otherwise.
 - Pointer dragging of the level-line ends was not exercised; the keyboard path was.
+
+## v2 fixes (after the fresh engineering re-read, `eng.v2.md`)
+
+One commit, the one that adds this section.
+
+| Finding | Fix | Check |
+|---|---|---|
+| A stored video that never reports ready or failed left both file pickers disabled for good | Waiting for a video's first picture is time-bound (20 seconds for a chosen file, 6 for a stored one); the "still reading stored slots" lock is cleared in a `finally`; the slot says "The stored video could not be opened on this device. Its tracking is kept. Choose the video again to play it." | Headless Chrome with a stored video made never to become ready: pickers disabled at start, enabled after the time limit, the sentence shown, tracking kept, and a newly chosen video then tracks |
+| The slot fact "Camera movement during the video, millimeters" carried no scale mark | It reads "…, millimeters, scale not checked" whenever that video's scale is not checked, from the same flag as every other millimeter value | Read from the page with one video loaded |
+| Typed tape readings persist with nothing marking them stale | Footnote under the targets table: "After you move something, measure again and type the new reading." Readings still persist | Read from the page |
+
+Re-run with these changes: `node --test artifacts/bike-fit/tests/` (31 tests, 31 pass); at 390 pixels no
+sideways scroll, no control under 48 pixels, section order unchanged.

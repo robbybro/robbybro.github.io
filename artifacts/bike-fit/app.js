@@ -20,6 +20,9 @@ const TRACKER_FILES = {
 const MODEL_URL = './vendor/pose_landmarker_heavy.task';
 // Longer clips add minutes of tracking and no information; the filming checklist asks for 15 seconds.
 const MAX_TRACKED_SECONDS = 30;
+// How long a video may take to show its first picture: a file just chosen, and one read back from this device.
+const CHOSEN_VIDEO_TIMEOUT_MILLISECONDS = 20000;
+const STORED_VIDEO_TIMEOUT_MILLISECONDS = 6000;
 // A seek that has not shown its picture after this long is given up on, and the frame counts as lost.
 const SEEK_TIMEOUT_MILLISECONDS = 3000;
 // This many frames in a row that never showed means the browser has stopped seeking; tracking stops.
@@ -177,11 +180,19 @@ async function loadModel(onProgress) {
   return (modelBytes = bytes);
 }
 
-function videoReady(video) {
+// Resolves when the video has a first picture. Rejects if the browser reports an error, or says
+// nothing at all within the time allowed: a video that never loads must not hold the page.
+function videoReady(video, timeoutMilliseconds) {
   return new Promise((resolve, reject) => {
     if (video.readyState >= 2) return resolve();
-    const done = (ok) => { video.removeEventListener('loadeddata', good); video.removeEventListener('error', bad); ok ? resolve() : reject(new Problem('This video could not be opened in this browser. Choose another file.')); };
+    const done = (ok) => {
+      video.removeEventListener('loadeddata', good);
+      video.removeEventListener('error', bad);
+      clearTimeout(timer);
+      ok ? resolve() : reject(new Problem('This video could not be opened in this browser. Choose another file.'));
+    };
     const good = () => done(true), bad = () => done(false);
+    const timer = setTimeout(bad, timeoutMilliseconds);
     video.addEventListener('loadeddata', good);
     video.addEventListener('error', bad);
   });
@@ -274,7 +285,7 @@ async function trackFile(slot, file) {
   let landmarker = null;
   try {
     await holdScreen();
-    await videoReady(slot.video);
+    await videoReady(slot.video, CHOSEN_VIDEO_TIMEOUT_MILLISECONDS);
     const video = slot.video;
     if (!Number.isFinite(video.duration) || video.duration <= 0) throw new Problem('This video has no readable length. Choose another file.');
     const framesPerSecond = chooseSamplingRate(await presentedFrameTimes(video));
@@ -369,11 +380,15 @@ async function restoreSlot(slot) {
   const { frames, width, height, framesPerSecond, levelLine, truncated, stalled } = stored;
   slot.record = { frames, width, height, framesPerSecond, levelLine: levelLine || null, truncated: Boolean(truncated), stalled: Number.isInteger(stalled) ? stalled : 0 };
   compute(slot);
-  setVideo(slot, stored.video instanceof Blob ? stored.video : null);
+  const kept = stored.video instanceof Blob;
+  setVideo(slot, kept ? stored.video : null);
   if (slot.url) {
-    try { await videoReady(slot.video); await seekTo(slot.video, 0.5 / framesPerSecond); } catch { setVideo(slot, null); }
+    try { await videoReady(slot.video, STORED_VIDEO_TIMEOUT_MILLISECONDS); await seekTo(slot.video, 0.5 / framesPerSecond); } catch { setVideo(slot, null); }
   }
-  if (slot.record && !slot.url) slot.note = 'The video itself is not stored on this device. Choose it again to play it.';
+  if (slot.record && !slot.url) {
+    slot.note = kept ? 'The stored video could not be opened on this device. Its tracking is kept. Choose the video again to play it.'
+      : 'The video itself is not stored on this device. Choose it again to play it.';
+  }
 }
 
 // ---------- status sentences ----------
@@ -715,12 +730,15 @@ function renderSlot(slot) {
     fact(body, 'Cadence, revolutions per minute', `${round(r.measures.cadence.median)} ± ${round(r.measures.cadence.spread)}`);
     fact(body, 'Frames tracked', `${r.frameCount} at ${round(r.framesPerSecond, 2)} per second`);
     fact(body, 'Rider faces', r.facing === 'left' ? 'Left of the picture' : 'Right of the picture');
-    if (slot.crank !== null) fact(body, 'Camera movement during the video, millimeters', `${round(r.cameraDriftPixels * slot.crank / r.pedalCircle.radius)}`);
+    // A millimeter value from this video's own scale, so it carries the same mark as every other one.
+    const checked = currentComparison && currentComparison.scale.checked[slot.id];
+    if (slot.crank !== null) fact(body, `Camera movement during the video, millimeters${checked ? '' : ', scale not checked'}`, `${round(r.cameraDriftPixels * slot.crank / r.pedalCircle.radius)}`);
   }
   draw(slot);
 }
 
 function render() {
+  currentComparison = compareSlots();
   for (const slot of Object.values(slots)) renderSlot(slot);
   // The filming checklist stands open while a slot still needs a video, and folds once both have one.
   const needsVideo = Object.values(slots).some((s) => !s.record);
@@ -1349,9 +1367,10 @@ async function deleteEverything() {
 // ---------- the report as a whole ----------
 
 let currentComparison = null;
+const compareSlots = () => compare(slots.kickr.result, slots.open.result, slots.kickr.crank, slots.open.crank);
 
 function renderReport() {
-  currentComparison = compare(slots.kickr.result, slots.open.result, slots.kickr.crank, slots.open.crank);
+  currentComparison = compareSlots();
   renderAnswer(currentComparison);
   renderTargets();
   renderComparison(currentComparison);
@@ -1408,9 +1427,13 @@ async function start() {
   wireReport();
   render();
   receiveImport();
-  if (supported) await Promise.all(Object.values(slots).map(restoreSlot));
-  restoring = false;
-  render();
+  // Whatever happens while stored slots are read back, the file pickers are handed over afterwards.
+  try {
+    if (supported) await Promise.all(Object.values(slots).map(restoreSlot));
+  } finally {
+    restoring = false;
+    render();
+  }
 }
 
 start().catch(crash);
