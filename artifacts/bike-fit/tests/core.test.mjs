@@ -22,7 +22,7 @@ const BASE = {
   wrist: [480, 610],     // wrist on the hood: 480 ahead, 610 above
   torsoDegrees: 42,
   torsoLength: 520,
-  thigh: 420, shin: 430, upperArm: 300, forearm: 270,
+  thigh: 425, shin: 425, upperArm: 300, forearm: 270,
   footLength: 260, ankleAlongFoot: 0.2, ankleAboveSole: 85,
   cadence: 88,           // revolutions per minute
   framesPerSecond: 30,
@@ -201,8 +201,8 @@ test('a second rider moved by planted amounts yields those four numbers and the 
   const kickr = makeVideo();
   // The road bike: hip 12 higher and 7 further forward, wrist 15 further ahead and 9 lower.
   // Filmed from another distance and with a different crank length, as a second video would be.
-  const open = makeVideo({ hip: [-190 + 7, 750 + 12], wrist: [480 + 15, 610 - 9], crank: 172.5, pixelsPerMillimeter: 0.61, origin: [350, 1010], cadence: 84 });
-  const c = compare(analyze(kickr.input), analyze(open.input), 170, 172.5);
+  const open = makeVideo({ hip: [-190 + 7, 750 + 12], wrist: [480 + 15, 610 - 9], crank: 175, pixelsPerMillimeter: 0.61, origin: [350, 1010], cadence: 84 });
+  const c = compare(analyze(kickr.input), analyze(open.input), 170, 175);
   const by = Object.fromEntries(c.adjustments.map((a) => [a.key, a]));
   assert.deepEqual([by.saddleHeight.direction, by.saddleHeight.millimeters], [DIRECTION.raise, 12]);
   assert.deepEqual([by.saddleSetback.direction, by.saddleSetback.millimeters], [DIRECTION.forward, 7]);
@@ -218,7 +218,7 @@ test('a second rider moved by planted amounts yields those four numbers and the 
   assert.ok(Math.abs(c.scale.disagreementPercent) < 0.1, 'the same rider measures the same leg on both videos');
   assert.equal(c.scale.agrees, true);
   // The opposite move reads with the opposite words.
-  const back = compare(analyze(open.input), analyze(kickr.input), 172.5, 170);
+  const back = compare(analyze(open.input), analyze(kickr.input), 175, 170);
   assert.deepEqual(back.adjustments.map((a) => a.direction), [DIRECTION.lower, DIRECTION.back, DIRECTION.shorten, DIRECTION.raise]);
 });
 
@@ -366,8 +366,8 @@ const SHEET = {
   version: 1,
   videoRider: 1,
   riders: [
-    { label: 'Rider A', bike: 'Test Bike 54', saddleHeight: 700, saddleBehind: 200, saddleAbove: 660, barAhead: 430, barAbove: 640, hoodAhead: 510, hoodAbove: 700 },
-    { label: 'Rider B', bike: 'Other Bike', saddleHeight: 760, saddleBehind: 230, saddleAbove: 715, barAhead: 470, barAbove: 650, hoodAhead: 560, hoodAbove: 710, crankLength: 172.5, hoodAngle: 8 },
+    { label: 'Rider A', bike: 'Test Bike', saddleHeight: 700, saddleBehind: 200, saddleAbove: 665, barAhead: 430, barAbove: 640, hoodAhead: 510, hoodAbove: 700 },
+    { label: 'Rider B', bike: 'Other Bike', saddleHeight: 760, saddleBehind: 230, saddleAbove: 715, barAhead: 470, barAbove: 650, hoodAhead: 560, hoodAbove: 710, crankLength: 175, hoodAngle: 8 },
   ],
 };
 const link = (value) => IMPORT_PREFIX + Buffer.from(typeof value === 'string' ? value : JSON.stringify(value)).toString('base64url');
