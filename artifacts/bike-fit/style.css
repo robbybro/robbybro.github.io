@@ -97,6 +97,7 @@ h3 { font-size: 1rem; }
 .btn:hover { border-color: var(--ink-muted); }
 .btn:disabled, .btn.disabled { opacity: 0.45; cursor: default; }
 .btn[aria-pressed="true"] { background: var(--ink-1); color: var(--page); border-color: var(--ink-1); }
+.rider-pick[aria-pressed="true"]::before { content: "✓"; margin-right: 6px; }
 .btn.file { position: relative; }
 .btn.file:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
 .file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
@@ -106,7 +107,8 @@ input[type="number"], select {
   border: 1px solid var(--baseline); border-radius: 8px;
   background: var(--surface-1); color: var(--ink-1); font: inherit; font-size: 1rem;
 }
-input[type="number"]::placeholder { color: var(--ink-muted); }
+/* A placeholder must not pass for a typed value: lighter weight and slanted, at readable contrast. */
+input[type="number"]::placeholder { color: var(--ink-2); font-style: italic; opacity: 0.85; }
 input[type="range"] { width: 100%; height: 48px; margin: 0; accent-color: var(--ink-1); background: transparent; }
 
 /* Video slots: stacked on a phone, side by side when there is room. */
@@ -177,7 +179,7 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; white-s
 table.data td.wrap { white-space: normal; }
 table.data .unit { display: block; font-weight: 400; font-size: 0.78rem; color: var(--ink-2); }
 table.data tr.waiting td, table.data td.waiting { color: var(--ink-2); }
-table.data tr.grey th, table.data tr.grey td { color: var(--ink-muted); }
+table.data tr.grey th, table.data tr.grey td { color: var(--ink-2); font-style: italic; }
 table.pinned th:first-child { position: sticky; left: 0; background: var(--surface-1); max-width: 46vw; }
 #answer-table tbody th { white-space: nowrap; }
 /* On a phone all four columns of the answer must show without sideways scrolling. */
@@ -188,7 +190,7 @@ table.pinned th:first-child { position: sticky; left: 0; background: var(--surfa
 #answer-table .amount { font-size: 1.05rem; font-weight: 600; }
 #answer-table tr.waiting .amount { font-size: 0.88rem; font-weight: 400; white-space: normal; }
 #answer-table tr.grey .amount { font-weight: 400; white-space: normal; }
-table.data td.grey { color: var(--ink-muted); }
+table.data td.grey { color: var(--ink-2); font-style: italic; }
 #targets .row { margin-bottom: 8px; }
 #targets-table .now-input { max-width: 8rem; }
 #targets-table .move { font-weight: 600; white-space: nowrap; }
@@ -232,7 +234,7 @@ a.door { display: block; min-height: 48px; color: inherit; text-decoration: unde
 .chart .readout .k { display: inline-flex; align-items: center; gap: 5px; }
 .chart svg, .fit-figure svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
 svg text { font-family: inherit; font-size: 11px; fill: var(--ink-2); }
-svg text.tick { fill: var(--ink-muted); font-variant-numeric: tabular-nums; }
+svg text.tick { fill: var(--ink-2); font-variant-numeric: tabular-nums; }
 svg text.strong { fill: var(--ink-1); font-weight: 600; }
 svg .grid { stroke: var(--grid); stroke-width: 1; }
 svg .axis { stroke: var(--baseline); stroke-width: 1; }

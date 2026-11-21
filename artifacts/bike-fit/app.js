@@ -27,7 +27,7 @@ const MAX_STALLED_FRAMES = 8;
 const CRANK_RANGE = [100, 220];
 // A WebAssembly module that uses one SIMD instruction; the vendored tracker needs SIMD.
 const SIMD_PROBE = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
-const UNSUPPORTED = 'This browser cannot run the pose tracker. Use a current Chrome, Edge or Firefox, or Safari 16.4 or later.';
+const UNSUPPORTED = 'This browser cannot run this page. Use a current Chrome, Edge or Firefox, or Safari 16.4 or later.';
 const BONES = [['shoulder', 'elbow'], ['elbow', 'wrist'], ['shoulder', 'hip'], ['hip', 'knee'], ['knee', 'ankle'], ['ankle', 'heel'], ['heel', 'toe'], ['ankle', 'toe']];
 const TRAILS = ['knee', 'ankle', 'toe'];
 const DEFAULT_LEVEL_LINE = [[0.2, 0.92], [0.8, 0.92]];
@@ -158,7 +158,7 @@ let modelBytes = null;
 async function loadModel(onProgress) {
   if (modelBytes) return modelBytes;
   const response = await fetch(MODEL_URL);
-  if (!response.ok) throw new Problem(`The pose model did not load (the server answered ${response.status}). Reload the page and choose the video again.`);
+  if (!response.ok) throw new Problem('The tracking model did not load. Reload the page and choose the video again.');
   const total = Number(response.headers.get('content-length')) || 0;
   if (!response.body) return (modelBytes = new Uint8Array(await response.arrayBuffer()));
   const reader = response.body.getReader();
@@ -314,7 +314,7 @@ async function trackFile(slot, file) {
     await seekTo(video, 0.5 / framesPerSecond);
   } catch (error) {
     // A cancelled or failed replacement leaves the slot as it was stored.
-    const note = error === CANCELLED ? '' : error instanceof Problem ? error.message : `Tracking stopped: ${error && error.message ? error.message : 'unknown error'}. Choose the video again.`;
+    const note = error === CANCELLED ? '' : error instanceof Problem ? error.message : (error && error.message ? `Tracking stopped: ${error.message}. Choose the video again.` : 'Tracking stopped for an unknown reason. Choose the video again.');
     await restoreSlot(slot);
     slot.note = note;
   } finally {
@@ -393,7 +393,7 @@ function statusText(slot) {
   const job = slot.job;
   if (job && job.phase === 'model') {
     if (!job.done) return 'Opening the video.';
-    return job.total >= job.done ? `Loading the pose model: ${megabytes(job.done)} of ${megabytes(job.total)} megabytes.` : `Loading the pose model: ${megabytes(job.done)} megabytes.`;
+    return job.total >= job.done ? `Loading the tracking model: ${megabytes(job.done)} of ${megabytes(job.total)} megabytes.` : `Loading the tracking model: ${megabytes(job.done)} megabytes.`;
   }
   if (job) return `Frame ${job.done} of ${job.total}`;
   const out = [];
@@ -406,7 +406,7 @@ function statusText(slot) {
     if (r.lost.length) out.push(describeLost(r.lost));
     if (slot.record.stalled) out.push(`${slot.record.stalled} ${slot.record.stalled === 1 ? 'frame' : 'frames'} did not load in time and ${slot.record.stalled === 1 ? 'counts' : 'count'} as lost.`);
     if (slot.record.truncated) out.push(`Only the first ${MAX_TRACKED_SECONDS} seconds were tracked.`);
-    if (cameraMoved(slot)) out.push('The camera moved during the clip, which widens the spread; a steady phone gives tighter numbers.');
+    if (cameraMoved(slot)) out.push('The camera moved during the video, which widens the spread. Rest the phone on something steady to tighten it.');
     if (slot.crank === null) out.push('Enter the crank length to get millimeters.');
   } else if (r) {
     if (r.reason === 'tracking-lost') out.push(`${r.lost.length ? describeLost(r.lost) : 'Tracking lost.'} Film again with your whole body in the picture, then replace the video.`);
@@ -557,7 +557,7 @@ function wireSlot(slot) {
   slot.skeletonButton.addEventListener('click', () => {
     slot.showSkeleton = !slot.showSkeleton;
     slot.skeletonButton.setAttribute('aria-pressed', String(slot.showSkeleton));
-    slot.skeletonButton.textContent = slot.showSkeleton ? 'Skeleton on' : 'Skeleton off';
+    slot.skeletonButton.textContent = slot.showSkeleton ? 'Tracked joints on' : 'Tracked joints off';
     draw(slot);
   });
   new ResizeObserver(() => { draw(slot); placeHandles(slot); }).observe(slot.stage);
@@ -672,7 +672,7 @@ function renderSlot(slot) {
   renderStatus(slot);
   // The Open slot shows the fit sheet's crank length as a hint only; the field itself stays empty.
   const sheetCrank = slot.id === 'open' ? riders()[videoRiderIndex()].crankLength : undefined;
-  slot.crankInput.placeholder = typeof sheetCrank === 'number' ? String(sheetCrank) : 'millimeters';
+  slot.crankInput.placeholder = typeof sheetCrank === 'number' ? String(sheetCrank) : '170';
   slot.fileLabel.textContent = slot.record ? 'Replace video' : 'Choose video';
   const locked = Boolean(tracking) || restoring || !supported;
   slot.fileInput.disabled = locked;
@@ -699,9 +699,9 @@ function renderSlot(slot) {
   slot.levelUse.hidden = !marking;
   slot.levelClear.hidden = !(slot.record && slot.record.levelLine) || marking;
   slot.levelStart.textContent = slot.record && slot.record.levelLine ? 'Move the level line' : 'Mark a level line';
-  if (marking) slot.levelNote.textContent = 'Drag the two handles onto something level, such as the line where the floor meets the wall.';
-  else if (r && r.ok && slot.record.levelLine) slot.levelNote.textContent = `Camera roll of ${round(Math.abs(r.rollDegrees), 1)}° corrected in positions and the torso angle.`;
-  else slot.levelNote.textContent = 'Optional. One degree of camera roll moves the hip about 12 millimeters.';
+  if (marking) slot.levelNote.textContent = 'Drag the two ends of the line onto something level, such as the line where the floor meets the wall.';
+  else if (r && r.ok && slot.record.levelLine) slot.levelNote.textContent = `Camera tilt of ${round(Math.abs(r.rollDegrees), 1)}° is corrected in positions and the torso angle.`;
+  else slot.levelNote.textContent = 'Optional. One degree of camera tilt moves the hip joint about 12 millimeters.';
   placeHandles(slot);
 
   slot.crankNoteEl.textContent = slot.crankInput.value.trim() !== '' && slot.crank === null
@@ -715,7 +715,7 @@ function renderSlot(slot) {
     fact(body, 'Cadence, revolutions per minute', `${round(r.measures.cadence.median)} ± ${round(r.measures.cadence.spread)}`);
     fact(body, 'Frames tracked', `${r.frameCount} at ${round(r.framesPerSecond, 2)} per second`);
     fact(body, 'Rider faces', r.facing === 'left' ? 'Left of the picture' : 'Right of the picture');
-    if (slot.crank !== null) fact(body, 'Camera movement during the clip, millimeters', `${round(r.cameraDriftPixels * slot.crank / r.pedalCircle.radius)}`);
+    if (slot.crank !== null) fact(body, 'Camera movement during the video, millimeters', `${round(r.cameraDriftPixels * slot.crank / r.pedalCircle.radius)}`);
   }
   draw(slot);
 }
@@ -771,12 +771,12 @@ const listNames = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', '
 
 function receiveImport() {
   if (!arrivedImport.present) return;
-  if (!arrivedImport.sheet) return notify('That import link is not valid. Nothing was changed.');
+  if (!arrivedImport.sheet) return notify('That import link did not work. Nothing was changed. Open the import link again from where you got it.');
   // Ask before anything stored is replaced: an imported sheet, or numbers typed on this page.
   const typed = entered.some((e) => e && Object.keys(e).length);
   if (!sheet && !typed) return adoptSheet(arrivedImport.sheet, 'Fit numbers imported for');
-  notify('Replace stored fit numbers?', [
-    ['Replace', () => adoptSheet(arrivedImport.sheet, 'Fit numbers replaced. Now stored for')],
+  notify('Replace the fit numbers stored on this device with the imported ones?', [
+    ['Replace stored numbers', () => adoptSheet(arrivedImport.sheet, 'Fit numbers replaced. Now stored for')],
     ['Keep stored numbers', () => notify('Stored fit numbers kept.')],
   ]);
 }
@@ -886,7 +886,7 @@ function riderButtons(container, onPick) {
   const all = riders();
   container.hidden = all.length < 2;
   all.forEach((rider, i) => {
-    const button = html('button', 'btn', rider.label);
+    const button = html('button', 'btn rider-pick', rider.label);
     button.type = 'button';
     button.setAttribute('aria-pressed', String(i === selectedRider));
     button.addEventListener('click', () => { selectedRider = i; onPick(); });
@@ -936,7 +936,8 @@ function renderComparison(c) {
   const body = $('comparison-table').tBodies[0];
   body.replaceChildren();
   const ok = { kickr: Boolean(slots.kickr.result && slots.kickr.result.ok), open: Boolean(slots.open.result && slots.open.result.ok) };
-  for (const row of [...c.rows, ...c.positions]) {
+  // Positions first: they are the rows the answer above is made from.
+  for (const row of [...c.positions, ...c.rows]) {
     const [label, unit] = MEASURE_LABELS[row.key];
     const digits = unit === 'millimeters' ? 0 : 1;
     // A millimeter value whose video scale has nothing checking it is greyed and its unit says so.
@@ -979,7 +980,7 @@ function renderComparison(c) {
   for (const slot of Object.values(slots)) {
     if (sc.poorFit[slot.id]) notes.push(`On the ${slot.title} video the ball of the foot strays from its pedal circle by more than ${PEDAL_FIT_LIMIT_SHARE * 100} percent of the circle's radius, so that video's scale is not checked.`);
   }
-  notes.push('The bottom bracket is taken as the center of the circle the ball of the foot traces. It is drawn on each video so a wrong fit is visible.');
+  notes.push('The bottom bracket is taken as the center of the circle the ball of the foot traces. It is drawn on each video so you can see if it is off.');
   $('comparison-notes').replaceChildren(...notes.map((n) => html('li', '', n)));
 }
 
@@ -1342,7 +1343,7 @@ async function deleteEverything() {
   render();
   $('delete-note').textContent = blocked ? 'Another tab has this page open, so the videos are not deleted yet. Close it, then delete again.'
     : cleared ? 'Deleted. Nothing from this page is stored on this device.'
-    : 'The videos are deleted, but this browser refused to clear the rest. Clear this site\'s data in the browser settings.';
+    : 'The videos are deleted. This browser did not clear the rest. Clear this site\'s data in the browser settings.';
 }
 
 // ---------- the report as a whole ----------
@@ -1377,7 +1378,7 @@ function wireReport() {
 
 // Last resort for a failure nothing else turned into a sentence: say so instead of going quiet.
 function crash(error) {
-  $('notice').textContent = `Something went wrong on this page: ${error && error.message ? error.message : 'unknown error'}. Reload it; what is stored on this device is kept.`;
+  $('notice').textContent = `Something went wrong on this page: ${error && error.message ? error.message : 'unknown error'}. Reload the page. What is stored on this device stays.`;
   $('notice').hidden = false;
 }
 

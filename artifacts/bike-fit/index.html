@@ -102,7 +102,7 @@
       <li>The spread is the variation between pedal strokes. It does not cover camera placement error.</li>
       <li>No measurable difference means the difference is smaller than the spread between pedal strokes.</li>
       <li>Millimeters are straight up and straight back, not along the seatpost.</li>
-      <li>Wahoo names these adjustments Saddle Height, Setback, Reach and Stack Height. Its owner's manual gives no units for the scales, so measure each change with a tape, film again, and replace the Kickr Shift video.</li>
+      <li>Wahoo calls these adjusters Saddle Height, Setback, Reach and Stack Height. Its manual gives no units for them. After each change, measure it with a tape, film again, and replace the Kickr Shift video.</li>
     </ul>
   </section>
 
@@ -129,7 +129,7 @@
   </section>
 
   <section id="comparison" aria-labelledby="comparison-title">
-    <h2 id="comparison-title">Comparison</h2>
+    <h2 id="comparison-title">Kickr Shift and Open MIN.D compared</h2>
     <div class="scroll">
       <table class="data pinned" id="comparison-table">
         <thead>
@@ -148,7 +148,7 @@
       <div class="legend" id="chart-legend">
         <span class="k" data-series="kickr"><span class="sw kickr"></span>Kickr Shift</span>
         <span class="k" data-series="open"><span class="sw open"></span>Open MIN.D</span>
-        <span class="k"><span class="sw band"></span>Shaded: spread between pedal strokes</span>
+        <span class="k"><span class="sw band"></span>Shaded band: spread between pedal strokes</span>
       </div>
       <div class="chart-grid" id="chart-grid"></div>
       <ul class="footnotes">
@@ -164,7 +164,7 @@
   </section>
 
   <section id="fit-sheet" aria-labelledby="fit-title">
-    <h2 id="fit-title">Fit sheet</h2>
+    <h2 id="fit-title">Fit sheet diagram</h2>
     <p class="section-status" id="fit-status"></p>
     <div class="row" id="fit-toggles"></div>
     <div class="legend" id="fit-legend">
@@ -192,9 +192,9 @@
     <h2 id="stored-title">Stored on this device</h2>
     <ul class="stored-list" id="stored-list"></ul>
     <div class="row">
-      <button type="button" class="btn" id="delete-all">Delete everything on this device</button>
-      <button type="button" class="btn" id="delete-confirm" hidden>Yes, delete it all</button>
-      <button type="button" class="btn" id="delete-cancel" hidden>Keep it</button>
+      <button type="button" class="btn" id="delete-all">Delete everything this page stored</button>
+      <button type="button" class="btn" id="delete-confirm" hidden>Delete everything stored</button>
+      <button type="button" class="btn" id="delete-cancel" hidden>Cancel</button>
     </div>
     <p class="field-note" id="delete-note" role="status"></p>
   </section>
@@ -236,18 +236,18 @@
         <button type="button" class="btn speed" data-rate="1" aria-pressed="true">1×</button>
         <button type="button" class="btn speed" data-rate="0.5" aria-pressed="false">0.5×</button>
         <button type="button" class="btn speed" data-rate="0.25" aria-pressed="false">0.25×</button>
-        <button type="button" class="btn skeleton" aria-pressed="true">Skeleton on</button>
+        <button type="button" class="btn skeleton" aria-pressed="true">Tracked joints on</button>
       </div>
     </div>
     <div class="fields">
       <label class="field">
         <span class="field-label crank-label"></span>
-        <input type="number" class="crank" inputmode="decimal" min="100" max="220" step="0.5" placeholder="millimeters">
+        <input type="number" class="crank" inputmode="decimal" min="100" max="220" step="0.5" placeholder="170">
         <span class="field-note crank-note"></span>
       </label>
       <div class="level-tool" hidden>
         <button type="button" class="btn level-start">Mark a level line</button>
-        <button type="button" class="btn level-use" hidden>Use this line</button>
+        <button type="button" class="btn level-use" hidden>Use level line</button>
         <button type="button" class="btn level-clear" hidden>Remove level line</button>
         <p class="field-note level-note"></p>
       </div>
