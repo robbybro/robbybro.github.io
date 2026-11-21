@@ -50,8 +50,13 @@ const KEY_ENTERED = `${KEY_PREFIX}entered`;
 function withStore(mode, work) {
   return new Promise((resolve, reject) => {
     const open = indexedDB.open(DB_NAME, 1);
-    open.onupgradeneeded = () => open.result.createObjectStore(STORE, { keyPath: 'id' });
-    open.onerror = () => reject(open.error);
+    let absent = false;
+    open.onupgradeneeded = () => {
+      // Reading must not leave an empty database behind (after "Delete everything", nothing is stored).
+      if (mode === 'readonly') { absent = true; open.transaction.abort(); return; }
+      open.result.createObjectStore(STORE, { keyPath: 'id' });
+    };
+    open.onerror = (event) => { if (absent) { event.preventDefault(); resolve(undefined); } else reject(open.error); };
     open.onsuccess = () => {
       const db = open.result;
       const tx = db.transaction(STORE, mode);
