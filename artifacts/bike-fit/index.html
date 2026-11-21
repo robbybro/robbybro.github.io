@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; media-src blob:; connect-src 'self'; worker-src 'self' blob:; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="artifact-index" content="unlisted">
+<meta name="description" content="Bike fit comparison">
+<title>Bike fit comparison</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="viz-root">
+  <header>
+    <h1>Bike fit comparison</h1>
+    <div class="sub">Two side-on riding videos, tracked on this device. <b>Nothing is uploaded.</b></div>
+  </header>
+
+  <noscript><p class="notice">This page needs JavaScript to track the videos.</p></noscript>
+  <p class="notice boot" id="boot">This browser cannot run this page. Use a current Chrome, Edge or Firefox, or Safari 16.4 or later.</p>
+  <div id="notice" class="notice" role="status" hidden></div>
+
+  <section id="videos" aria-labelledby="videos-title">
+    <h2 id="videos-title">Videos</h2>
+    <div class="shared" id="shared" hidden>
+      <label for="shared-angle">Both videos at crank angle <output id="shared-angle-value" for="shared-angle">0°</output></label>
+      <input type="range" id="shared-angle" min="0" max="360" step="5" value="0">
+      <button type="button" class="btn" id="play-both">Play both</button>
+    </div>
+    <div class="slots" id="slots"></div>
+  </section>
+</div>
+
+<template id="slot-template">
+  <article class="slot">
+    <h3 class="slot-title"></h3>
+    <p class="slot-status" role="status"></p>
+    <progress class="slot-progress" hidden></progress>
+    <div class="row">
+      <label class="btn file"><span class="file-label">Choose video</span><input type="file" class="file-input" accept="video/*"></label>
+      <button type="button" class="btn cancel" hidden>Cancel</button>
+    </div>
+    <ol class="checklist" hidden>
+      <li>Set the phone on something steady at hip height. Do not hold it.</li>
+      <li>Place it straight out to the side of the bike, far enough away that your whole body and the bike fit in the picture.</li>
+      <li>Film the same side of your body as in the Kickr Shift video.</li>
+      <li>Ride with your hands on the hoods, the same as on the Kickr Shift.</li>
+      <li>Wear the same shoes, and shorts that show your knee and hip.</li>
+      <li>Keep something level in the picture, such as the line where the floor meets the wall.</li>
+      <li>Pedal steadily at your usual cadence for 15 seconds, then stop the recording.</li>
+    </ol>
+    <div class="stage-wrap" hidden>
+      <div class="stage">
+        <video class="video" playsinline muted preload="auto"></video>
+        <canvas class="overlay"></canvas>
+        <div class="level-layer" hidden>
+          <button type="button" class="handle" data-handle="0" aria-label="First end of the level line. Arrow keys move it."></button>
+          <button type="button" class="handle" data-handle="1" aria-label="Second end of the level line. Arrow keys move it."></button>
+        </div>
+      </div>
+    </div>
+    <div class="player" hidden>
+      <div class="row">
+        <button type="button" class="btn prev">Previous frame</button>
+        <button type="button" class="btn play">Play</button>
+        <button type="button" class="btn next">Next frame</button>
+      </div>
+      <div class="scrub">
+        <div class="scrub-marks" aria-hidden="true"></div>
+        <input type="range" class="scrubber" min="0" max="0" step="1" value="0" aria-label="Frame">
+      </div>
+      <p class="frame-readout"></p>
+      <div class="row">
+        <span class="row-label">Speed</span>
+        <button type="button" class="btn speed" data-rate="1" aria-pressed="true">1×</button>
+        <button type="button" class="btn speed" data-rate="0.5" aria-pressed="false">0.5×</button>
+        <button type="button" class="btn speed" data-rate="0.25" aria-pressed="false">0.25×</button>
+        <button type="button" class="btn skeleton" aria-pressed="true">Skeleton on</button>
+      </div>
+    </div>
+    <div class="fields">
+      <label class="field">
+        <span class="field-label crank-label"></span>
+        <input type="number" class="crank" inputmode="decimal" min="100" max="220" step="0.5" placeholder="millimeters">
+        <span class="field-note crank-note"></span>
+      </label>
+      <div class="level-tool" hidden>
+        <button type="button" class="btn level-start">Mark a level line</button>
+        <button type="button" class="btn level-use" hidden>Use this line</button>
+        <button type="button" class="btn level-clear" hidden>Remove level line</button>
+        <p class="field-note level-note"></p>
+      </div>
+    </div>
+    <table class="facts" hidden>
+      <tbody></tbody>
+    </table>
+    <details class="checklist-row" hidden>
+      <summary>Filming checklist</summary>
+    </details>
+  </article>
+</template>
+</body>
+</html>
