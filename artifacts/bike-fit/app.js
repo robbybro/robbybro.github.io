@@ -4,7 +4,7 @@
 import { PoseLandmarker } from './vendor/tasks-vision/vision_bundle.mjs';
 import {
   analyze, compare, frameForCrankAngle, chooseSamplingRate, readImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
-  IMPORT_PREFIX, FIT_NUMBER_KEYS, CURVE_STEP_DEGREES, SCALE_DISAGREEMENT_LIMIT_PERCENT,
+  IMPORT_PREFIX, FIT_NUMBER_KEYS, CURVE_STEP_DEGREES, SCALE_DISAGREEMENT_LIMIT_PERCENT, PEDAL_FIT_LIMIT_SHARE,
 } from './core.js';
 
 // An import link carries fit numbers in the address fragment. It is read and taken out of the address
@@ -817,9 +817,13 @@ function renderAnswer(c) {
     const row = $('answer-table').querySelector(`tr[data-key="${adj.key}"]`);
     const waiting = WAITING[adj.status];
     row.classList.toggle('waiting', Boolean(waiting) && adj.status !== 'scale-disagrees');
-    row.classList.toggle('grey', adj.status === 'scale-disagrees');
+    // Greyed: the scales disagree (no numbers), or a video's scale is not checked (numbers, marked).
+    const unchecked = !waiting && !adj.scaleChecked;
+    row.classList.toggle('grey', adj.status === 'scale-disagrees' || unchecked);
     row.querySelector('.direction').textContent = adj.direction || '';
-    row.querySelector('.amount').textContent = waiting || String(adj.millimeters);
+    const amount = row.querySelector('.amount');
+    amount.textContent = waiting || String(adj.millimeters);
+    if (unchecked) amount.append(html('span', 'unit', 'scale not checked'));
     row.querySelector('.spread').textContent = waiting ? '' : `± ${adj.spread}`;
   }
 }
@@ -857,35 +861,42 @@ function renderComparison(c) {
   for (const row of [...c.rows, ...c.positions]) {
     const [label, unit] = MEASURE_LABELS[row.key];
     const digits = unit === 'millimeters' ? 0 : 1;
+    // A millimeter value whose video scale has nothing checking it is greyed and its unit says so.
+    const unchecked = (id) => Boolean(row.checked) && Boolean(row[id]) && !row.checked[id];
     const tr = body.insertRow();
     const th = html('th', '', label);
     th.scope = 'row';
-    th.append(html('span', 'unit', unit));
+    th.append(html('span', 'unit', unchecked('kickr') || unchecked('open') ? `${unit}, scale not checked` : unit));
     tr.append(th);
     for (const id of ['kickr', 'open']) {
       const cell = tr.insertCell();
       cell.className = 'num';
-      if (row[id]) cell.textContent = withSpread(row[id], digits);
+      if (row[id]) { cell.textContent = withSpread(row[id], digits); cell.classList.toggle('grey', unchecked(id)); }
       else { cell.textContent = !ok[id] ? 'No video yet' : 'Needs a crank length'; cell.classList.add('waiting', 'wrap'); }
     }
     const diff = tr.insertCell();
     diff.className = 'num';
     diff.textContent = row.difference ? signed(row.difference, digits) : '';
+    diff.classList.toggle('grey', unchecked('kickr') || unchecked('open'));
   }
   const notes = [];
-  notes.push('Each value is the median over pedal strokes, plus or minus the spread between strokes. Difference is Open MIN.D minus Kickr Shift. The spread does not cover camera placement error.');
+  notes.push('Each value is the median over pedal strokes. The ± is the spread between pedal strokes only. It does not cover camera placement error or the scale of the video.');
+  notes.push('Difference is Open MIN.D minus Kickr Shift.');
   const strokes = Object.values(slots).filter((s) => ok[s.id]).map((s) => `${s.title}: ${s.result.strokesUsed < s.result.strokesFound ? `based on ${s.result.strokesUsed} of ${s.result.strokesFound} strokes` : `${s.result.strokesUsed} pedal ${s.result.strokesUsed === 1 ? 'stroke' : 'strokes'}`}`);
   if (strokes.length) notes.push(`${strokes.join('. ')}.`);
   const sc = c.scale;
   if (sc.disagreementPercent !== null) {
     const gap = plain(Math.abs(sc.disagreementPercent), 1);
-    notes.push(`Scale check: thigh plus shin measures ${plain(sc.legByPedalCircle.kickr, 0)} millimeters by the Kickr Shift pedal circle and ${plain(sc.legByPedalCircle.open, 0)} by the Open MIN.D pedal circle, ${gap}% apart. ${sc.agrees
-      ? 'Positions use the average of the two as the shared ruler.'
-      : `That is past the ${SCALE_DISAGREEMENT_LIMIT_PERCENT}% limit: check both crank lengths, and that both videos are filmed from straight out to the side.`}`);
+    notes.push(`Scale check: thigh plus shin measures ${plain(sc.legByPedalCircle.kickr, 0)} millimeters by the Kickr Shift pedal circle and ${plain(sc.legByPedalCircle.open, 0)} by the Open MIN.D pedal circle, ${gap} percent apart. ${sc.agrees
+      ? 'Positions use the average of the two. Agreement shows the two videos match each other, not that either is exact.'
+      : `That is past the ${SCALE_DISAGREEMENT_LIMIT_PERCENT} percent limit. Check both crank lengths and that both videos are filmed from straight out to the side.`}`);
   } else if (sc.legMillimeters !== null) {
     const byLeg = Object.values(slots).filter((s) => sc.source[s.id] === 'leg length');
-    if (byLeg.length) notes.push(`No crank length is entered for the ${byLeg[0].title}, so its millimeters come from the rider's thigh plus shin length measured on the other video.`);
-    else if (ok.kickr !== ok.open) notes.push('With one video the millimeters rest on that video\'s pedal circle and crank length alone; the second video adds the scale check.');
+    if (byLeg.length) notes.push(`No crank length is entered for the ${byLeg[0].title}, so its millimeters come from the rider's thigh plus shin length measured on the other video, and the two scales are not checked against each other.`);
+    else if (ok.kickr !== ok.open) notes.push('With one video, millimeters rest on that video\'s pedal circle and crank length alone and are not checked against a second video. They can be off by more than the ±.');
+  }
+  for (const slot of Object.values(slots)) {
+    if (sc.poorFit[slot.id]) notes.push(`On the ${slot.title} video the ball of the foot strays from its pedal circle by more than ${PEDAL_FIT_LIMIT_SHARE * 100} percent of the circle's radius, so that video's scale is not checked.`);
   }
   notes.push('The bottom bracket is taken as the center of the circle the ball of the foot traces. It is drawn on each video so a wrong fit is visible.');
   $('comparison-notes').replaceChildren(...notes.map((n) => html('li', '', n)));
@@ -1143,8 +1154,9 @@ function renderFitSheet() {
   const position = Object.fromEntries(c.positions.map((p) => [p.key, p]));
   for (const id of ['kickr', 'open']) {
     if (!position.hipBehind[id]) continue;
-    groups.push({ rider: videoRiderIndex(), kind: `${id}-video`, points: [[-position.hipBehind[id].value, position.hipAbove[id].value], [position.wristAhead[id].value, position.wristAbove[id].value]], label: null });
+    groups.push({ rider: videoRiderIndex(), kind: `${id}-video`, unchecked: !c.scale.checked[id], points: [[-position.hipBehind[id].value, position.hipAbove[id].value], [position.wristAhead[id].value, position.wristAbove[id].value]], label: null });
   }
+  $('fit-unchecked-note').hidden = !groups.some((g) => g.unchecked);
   const diagram = $('fit-diagram');
   diagram.replaceChildren();
   document.querySelector('.fit-figure').hidden = !groups.length;
@@ -1176,7 +1188,7 @@ function renderFitSheet() {
   diagram.append(svg('path', { class: 'origin', d: `M${x(0) - 8},${y(0)}H${x(0) + 8}M${x(0)},${y(0) - 8}V${y(0) + 8}` }));
   diagram.append(svg('text', { class: 'strong', x: x(0) + 12, y: y(0) + 4 }, 'Bottom bracket'));
   for (const g of groups) {
-    const layer = svg('g', { class: `rider-${g.rider + 1}` });
+    const layer = svg('g', { class: `rider-${g.rider + 1}${g.unchecked ? ' unchecked' : ''}` });
     const kindClass = g.kind === 'sheet' ? 'sheet' : g.kind;
     layer.append(svg('path', { class: `link ${kindClass}`, d: `M${g.points.map(([px, py]) => `${x(px).toFixed(1)},${y(py).toFixed(1)}`).join('L')}` }));
     for (const [px, py] of g.points) layer.append(svg('circle', { class: g.kind === 'sheet' ? 'hollow' : 'filled', cx: x(px), cy: y(py), r: 6 }));

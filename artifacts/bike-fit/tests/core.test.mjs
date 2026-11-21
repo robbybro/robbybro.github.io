@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import {
   analyze, compare, resolveScale, frameForCrankAngle, fitCircle, jointAngle, pickNearSide, chooseSamplingRate,
   readImportFragment, encodeImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
-  DIRECTION, BALL_OF_FOOT_FRACTION, IMPORT_PREFIX, IMPORT_MAX_LENGTH,
+  DIRECTION, BALL_OF_FOOT_FRACTION, IMPORT_PREFIX, IMPORT_MAX_LENGTH, PEDAL_FIT_LIMIT_SHARE,
 } from '../core.js';
 
 const RAD = Math.PI / 180;
@@ -374,6 +374,39 @@ test('crank angle: 0 at top dead center, rising as the rider pedals; a frame can
     assert.ok(gap <= step / 2 + 0.5, `frame ${i} shows ${r.crankDegrees[i]} for ${wanted}`);
   }
   assert.equal(frameForCrankAngle(r, 450), frameForCrankAngle(r, 90));
+});
+
+test('a foot path that strays from its circle: that video is marked as scale not checked', () => {
+  // Scatter on the heel and toe, the same every run. `pixels` is the largest move of either point.
+  const scattered = (pixels) => {
+    const v = makeVideo();
+    const jolt = (i, j, axis) => ((((i * 73 + j * 31 + axis * 17) * 2654435761) % 1000) / 500 - 1) * pixels;
+    const frames = v.input.frames.map((f, i) => f.map((p, j) => ([29, 30, 31, 32].includes(j) ? [p[0] + jolt(i, j, 0) / 720, p[1] + jolt(i, j, 1) / 1280, p[2], p[3]] : p)));
+    return analyze({ ...v.input, frames });
+  };
+  const exact = analyze(makeVideo().input);
+  assert.equal(exact.pedalCircle.fitsWell, true);
+  const mild = scattered(4);
+  assert.ok(mild.pedalCircle.fitError / mild.pedalCircle.radius < PEDAL_FIT_LIMIT_SHARE, 'about 2 percent of the radius');
+  assert.equal(mild.pedalCircle.fitsWell, true);
+  const rough = scattered(17);
+  assert.ok(rough.pedalCircle.fitError / rough.pedalCircle.radius > PEDAL_FIT_LIMIT_SHARE, 'about 8 percent of the radius');
+  assert.equal(rough.pedalCircle.fitsWell, false);
+
+  // Two good videos that agree: both checked. One video alone, or a missing crank length: not checked.
+  const good = compare(exact, exact, 170, 170);
+  assert.deepEqual(good.scale.checked, { kickr: true, open: true });
+  assert.ok(good.adjustments.every((a) => a.scaleChecked));
+  assert.deepEqual(compare(exact, null, 170, null).scale.checked, { kickr: false, open: false });
+  assert.deepEqual(compare(exact, exact, 170, null).scale.checked, { kickr: false, open: false });
+  // A poorly fitting video is not checked, the other one still is, and the adjustments say so.
+  const mixed = compare(rough, exact, 170, 170);
+  assert.deepEqual(mixed.scale.poorFit, { kickr: true, open: false });
+  assert.deepEqual(mixed.scale.checked, { kickr: false, open: true });
+  assert.ok(mixed.positions.every((p) => p.checked.kickr === false && p.checked.open === true));
+  assert.ok(mixed.adjustments.every((a) => a.scaleChecked === false && a.millimeters !== null));
+  // Disagreeing scales: nothing is checked.
+  assert.deepEqual(compare(exact, exact, 170, 155).scale.checked, { kickr: false, open: false });
 });
 
 // Media times of presented frames for a video at `rate` frames per second: `keep(i)` drops frames the

@@ -28,6 +28,14 @@ export const CURVE_STEP_DEGREES = 5;
 const CURVE_BINS = 360 / CURVE_STEP_DEGREES;
 // Past this the two videos' pedal circles imply different rider sizes and millimeters are not trusted.
 export const SCALE_DISAGREEMENT_LIMIT_PERCENT = 5;
+// How far the ball-of-foot path may stray from its fitted circle (root-mean-square, as a share of the
+// circle's radius) before that video's scale is called not checked.
+// Why 5 percent: a video's scale is its crank length divided by this radius, and two videos whose scales
+// differ by more than 5 percent are already refused above. A path that sits further than that share off
+// its own circle cannot vouch for the radius to within it. Scatter of this size would leave the radius
+// alone if it were even all the way round, but nothing here can tell even scatter from foot points that
+// trail the shoe through part of the stroke, and that kind does move the radius.
+export const PEDAL_FIT_LIMIT_SHARE = 0.05;
 
 export const DIRECTION = {
   raise: 'Raise',
@@ -501,7 +509,13 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
     strokesUsed: usable.length,
     rollDegrees,
     // radius and fitError in pixels; centers are the per-frame bottom bracket estimates in image pixels.
-    pedalCircle: { radius, fitError: Math.sqrt(squares / centered), centers: centers.map((c) => (c ? toImage(c) : null)) },
+    // fitsWell is the gate on this video's scale (PEDAL_FIT_LIMIT_SHARE).
+    pedalCircle: {
+      radius,
+      fitError: Math.sqrt(squares / centered),
+      fitsWell: Math.sqrt(squares / centered) <= PEDAL_FIT_LIMIT_SHARE * radius,
+      centers: centers.map((c) => (c ? toImage(c) : null)),
+    },
     cameraDriftPixels: drift,
     legPixels: median(lengths.thigh) + median(lengths.shin),
     measures,
@@ -532,13 +546,23 @@ export function frameForCrankAngle(result, degrees) {
 
 // Millimeters per pixel for each video.
 // Each bike's pedal circle and crank length give that video a scale; the rider's leg (thigh plus shin)
-// must then come out the same length on both. The leg length is averaged and becomes the shared ruler,
+// must then come out the same length on both. The leg length is averaged and used for both videos,
 // and the gap between the two pedal-circle readings is reported.
+//
+// `checked` says, per video, whether its millimeters have anything behind them beyond its own pedal
+// circle: both videos must carry a pedal-circle scale, the two must agree, and this video's foot path
+// must fit its circle. Agreement shows the videos match each other; it cannot show either is exact.
 export function resolveScale(kickr, open, kickrCrank, openCrank) {
   const pedal = (r, crank) => (r && r.ok && crank > 0 ? crank / r.pedalCircle.radius : null);
   const a = pedal(kickr, kickrCrank), b = pedal(open, openCrank);
   const legA = a ? a * kickr.legPixels : null, legB = b ? b * open.legPixels : null;
-  const out = { kickr: null, open: null, legMillimeters: null, disagreementPercent: null, agrees: true, source: { kickr: null, open: null } };
+  const poor = (r) => Boolean(r && r.ok && !r.pedalCircle.fitsWell);
+  const out = {
+    kickr: null, open: null, legMillimeters: null, disagreementPercent: null, agrees: true,
+    source: { kickr: null, open: null },
+    poorFit: { kickr: poor(kickr), open: poor(open) },
+    checked: { kickr: false, open: false },
+  };
   if (legA === null && legB === null) return out;
   const leg = legA !== null && legB !== null ? (legA + legB) / 2 : (legA ?? legB);
   out.legMillimeters = leg;
@@ -548,6 +572,7 @@ export function resolveScale(kickr, open, kickrCrank, openCrank) {
     out.disagreementPercent = 100 * (legB - legA) / leg;
     out.agrees = Math.abs(out.disagreementPercent) <= SCALE_DISAGREEMENT_LIMIT_PERCENT;
     out.legByPedalCircle = { kickr: legA, open: legB };
+    out.checked = { kickr: out.agrees && !out.poorFit.kickr, open: out.agrees && !out.poorFit.open };
   }
   return out;
 }
@@ -578,10 +603,14 @@ export function compare(kickr, open, kickrCrank, openCrank) {
   const A = kickr && kickr.ok ? kickr : null, B = open && open.ok ? open : null;
   const scale = resolveScale(A, B, kickrCrank, openCrank);
   const rows = MEASURE_KEYS.map((k) => differenceRow(k, k === 'cadence' ? 'revolutions per minute' : 'degrees', A && A.measures[k], B && B.measures[k]));
-  const positions = POSITION_KEYS.map((k) => differenceRow(k, 'millimeters',
-    A && scale.kickr ? A.positionPixels[k] : null, B && scale.open ? B.positionPixels[k] : null, scale.kickr || 1, scale.open || 1));
+  const positions = POSITION_KEYS.map((k) => ({
+    ...differenceRow(k, 'millimeters', A && scale.kickr ? A.positionPixels[k] : null, B && scale.open ? B.positionPixels[k] : null, scale.kickr || 1, scale.open || 1),
+    checked: scale.checked,
+  }));
   const adjustments = ADJUSTMENTS.map((adj) => {
-    const out = { key: adj.key, status: 'change', direction: null, millimeters: null, spread: null };
+    // scaleChecked is false when either video's millimeters are not checked; the row still carries
+    // its numbers, and the page marks them.
+    const out = { key: adj.key, status: 'change', direction: null, millimeters: null, spread: null, scaleChecked: scale.checked.kickr && scale.checked.open };
     const row = positions.find((p) => p.key === adj.from);
     if (!B) out.status = 'needs-open';
     else if (!A) out.status = 'needs-kickr';
