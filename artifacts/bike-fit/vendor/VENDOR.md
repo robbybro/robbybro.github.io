@@ -39,6 +39,17 @@ WebAssembly variants. The page loads the standard build only, which needs WebAss
   inside the WebAssembly loader, and neither file uses `eval(` or `new Function`.
 - The page's `connect-src 'self'` policy stays as the second barrier if a later upgrade brings the call back.
 
+### When to upgrade
+
+Stay on `0.10.35` until one of these is true, then vendor a newer release and rerun the page's checks:
+
+- A security advisory names this release, or names a code path this page uses.
+- A `1.x` release that is at least two weeks old drops the usage-metrics call or adds a way to turn it off.
+- A browser change breaks the path this page uses (the WebAssembly loader, `createFromOptions`, `detectForVideo`).
+- The page ever accepts input from anywhere other than the owner's own file picker.
+
+If none has happened by 2027-05-20, decide again on that date.
+
 Before upgrading: search the new bundle for `googleapis` and read the package's privacy notice.
 
 ### Maintenance (checked 2026-11-20)
