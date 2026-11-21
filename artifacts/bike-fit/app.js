@@ -3,7 +3,7 @@
 // and what is stored on the device. Nothing here talks to another origin.
 import { PoseLandmarker } from './vendor/tasks-vision/vision_bundle.mjs';
 import {
-  analyze, compare, frameForCrankAngle, readImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
+  analyze, compare, frameForCrankAngle, chooseSamplingRate, readImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
   IMPORT_PREFIX, FIT_NUMBER_KEYS, CURVE_STEP_DEGREES, SCALE_DISAGREEMENT_LIMIT_PERCENT,
 } from './core.js';
 
@@ -20,9 +20,10 @@ const TRACKER_FILES = {
 const MODEL_URL = './vendor/pose_landmarker_heavy.task';
 // Longer clips add minutes of tracking and no information; the filming checklist asks for 15 seconds.
 const MAX_TRACKED_SECONDS = 30;
-// Tracking samples faster than this are thinned: 60 per second already puts 40 samples in a pedal stroke.
-const MAX_SAMPLES_PER_SECOND = 60;
-const COMMON_FRAME_RATES = [24, 25, 30, 48, 50, 60, 90, 100, 120, 240];
+// A seek that has not shown its picture after this long is given up on, and the frame counts as lost.
+const SEEK_TIMEOUT_MILLISECONDS = 3000;
+// This many frames in a row that never showed means the browser has stopped seeking; tracking stops.
+const MAX_STALLED_FRAMES = 8;
 const CRANK_RANGE = [100, 220];
 // A WebAssembly module that uses one SIMD instruction; the vendored tracker needs SIMD.
 const SIMD_PROBE = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
@@ -114,6 +115,7 @@ const SLOT_DEFINITIONS = [
 ];
 const slots = {};
 let tracking = null;    // the slot being tracked; one video at a time
+let restoring = true;   // stored slots are still being read back; no new video may start until they are
 let bothPlaying = false;
 
 function buildSlot(def) {
@@ -180,15 +182,13 @@ function videoReady(video) {
   });
 }
 
-// Frames per second, read from the video itself: the shortest time between two frames the browser
-// presents while it plays for a moment. The shortest, because a busy browser skips frames (which only
-// ever makes a gap longer), and tracking at too low a rate would quietly lose two frames in three.
-// A reading under 24 is taken as skipped frames too. Browsers without the callback, or a video that
-// will not play, get 30; sampling a slower video at 30 only repeats frames.
-function measureFrameRate(video) {
+// Media times of the frames the browser presents while the video plays for a moment. What rate to
+// sample at is decided from them in core.js (chooseSamplingRate). Browsers without the callback get
+// an empty list, which that function reads as 30 per second.
+function presentedFrameTimes(video) {
   if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
     // Still play for an instant: iOS Safari decodes nothing for seeking until a video has played.
-    return video.play().then(() => video.pause(), () => {}).then(() => 30);
+    return video.play().then(() => video.pause(), () => {}).then(() => []);
   }
   return new Promise((resolve) => {
     const times = [];
@@ -198,12 +198,7 @@ function measureFrameRate(video) {
       finished = true;
       clearTimeout(timer);
       video.pause();
-      const gaps = [];
-      for (let i = 1; i < times.length; i++) if (times[i] - times[i - 1] > 1 / 500) gaps.push(times[i] - times[i - 1]);
-      if (gaps.length < 5) return resolve(30);
-      const rate = 1 / Math.min(...gaps);
-      const common = COMMON_FRAME_RATES.find((c) => Math.abs(rate - c) / c < 0.04);
-      resolve(rate < 23.5 ? 30 : common || round(rate, 2));
+      resolve(times);
     };
     const onFrame = (now, meta) => {
       times.push(meta.mediaTime);
@@ -217,16 +212,23 @@ function measureFrameRate(video) {
   });
 }
 
-// Shows one moment of the video and resolves once that picture is decoded.
+// Shows one moment of the video. Resolves true once that picture is decoded, false if the browser
+// had not shown it in time: the caller must then not read the video, which still holds the old picture.
 function seekTo(video, seconds) {
   return new Promise((resolve) => {
-    if (video.currentTime === seconds && !video.seeking) return resolve();
-    const done = () => { video.removeEventListener('seeked', onSeeked); clearTimeout(timer); resolve(); };
-    const onSeeked = () => {
-      if (video.readyState >= 2) return done();
-      video.addEventListener('canplay', done, { once: true });
+    if (video.currentTime === seconds && !video.seeking) return resolve(true);
+    const done = (shown) => {
+      video.removeEventListener('seeked', onSeeked);
+      video.removeEventListener('canplay', onReady);
+      clearTimeout(timer);
+      resolve(shown);
     };
-    const timer = setTimeout(done, 3000);
+    const onReady = () => done(true);
+    const onSeeked = () => {
+      if (video.readyState >= 2) return done(true);
+      video.addEventListener('canplay', onReady);
+    };
+    const timer = setTimeout(() => done(false), SEEK_TIMEOUT_MILLISECONDS);
     video.addEventListener('seeked', onSeeked);
     video.currentTime = seconds;
   });
@@ -235,7 +237,7 @@ function seekTo(video, seconds) {
 const CANCELLED = Symbol('cancelled');
 
 async function trackFile(slot, file) {
-  if (tracking) return;
+  if (tracking || restoring) return;
   tracking = slot;
   const job = { cancelled: false, phase: 'model', done: 0, total: 0 };
   slot.job = job;
@@ -251,8 +253,7 @@ async function trackFile(slot, file) {
     await videoReady(slot.video);
     const video = slot.video;
     if (!Number.isFinite(video.duration) || video.duration <= 0) throw new Problem('This video has no readable length. Choose another file.');
-    const measured = await measureFrameRate(video);
-    const framesPerSecond = measured > MAX_SAMPLES_PER_SECOND ? measured / Math.ceil(measured / MAX_SAMPLES_PER_SECOND) : measured;
+    const framesPerSecond = chooseSamplingRate(await presentedFrameTimes(video));
     const seconds = Math.min(video.duration, MAX_TRACKED_SECONDS);
     const count = Math.floor(seconds * framesPerSecond + 1e-3);
     const model = await loadModel((received, total) => { job.done = received; job.total = total; renderStatus(slot); });
@@ -266,15 +267,24 @@ async function trackFile(slot, file) {
     job.phase = 'frames';
     job.total = count;
     const frames = [];
+    let stalled = 0, stalledInARow = 0;
     for (let i = 0; i < count; i++) {
       if (job.cancelled) throw CANCELLED;
-      await seekTo(video, (i + 0.5) / framesPerSecond);
-      const found = landmarker.detectForVideo(video, Math.round(i * 1000 / framesPerSecond)).landmarks[0];
-      frames.push(found ? found.map((p) => [round(p.x, 5), round(p.y, 5), round(p.z, 4), round(p.visibility ?? 0, 3)]) : null);
+      if (await seekTo(video, (i + 0.5) / framesPerSecond)) {
+        stalledInARow = 0;
+        const found = landmarker.detectForVideo(video, Math.round(i * 1000 / framesPerSecond)).landmarks[0];
+        frames.push(found ? found.map((p) => [round(p.x, 5), round(p.y, 5), round(p.z, 4), round(p.visibility ?? 0, 3)]) : null);
+      } else {
+        // The picture never arrived, so the video still shows an earlier frame. Tracking that would
+        // store the wrong moment as this one; the frame is recorded as lost instead.
+        frames.push(null);
+        stalled++;
+        if (++stalledInARow >= MAX_STALLED_FRAMES) throw new Problem(`This browser stopped showing frames of the video at frame ${i + 1}. Choose the video again.`);
+      }
       job.done = i + 1;
       renderStatus(slot);
     }
-    slot.record = { frames, width: video.videoWidth, height: video.videoHeight, framesPerSecond, levelLine: null, truncated: video.duration > MAX_TRACKED_SECONDS + 0.5 };
+    slot.record = { frames, width: video.videoWidth, height: video.videoHeight, framesPerSecond, levelLine: null, truncated: video.duration > MAX_TRACKED_SECONDS + 0.5, stalled };
     compute(slot);
     slot.note = await persist(slot);
     await seekTo(video, 0.5 / framesPerSecond);
@@ -331,8 +341,8 @@ async function restoreSlot(slot) {
   slot.record = null;
   slot.result = null;
   if (!stored || !Array.isArray(stored.frames)) { setVideo(slot, null); return; }
-  const { frames, width, height, framesPerSecond, levelLine, truncated } = stored;
-  slot.record = { frames, width, height, framesPerSecond, levelLine: levelLine || null, truncated: Boolean(truncated) };
+  const { frames, width, height, framesPerSecond, levelLine, truncated, stalled } = stored;
+  slot.record = { frames, width, height, framesPerSecond, levelLine: levelLine || null, truncated: Boolean(truncated), stalled: Number.isInteger(stalled) ? stalled : 0 };
   compute(slot);
   setVideo(slot, stored.video instanceof Blob ? stored.video : null);
   if (slot.url) {
@@ -366,6 +376,7 @@ function statusText(slot) {
     if (r.strokesUsed < r.strokesFound) out.push(`Based on ${r.strokesUsed} of ${r.strokesFound} strokes, at ${cadence}.`);
     else out.push(`${r.strokesUsed} pedal ${r.strokesUsed === 1 ? 'stroke' : 'strokes'} tracked at ${cadence}.`);
     if (r.lost.length) out.push(describeLost(r.lost));
+    if (slot.record.stalled) out.push(`${slot.record.stalled} ${slot.record.stalled === 1 ? 'frame' : 'frames'} did not load in time and ${slot.record.stalled === 1 ? 'counts' : 'count'} as lost.`);
     if (slot.record.truncated) out.push(`Only the first ${MAX_TRACKED_SECONDS} seconds were tracked.`);
     if (r.cameraDriftPixels > 0.1 * r.pedalCircle.radius) out.push('The camera moved during the clip, which widens the spread; a steady phone gives tighter numbers.');
     if (slot.crank === null) out.push('Enter the crank length to get millimeters.');
@@ -419,9 +430,12 @@ function draw(slot) {
   if (!r.skeleton.hip[i]) return;
   const color = getComputedStyle(slot.el).getPropertyValue('--slot-color').trim() || ink;
   // Pedal circle and the bottom bracket estimate, so a wrong fit is visible.
-  const center = at(r.pedalCircle.centers[i]);
-  cased(() => { g.beginPath(); g.arc(center[0], center[1], r.pedalCircle.radius * k, 0, 2 * Math.PI); }, 1);
-  cased(() => { g.beginPath(); g.moveTo(center[0] - 9, center[1]); g.lineTo(center[0] + 9, center[1]); g.moveTo(center[0], center[1] - 9); g.lineTo(center[0], center[1] + 9); }, 2);
+  // (A frame in a tracked run too short to center has none.)
+  if (r.pedalCircle.centers[i]) {
+    const center = at(r.pedalCircle.centers[i]);
+    cased(() => { g.beginPath(); g.arc(center[0], center[1], r.pedalCircle.radius * k, 0, 2 * Math.PI); }, 1);
+    cased(() => { g.beginPath(); g.moveTo(center[0] - 9, center[1]); g.lineTo(center[0] + 9, center[1]); g.moveTo(center[0], center[1] - 9); g.lineTo(center[0], center[1] + 9); }, 2);
+  }
   // Where the knee, ankle and toe have just been: one pedal stroke of trail.
   const trail = Math.round(r.referenceStroke.end - r.referenceStroke.start);
   for (const joint of TRAILS) {
@@ -632,7 +646,7 @@ function renderSlot(slot) {
   const sheetCrank = slot.id === 'open' ? riders()[videoRiderIndex()].crankLength : undefined;
   slot.crankInput.placeholder = typeof sheetCrank === 'number' ? String(sheetCrank) : 'millimeters';
   slot.fileLabel.textContent = slot.record ? 'Replace video' : 'Choose video';
-  const locked = Boolean(tracking) || !supported;
+  const locked = Boolean(tracking) || restoring || !supported;
   slot.fileInput.disabled = locked;
   slot.fileButton.classList.toggle('disabled', locked);
   slot.cancel.hidden = !busy;
@@ -734,7 +748,9 @@ const listNames = (names) => (names.length > 1 ? `${names.slice(0, -1).join(', '
 function receiveImport() {
   if (!arrivedImport.present) return;
   if (!arrivedImport.sheet) return notify('That import link is not valid. Nothing was changed.');
-  if (!sheet) return adoptSheet(arrivedImport.sheet, 'Fit numbers imported for');
+  // Ask before anything stored is replaced: an imported sheet, or numbers typed on this page.
+  const typed = entered.some((e) => e && Object.keys(e).length);
+  if (!sheet && !typed) return adoptSheet(arrivedImport.sheet, 'Fit numbers imported for');
   notify('Replace stored fit numbers?', [
     ['Replace', () => adoptSheet(arrivedImport.sheet, 'Fit numbers replaced. Now stored for')],
     ['Keep stored numbers', () => notify('Stored fit numbers kept.')],
@@ -858,7 +874,7 @@ function renderComparison(c) {
   }
   const notes = [];
   notes.push('Each value is the median over pedal strokes, plus or minus the spread between strokes. Difference is Open MIN.D minus Kickr Shift. The spread does not cover camera placement error.');
-  const strokes = Object.values(slots).filter((s) => ok[s.id]).map((s) => `${s.title}: ${s.result.strokesUsed < s.result.strokesFound ? `based on ${s.result.strokesUsed} of ${s.result.strokesFound} strokes` : `${s.result.strokesUsed} pedal strokes`}`);
+  const strokes = Object.values(slots).filter((s) => ok[s.id]).map((s) => `${s.title}: ${s.result.strokesUsed < s.result.strokesFound ? `based on ${s.result.strokesUsed} of ${s.result.strokesFound} strokes` : `${s.result.strokesUsed} pedal ${s.result.strokesUsed === 1 ? 'stroke' : 'strokes'}`}`);
   if (strokes.length) notes.push(`${strokes.join('. ')}.`);
   const sc = c.scale;
   if (sc.disagreementPercent !== null) {
@@ -1295,6 +1311,7 @@ async function start() {
   render();
   receiveImport();
   if (supported) await Promise.all(Object.values(slots).map(restoreSlot));
+  restoring = false;
   render();
 }
 

@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  analyze, compare, resolveScale, frameForCrankAngle, fitCircle, jointAngle, pickNearSide,
+  analyze, compare, resolveScale, frameForCrankAngle, fitCircle, jointAngle, pickNearSide, chooseSamplingRate,
   readImportFragment, encodeImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
   DIRECTION, BALL_OF_FOOT_FRACTION, IMPORT_PREFIX, IMPORT_MAX_LENGTH,
 } from '../core.js';
@@ -281,6 +281,34 @@ test('a hand-held camera that drifts: the bottom bracket is followed and positio
   near(mm.wristAhead, 480, 2, 'wrist ahead');
 });
 
+test('a drifting camera with tracking cut into short runs: short runs are left out, not centered by the whole clip', () => {
+  // The camera drifts 40 pixels (about 70 mm at this scale). Tracking holds for the first 70 frames,
+  // then breaks every 30 frames (about one and a half strokes) for the rest of the clip.
+  const v = makeVideo({ drift: [40, -15] });
+  const cut = (i) => i >= 70 && (i - 70) % 36 < 6;
+  const frames = v.input.frames.map((f, i) => (cut(i) ? null : f));
+  const r = analyze({ ...v.input, frames });
+  assert.equal(r.ok, true);
+  // Only the unbroken first run (frames 0 to 69, three and a bit strokes) can be used.
+  assert.ok(r.strokesUsed >= 2 && r.strokesUsed <= 3, `strokes used: ${r.strokesUsed}`);
+  // Pedaled strokes are counted between the first and last top dead center seen in any run.
+  assert.ok(r.strokesFound >= 11 && r.strokesFound <= 14, `strokes pedaled: ${r.strokesFound}`);
+  const mm = millimeters(r, v.o.crank);
+  near(mm.hipBehind, 190, 2, 'hip behind');
+  near(mm.hipAbove, 750, 2, 'hip above');
+  near(mm.wristAhead, 480, 2, 'wrist ahead');
+  near(mm.wristAbove, 610, 2, 'wrist above');
+  // Frames in the short runs are tracked (the skeleton can be drawn) but carry no center and no crank angle.
+  assert.notEqual(r.skeleton.knee[90], null);
+  assert.equal(r.pedalCircle.centers[90], null);
+  assert.equal(r.crankDegrees[90], null);
+  assert.notEqual(r.pedalCircle.centers[30], null);
+  // With every run short there is nothing to center on: a named failure, not a quietly wrong answer.
+  const allShort = analyze({ ...v.input, frames: v.input.frames.map((f, i) => (i % 36 < 6 ? null : f)) });
+  assert.deepEqual([allShort.ok, allShort.reason], [false, 'tracking-lost']);
+  assert.ok(allShort.lost.length >= 8);
+});
+
 test('lost tracking: the lost frames are named and results rest on the strokes that remain', () => {
   const v = makeVideo();
   const frames = v.input.frames.map((f, i) => (i >= 87 && i <= 139 ? null : f));
@@ -346,6 +374,63 @@ test('crank angle: 0 at top dead center, rising as the rider pedals; a frame can
     assert.ok(gap <= step / 2 + 0.5, `frame ${i} shows ${r.crankDegrees[i]} for ${wanted}`);
   }
   assert.equal(frameForCrankAngle(r, 450), frameForCrankAngle(r, 90));
+});
+
+// Media times of presented frames for a video at `rate` frames per second: `keep(i)` drops frames the
+// browser skipped, `jitter(i)` moves a timestamp by a few milliseconds.
+const presented = (rate, count, { keep = () => true, jitter = () => 0 } = {}) => {
+  const times = [];
+  for (let i = 0; i < count; i++) if (keep(i)) times.push(i / rate + jitter(i));
+  return times;
+};
+
+test('sampling rate: common frame rates are read exactly', () => {
+  for (const [rate, expected] of [[24, 24], [25, 25], [30, 30], [50, 50], [60, 60], [29.97, 30], [23.976, 24], [59.94, 60]]) {
+    assert.equal(chooseSamplingRate(presented(rate, 20)), expected, `${rate} frames per second`);
+  }
+});
+
+test('sampling rate: faster videos are thinned to at most 60 samples per second', () => {
+  assert.equal(chooseSamplingRate(presented(120, 20)), 60);
+  assert.equal(chooseSamplingRate(presented(240, 20)), 60);
+  assert.equal(chooseSamplingRate(presented(90, 20)), 45);
+  assert.equal(chooseSamplingRate(presented(100, 20)), 50);
+});
+
+test('sampling rate: skipped frames never lower the reading', () => {
+  // The bug this guards: a 30 frames per second video once read as 10 because the browser was
+  // presenting every third frame when the measurement ran.
+  assert.equal(chooseSamplingRate(presented(30, 60, { keep: (i) => i % 3 === 0 })), 30);
+  assert.equal(chooseSamplingRate(presented(30, 40, { keep: (i) => i % 2 === 0 })), 30);
+  // Mostly skipped, a few neighbors kept.
+  assert.equal(chooseSamplingRate(presented(30, 60, { keep: (i) => i % 3 === 0 || i % 10 === 1 })), 30);
+  assert.equal(chooseSamplingRate(presented(60, 60, { keep: (i) => i % 4 !== 3 })), 60);
+});
+
+test('sampling rate: jittered and variable timestamps', () => {
+  const wobble = (ms) => (i) => (((i * 7919) % 13) / 12 - 0.5) * 2 * ms / 1000;
+  // A true 60 with a millisecond and a half of timestamp jitter stays 60, not half of an odd 68.
+  assert.equal(chooseSamplingRate(presented(60, 20, { jitter: wobble(1.5) })), 60);
+  assert.equal(chooseSamplingRate(presented(30, 20, { jitter: wobble(2) })), 30);
+  assert.equal(chooseSamplingRate(presented(24, 20, { jitter: wobble(2) })), 24);
+  // A phone's variable-rate video near 30: gaps wander between 30 and 37 milliseconds.
+  const variable = [0];
+  for (let i = 1; i < 20; i++) variable.push(variable[i - 1] + 0.030 + ((i * 5) % 8) / 1000);
+  assert.equal(chooseSamplingRate(variable), 30);
+  // A variable-rate video near 15 is sampled at 30: frames repeat, none are lost.
+  const slow = [0];
+  for (let i = 1; i < 20; i++) slow.push(slow[i - 1] + 0.062 + ((i * 3) % 9) / 1000);
+  assert.equal(chooseSamplingRate(slow), 30);
+  // One stray short gap does not set the rate.
+  const stray = presented(30, 20);
+  stray.splice(5, 0, stray[4] + 0.004);
+  assert.equal(chooseSamplingRate(stray), 30);
+});
+
+test('sampling rate: with too little to go on, 30', () => {
+  assert.equal(chooseSamplingRate([]), 30);
+  assert.equal(chooseSamplingRate([0, 1 / 60, 2 / 60]), 30);
+  assert.equal(chooseSamplingRate(Array(20).fill(0.5)), 30);
 });
 
 test('circle fit: exact on a circle, steady with a few wild points, null when it cannot be done', () => {
@@ -420,6 +505,12 @@ test('crafted import links change nothing: each is rejected whole', () => {
   reject(withRider({ label: 42 }), 'label not text');
   reject(withRider({ label: '' }), 'empty label');
   reject({ version: 1, riders: [{ saddleHeight: 700 }] }, 'no label');
+  // Letters that draw nothing: a name made of Hangul fillers, or one hiding in a visible name.
+  reject(withRider({ label: '\u3164\u3164\u3164' }), 'label of invisible letters');
+  reject(withRider({ label: '\u115F\u1160' }), 'label of invisible jamo fillers');
+  reject(withRider({ label: '\uFFA0' }), 'halfwidth filler');
+  reject(withRider({ label: 'Rider\u3164A' }), 'invisible letter inside a name');
+  reject(withRider({ bike: '\u3164' }), 'invisible bike label');
   // Shape: wrong version, no riders, too many riders, wrong rider index, not an object, not JSON, not base64.
   reject({ ...SHEET, version: 2 }, 'unknown version');
   reject({ version: 1, riders: [] }, 'no riders');

@@ -118,6 +118,43 @@ export function fitCircle(points) {
   return { ...fit, rms: Math.sqrt(t / points.length) };
 }
 
+// ---------- frame rate ----------
+
+const COMMON_FRAME_RATES = [24, 25, 30, 48, 50, 60, 90, 100, 120, 240];
+// More samples than this per second add tracking time and nothing else: 60 already puts about
+// 40 samples in a pedal stroke.
+const MAX_SAMPLES_PER_SECOND = 60;
+
+// How many times per second to sample a video for tracking, from the media times (seconds) of frames
+// the browser presented while the video played for a moment.
+//
+// The gap between two neighboring frames is the frame time. A busy browser skips frames, which only
+// ever makes a gap longer, so the frame time is the middle of the cluster of shortest gaps: the
+// middle, not the minimum, because timestamps jitter by a millisecond or so, and a cluster rather than
+// one gap, so a single stray short gap decides nothing.
+// Reading too low would quietly drop frames, so a rate under 24 is taken as skipped frames and
+// replaced by 30 (sampling a slow video at 30 only repeats frames). With too little to go on: 30.
+export function chooseSamplingRate(presentedTimes) {
+  const gaps = [];
+  for (let i = 1; i < presentedTimes.length; i++) {
+    const gap = presentedTimes[i] - presentedTimes[i - 1];
+    if (gap > 1 / 500) gaps.push(gap);
+  }
+  if (gaps.length < 5) return 30;
+  gaps.sort((a, b) => a - b);
+  let frameTime = null;
+  for (let k = 0; k < gaps.length && frameTime === null; k++) {
+    const cluster = gaps.filter((g) => g >= gaps[k] && g < 1.5 * gaps[k]);
+    if (cluster.length >= Math.max(3, gaps.length / 5)) frameTime = median(cluster);
+  }
+  if (frameTime === null) return 30;
+  let rate = 1 / frameTime;
+  if (rate < 23.5) return 30;
+  const nearest = COMMON_FRAME_RATES.reduce((best, c) => (Math.abs(rate - c) < Math.abs(rate - best) ? c : best));
+  rate = Math.abs(rate - nearest) / nearest < 0.04 ? nearest : Math.round(rate * 100) / 100;
+  return rate > MAX_SAMPLES_PER_SECOND ? rate / Math.ceil(rate / MAX_SAMPLES_PER_SECOND) : rate;
+}
+
 // ---------- reading the pose frames ----------
 
 // frames: one entry per video frame, null when no person was found, else 33 landmarks of [x, y, z, visibility]
@@ -274,11 +311,11 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
 
   // Crank angle per frame about a given center, unwrapped within each tracked run and held
   // non-decreasing so jitter near top dead center cannot count one stroke twice. Strokes run from one
-  // top dead center to the next, at fractional frame positions.
-  const followCrank = (centerAt) => {
-    const crank = new Array(n).fill(null), turns = new Array(n).fill(null), strokes = [];
+  // top dead center to the next, at fractional frame positions; `tops` lists every top dead center.
+  const followCrank = (centerAt, overRuns) => {
+    const crank = new Array(n).fill(null), turns = new Array(n).fill(null), strokes = [], tops = [];
     let netAdvance = 0;
-    for (const [a, b] of runs) {
+    for (const [a, b] of overRuns) {
       let prev = null, total = 0, high = -Infinity;
       for (let i = a; i <= b; i++) {
         const p = ballOf(smooth, i), c = centerAt(i);
@@ -303,9 +340,10 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
         const at = i - 1 + (k * 360 - turns[i - 1]) / (turns[i] - turns[i - 1]);
         if (previous !== null) strokes.push({ start: previous, end: at, turn: k - 1, run: [a, b] });
         previous = at;
+        tops.push(at);
       }
     }
-    return { crank, turns, strokes, netAdvance };
+    return { crank, turns, strokes, tops, netAdvance };
   };
 
   // First pass: one circle through the whole unsmoothed ball-of-foot path gives a rough bottom bracket
@@ -315,43 +353,57 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
   const whole = fitCircle(ballPath);
   const longSide = Math.max(width, height);
   if (!whole || !(whole.r > 0.01 * longSide) || whole.r > longSide) return fail('no-stroke', lost);
-  const rough = followCrank(() => [whole.cx, whole.cy]);
+  const rough = followCrank(() => [whole.cx, whole.cy], runs);
   const roughStrokes = rough.strokes.filter(plausible);
   if (rough.netAdvance < 360 || !roughStrokes.length) return fail(lost.length ? 'tracking-lost' : 'no-stroke', lost);
 
   // Second pass: a hand-held camera drifts, which moves the bottom bracket in the picture. So the
   // center is fitted again around every frame, from the two pedal strokes that surround it.
+  // A tracked run shorter than those two strokes cannot be refitted. The whole-clip center would be
+  // wrong for it whenever the camera drifted, so such a run gets no center, its strokes are left out,
+  // and the result reports them as pedaled but not used.
   const windowFrames = Math.round(2 * median(roughStrokes.map((s) => s.end - s.start)));
   const centers = new Array(n).fill(null);
   const radii = [];
+  const steadyRuns = [];
   for (const [a, b] of runs) {
-    const length = Math.min(windowFrames, b - a + 1);
+    if (b - a + 1 < windowFrames) continue;
     const fits = new Map();
+    let any = false;
     for (let i = a; i <= b; i++) {
-      const start = Math.max(a, Math.min(b - length + 1, i - (length >> 1)));
+      const start = Math.max(a, Math.min(b - windowFrames + 1, i - (windowFrames >> 1)));
       if (!fits.has(start)) {
         const pts = [];
-        for (let k = start; k < start + length; k++) pts.push(ballOf(level, k));
-        const local = length >= windowFrames ? fitCircle(pts) : null;
+        for (let k = start; k < start + windowFrames; k++) pts.push(ballOf(level, k));
+        const local = fitCircle(pts);
         fits.set(start, local && local.r < 2 * whole.r ? local : null);
       }
       const local = fits.get(start);
-      centers[i] = local ? [local.cx, local.cy] : [whole.cx, whole.cy];
-      if (local) radii.push(local.r);
+      if (!local) continue;
+      centers[i] = [local.cx, local.cy];
+      radii.push(local.r);
+      any = true;
     }
+    if (!any) continue;
+    // A window that could not be fitted borrows the nearest center in its own run.
+    for (let i = a + 1; i <= b; i++) centers[i] = centers[i] || centers[i - 1];
+    for (let i = b - 1; i >= a; i--) centers[i] = centers[i] || centers[i + 1];
+    steadyRuns.push([a, b]);
   }
-  const radius = radii.length ? median(radii) : whole.r;
-  let squares = 0, drift = 0, first = null;
+  if (!steadyRuns.length) return fail(lost.length ? 'tracking-lost' : 'no-stroke', lost);
+  const radius = median(radii);
+  let squares = 0, centered = 0, drift = 0, first = null;
   for (let i = 0; i < n; i++) {
-    if (!tracked(i)) continue;
+    if (!centers[i]) continue;
     squares += (dist(ballOf(level, i), centers[i]) - radius) ** 2;
+    centered++;
     first = first || centers[i];
     drift = Math.max(drift, dist(centers[i], first));
   }
   const ahead = (p, i) => fwd * (p[0] - centers[i][0]);
   const above = (p, i) => -(p[1] - centers[i][1]);
-  const { crank, turns, strokes, netAdvance } = followCrank((i) => centers[i]);
-  if (netAdvance < 360) return fail('no-stroke', lost);
+  const { crank, turns, strokes, netAdvance } = followCrank((i) => centers[i], steadyRuns);
+  if (netAdvance < 360) return fail(lost.length ? 'tracking-lost' : 'no-stroke', lost);
 
   // Per-frame joint angles from the smoothed, level track.
   const series = { knee: [], hip: [], ankle: [], torso: [], shoulder: [], elbow: [] };
@@ -433,9 +485,11 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
     lengths.shin.push(dist(level.knee[i], level.ankle[i]));
   }
   const middle = usable[usable.length >> 1];
-  // Strokes the rider pedaled between the first and last top dead center seen, including any that
-  // lost tracking cut out: the "M" in "based on N of M strokes".
-  const pedaled = Math.round((strokes[strokes.length - 1].end - strokes[0].start) / median(usable.map((s) => s.end - s.start)));
+  // Strokes the rider pedaled between the first and last top dead center seen anywhere in the clip,
+  // including any that lost tracking cut out or left in a run too short to use: the "M" in
+  // "based on N of M strokes".
+  const tops = rough.tops;
+  const pedaled = Math.round((tops[tops.length - 1] - tops[0]) / median(usable.map((s) => s.end - s.start)));
   return {
     ok: true,
     frameCount: n,
@@ -447,7 +501,7 @@ export function analyze({ frames, width, height, framesPerSecond, levelLine = nu
     strokesUsed: usable.length,
     rollDegrees,
     // radius and fitError in pixels; centers are the per-frame bottom bracket estimates in image pixels.
-    pedalCircle: { radius, fitError: Math.sqrt(squares / trackedCount), centers: centers.map((c) => (c ? toImage(c) : null)) },
+    pedalCircle: { radius, fitError: Math.sqrt(squares / centered), centers: centers.map((c) => (c ? toImage(c) : null)) },
     cameraDriftPixels: drift,
     legPixels: median(lengths.thigh) + median(lengths.shin),
     measures,
@@ -555,6 +609,10 @@ const FIT_ANGLE_KEYS = ['hoodAngle'];
 const LABEL_KEYS = ['label', 'bike'];
 const MAX_RIDERS = 2;
 const LABEL_PATTERN = /^[\p{L}\p{N}][\p{L}\p{N} .,'’&()/+-]{0,39}$/u;
+// Letters that draw nothing (the Hangul fillers and their kind) would pass the pattern above and give
+// a rider with a blank name.
+const INVISIBLE = /\p{Default_Ignorable_Code_Point}/u;
+const validLabel = (v) => typeof v === 'string' && LABEL_PATTERN.test(v) && !INVISIBLE.test(v);
 const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 
 const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -599,7 +657,7 @@ export function sanitizeFitSheet(raw) {
     const rider = {};
     for (const k of LABEL_KEYS) {
       if (!Object.hasOwn(r, k)) continue;
-      if (typeof r[k] !== 'string' || !LABEL_PATTERN.test(r[k])) return null;
+      if (!validLabel(r[k])) return null;
       rider[k] = r[k];
     }
     if (!rider.label) return null;
