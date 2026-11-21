@@ -24,6 +24,50 @@
   <p class="notice boot" id="boot">This browser cannot run this page. Use a current Chrome, Edge or Firefox, or Safari 16.4 or later.</p>
   <div id="notice" class="notice" role="status" hidden></div>
 
+  <section id="answer" aria-labelledby="answer-title">
+    <h2 id="answer-title">What to change on the Kickr Shift</h2>
+    <div class="scroll">
+      <table class="data" id="answer-table">
+        <thead>
+          <tr><th scope="col">Adjustment</th><th scope="col">Direction</th><th scope="col" class="num">Millimeters</th><th scope="col" class="num">Spread between pedal strokes</th></tr>
+        </thead>
+        <tbody>
+          <tr data-key="saddleHeight"><th scope="row">Saddle height</th><td class="direction"></td><td class="num amount"></td><td class="num spread"></td></tr>
+          <tr data-key="saddleSetback"><th scope="row">Saddle setback</th><td class="direction"></td><td class="num amount"></td><td class="num spread"></td></tr>
+          <tr data-key="barReach"><th scope="row">Bar reach</th><td class="direction"></td><td class="num amount"></td><td class="num spread"></td></tr>
+          <tr data-key="barHeight"><th scope="row">Bar height</th><td class="direction"></td><td class="num amount"></td><td class="num spread"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="footnotes">
+      <li>Each row moves the hip joint or wrist on the Kickr Shift to where it sits on the Open MIN.D, measured from the bottom bracket.</li>
+      <li>The spread is the variation between pedal strokes. It does not cover camera placement error.</li>
+      <li>Wahoo names these adjustments Saddle Height, Setback, Reach and Stack Height. Its owner's manual gives no units for the scales, so measure each change with a tape, film again, and replace the Kickr Shift video.</li>
+    </ul>
+    <div id="targets" hidden>
+      <h3>Targets from the fit sheet</h3>
+      <div class="row" id="target-riders" role="group" aria-label="Rider"></div>
+      <div class="scroll">
+        <table class="data" id="targets-table">
+          <caption id="targets-caption"></caption>
+          <thead>
+            <tr><th scope="col">Measure</th><th scope="col" class="num">Millimeters</th></tr>
+          </thead>
+          <tbody>
+            <tr data-key="saddleHeight"><th scope="row">Saddle height</th><td class="num"></td></tr>
+            <tr data-key="saddleBehind"><th scope="row">Saddle center behind the bottom bracket</th><td class="num"></td></tr>
+            <tr data-key="saddleAbove"><th scope="row">Saddle center above the bottom bracket</th><td class="num"></td></tr>
+            <tr data-key="hoodAhead"><th scope="row">Hood ahead of the bottom bracket</th><td class="num"></td></tr>
+            <tr data-key="hoodAbove"><th scope="row">Hood above the bottom bracket</th><td class="num"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="footnotes">
+        <li>Set these on the Kickr Shift with a tape measure, from the center of the bottom bracket. The video comparison above is the check on the result.</li>
+      </ul>
+    </div>
+  </section>
+
   <section id="videos" aria-labelledby="videos-title">
     <h2 id="videos-title">Videos</h2>
     <div class="shared" id="shared" hidden>
@@ -32,6 +76,76 @@
       <button type="button" class="btn" id="play-both">Play both</button>
     </div>
     <div class="slots" id="slots"></div>
+  </section>
+
+  <section id="comparison" aria-labelledby="comparison-title">
+    <h2 id="comparison-title">Comparison</h2>
+    <div class="scroll">
+      <table class="data pinned" id="comparison-table">
+        <thead>
+          <tr><th scope="col">Measure</th><th scope="col" class="num">Kickr Shift</th><th scope="col" class="num">Open MIN.D</th><th scope="col" class="num">Difference</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <ul class="footnotes" id="comparison-notes"></ul>
+  </section>
+
+  <section id="charts" aria-labelledby="charts-title">
+    <h2 id="charts-title">Joint angles through the pedal stroke</h2>
+    <p class="section-status" id="charts-status">The charts appear when a video is tracked.</p>
+    <div id="charts-body" hidden>
+      <div class="legend" id="chart-legend">
+        <span class="k" data-series="kickr"><span class="sw kickr"></span>Kickr Shift</span>
+        <span class="k" data-series="open"><span class="sw open"></span>Open MIN.D</span>
+        <span class="k"><span class="sw band"></span>Shaded: spread between pedal strokes</span>
+      </div>
+      <div class="chart-grid" id="chart-grid"></div>
+      <ul class="footnotes">
+        <li>Crank angle is 0° with the pedal at the top and 180° at the bottom. Hover, tap or use the arrow keys for values.</li>
+      </ul>
+      <details class="table-view">
+        <summary>Chart values as a table</summary>
+        <div class="scroll tall">
+          <table class="data pinned" id="chart-table"><thead></thead><tbody></tbody></table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="fit-sheet" aria-labelledby="fit-title">
+    <h2 id="fit-title">Fit sheet</h2>
+    <p class="section-status" id="fit-status"></p>
+    <div class="row" id="fit-toggles"></div>
+    <div class="legend" id="fit-legend">
+      <span class="k"><span class="mark hollow"></span>From the fit sheet: saddle center, handlebar center, hood</span>
+      <span class="k"><span class="mark filled"></span>Measured from the video: hip joint, wrist</span>
+      <span class="k"><span class="sw ink"></span>Kickr Shift video</span>
+      <span class="k"><span class="sw ink dash"></span>Open MIN.D video</span>
+      <span class="k"><span class="sw ink dot"></span>Fit sheet</span>
+    </div>
+    <figure class="fit-figure"><svg id="fit-diagram" role="img" aria-labelledby="fit-title"></svg></figure>
+    <ul class="footnotes">
+      <li>Bottom bracket at the origin, millimeters, the same scale up and across, front of the bike to the right.</li>
+      <li>The hip joint sits above the saddle and the wrist above the hood, so a filled marker and a hollow one are not the same point.</li>
+    </ul>
+    <details id="fit-entry">
+      <summary>Enter or correct fit numbers</summary>
+      <div class="row" id="entry-riders" role="group" aria-label="Rider"></div>
+      <div class="entry-grid" id="entry-grid"></div>
+      <p class="field-note">Millimeters from the center of the bottom bracket. A number typed here replaces the imported one on this device.</p>
+    </details>
+  </section>
+
+  <section id="stored" aria-labelledby="stored-title">
+    <h2 id="stored-title">Stored on this device</h2>
+    <ul class="stored-list" id="stored-list"></ul>
+    <div class="row">
+      <button type="button" class="btn" id="delete-all">Delete everything on this device</button>
+      <button type="button" class="btn" id="delete-confirm" hidden>Yes, delete it all</button>
+      <button type="button" class="btn" id="delete-cancel" hidden>Keep it</button>
+    </div>
+    <p class="field-note" id="delete-note" role="status"></p>
   </section>
 </div>
 

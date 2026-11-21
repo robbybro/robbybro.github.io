@@ -160,3 +160,93 @@ input[type="range"] { width: 100%; height: 48px; margin: 0; accent-color: var(--
 .shared label { font-size: 0.9rem; font-weight: 600; }
 .shared output { font-variant-numeric: tabular-nums; }
 .shared .btn { justify-self: start; }
+
+/* Tables: numbers right-aligned in tabular figures; wide tables scroll inside their own box. */
+.scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-1); }
+.scroll.tall { max-height: 60vh; overflow-y: auto; }
+table.data { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table.data caption { text-align: left; padding: 10px 12px 0; font-weight: 600; }
+table.data th, table.data td { padding: 10px 12px; text-align: left; vertical-align: top; }
+table.data thead th { font-size: 0.78rem; font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--baseline); vertical-align: bottom; white-space: normal; }
+table.data tbody th { font-weight: 600; }
+table.data tbody tr + tr th, table.data tbody tr + tr td { border-top: 1px solid var(--grid); }
+table.data .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.data td.wrap { white-space: normal; }
+table.data .unit { display: block; font-weight: 400; font-size: 0.78rem; color: var(--ink-2); }
+table.data tr.waiting td, table.data td.waiting { color: var(--ink-2); }
+table.data tr.grey th, table.data tr.grey td { color: var(--ink-muted); }
+table.pinned th:first-child { position: sticky; left: 0; background: var(--surface-1); max-width: 46vw; }
+#answer-table tbody th { white-space: nowrap; }
+/* On a phone all four columns of the answer must show without sideways scrolling. */
+@media (max-width: 480px) {
+  #answer-table th, #answer-table td { padding: 10px 8px; }
+  #answer-table thead th.num { max-width: 5.5rem; }
+}
+#answer-table .amount { font-size: 1.05rem; font-weight: 600; }
+#answer-table tr.waiting .amount, #answer-table tr.grey .amount { font-size: 0.88rem; font-weight: 400; white-space: normal; }
+#targets { margin-top: 22px; }
+#targets h3 { margin-bottom: 8px; }
+#targets .row { margin-bottom: 8px; }
+.footnotes { list-style: none; margin-top: 8px; font-size: 0.82rem; color: var(--ink-2); }
+.footnotes li { margin-top: 4px; }
+.section-status { font-size: 0.92rem; color: var(--ink-2); margin-bottom: 8px; }
+
+/* Charts. Text is always ink; only marks carry a series color. */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; font-size: 0.82rem; color: var(--ink-2); align-items: center; }
+.legend .k { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--ink-2); border-radius: 2px; }
+.sw.kickr { border-top-color: var(--series-kickr); }
+.sw.open { border-top-color: var(--series-open); }
+.sw.band { height: 10px; border-top: 0; background: var(--ink-muted); opacity: 0.3; }
+.sw.ink { width: 34px; border-top-width: 2px; }
+.sw.dash { border-top-style: dashed; }
+.sw.dot { border-top-style: dotted; }
+.mark { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink-2); }
+.mark.filled { background: var(--ink-2); }
+.chart-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 900px) { .chart-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.chart { padding: 12px 12px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); min-width: 0; }
+.chart h3 { font-size: 0.92rem; }
+.chart .readout { min-height: 2.6em; margin-top: 2px; font-size: 0.82rem; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: center; }
+.chart .readout b { color: var(--ink-1); font-variant-numeric: tabular-nums; }
+.chart .readout .k { display: inline-flex; align-items: center; gap: 5px; }
+.chart svg, .fit-figure svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+svg text { font-family: inherit; font-size: 11px; fill: var(--ink-2); }
+svg text.tick { fill: var(--ink-muted); font-variant-numeric: tabular-nums; }
+svg text.strong { fill: var(--ink-1); font-weight: 600; }
+svg .grid { stroke: var(--grid); stroke-width: 1; }
+svg .axis { stroke: var(--baseline); stroke-width: 1; }
+svg .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+svg .band { stroke: none; opacity: 0.12; }
+svg .kickr.line, svg .kickr.key { stroke: var(--series-kickr); }
+svg .open.line, svg .open.key { stroke: var(--series-open); }
+svg .kickr.band, svg .kickr.dot { fill: var(--series-kickr); }
+svg .open.band, svg .open.dot { fill: var(--series-open); }
+svg .dot { stroke: var(--surface-1); stroke-width: 2; }
+svg .key { stroke-width: 2; stroke-linecap: round; }
+svg .leader { stroke: var(--ink-muted); stroke-width: 1; }
+svg .cross { stroke: var(--ink-muted); stroke-width: 1; }
+svg .hit { fill: transparent; }
+.table-view { margin-top: 10px; }
+.table-view summary, #fit-entry summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+
+/* Fit sheet diagram: color = rider, line style = where the points come from. */
+.fit-figure { max-width: 640px; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); }
+svg .rider-1 { --rider: var(--rider-1); }
+svg .rider-2 { --rider: var(--rider-2); }
+svg .hollow { fill: var(--surface-1); stroke: var(--rider); stroke-width: 2; }
+svg .filled { fill: var(--rider); stroke: var(--surface-1); stroke-width: 2; }
+svg .link { fill: none; stroke: var(--rider); stroke-width: 2; stroke-linecap: round; }
+svg .link.sheet { stroke-dasharray: 1 5; }
+svg .link.open-video { stroke-dasharray: 7 5; }
+svg .origin { stroke: var(--ink-1); stroke-width: 2; stroke-linecap: round; }
+.check { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding-right: 8px; font-size: 0.92rem; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--ink-1); }
+.check .sw { border-top-width: 4px; }
+.check .sw.rider-1 { border-top-color: var(--rider-1); }
+.check .sw.rider-2 { border-top-color: var(--rider-2); }
+.entry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 12px; margin: 10px 0; }
+
+.stored-list { list-style: none; font-size: 0.92rem; margin-bottom: 12px; }
+.stored-list li { padding: 6px 0; }
+.stored-list li + li { border-top: 1px solid var(--grid); }
