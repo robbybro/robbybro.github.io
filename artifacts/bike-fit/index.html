@@ -24,8 +24,65 @@
   <p class="notice boot" id="boot">This browser cannot run this page. Use a current Chrome, Edge or Firefox, or Safari 16.4 or later.</p>
   <div id="notice" class="notice" role="status" hidden></div>
 
+  <section id="targets" aria-labelledby="targets-title" hidden>
+    <h2 id="targets-title">Targets from the fit sheet</h2>
+    <div class="row" id="target-riders" role="group" aria-label="Rider"></div>
+    <div class="scroll">
+      <table class="data" id="targets-table">
+        <caption id="targets-caption"></caption>
+        <thead>
+          <tr><th scope="col">Measure</th><th scope="col" class="num">Target</th><th scope="col">Now on the Kickr Shift</th><th scope="col">Move</th></tr>
+        </thead>
+        <tbody>
+          <tr data-key="saddleHeight">
+            <th scope="row">Saddle height<span class="unit">Bottom bracket center to the top of the saddle, along the seat tube.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now" data-label="Now on the Kickr Shift"><input type="number" class="now-input" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="Tape reading" aria-label="Saddle height now on the Kickr Shift, in millimeters"></td>
+            <td class="move" data-label="Move"></td>
+          </tr>
+          <tr data-key="saddleBehind">
+            <th scope="row">Saddle center behind the bottom bracket<span class="unit">Level distance from the bottom bracket center back to the center of the saddle.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now" data-label="Now on the Kickr Shift"><input type="number" class="now-input" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="Tape reading" aria-label="Saddle center behind the bottom bracket now on the Kickr Shift, in millimeters"></td>
+            <td class="move" data-label="Move"></td>
+          </tr>
+          <tr data-key="saddleAbove">
+            <th scope="row">Saddle center above the bottom bracket<span class="unit">Plumb distance from the bottom bracket center up to the center of the saddle.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now" data-label="Now on the Kickr Shift"><input type="number" class="now-input" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="Tape reading" aria-label="Saddle center above the bottom bracket now on the Kickr Shift, in millimeters"></td>
+            <td class="move" data-label="Move"></td>
+          </tr>
+          <tr data-key="hoodAhead">
+            <th scope="row">Hood ahead of the bottom bracket<span class="unit">Level distance from the bottom bracket center forward to the hood where the hand rests.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now" data-label="Now on the Kickr Shift"><input type="number" class="now-input" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="Tape reading" aria-label="Hood ahead of the bottom bracket now on the Kickr Shift, in millimeters"></td>
+            <td class="move" data-label="Move"></td>
+          </tr>
+          <tr data-key="hoodAbove">
+            <th scope="row">Hood above the bottom bracket<span class="unit">Plumb distance from the bottom bracket center up to the hood where the hand rests.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now" data-label="Now on the Kickr Shift"><input type="number" class="now-input" inputmode="decimal" min="0" max="2000" step="0.5" placeholder="Tape reading" aria-label="Hood above the bottom bracket now on the Kickr Shift, in millimeters"></td>
+            <td class="move" data-label="Move"></td>
+          </tr>
+          <tr data-key="crankLength">
+            <th scope="row">Crank length<span class="unit">The Kickr Shift crank has pedal holes for 165, 167.5, 170, 172.5 and 175 millimeters.</span></th>
+            <td class="num target" data-label="Target"></td>
+            <td class="now"></td>
+            <td class="move"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="footnotes">
+      <li>All values are millimeters. Measure the Kickr Shift with a tape and type what it reads now. Move then says which way and how far.</li>
+      <li>Fitters pick slightly different points. Use the diagram on your own sheet.</li>
+      <li>The videos below are the check on the result.</li>
+    </ul>
+  </section>
+
   <section id="answer" aria-labelledby="answer-title">
-    <h2 id="answer-title">What to change on the Kickr Shift</h2>
+    <h2 id="answer-title">What the videos say to change</h2>
+    <p class="section-status" id="targets-absent">No fit sheet is on this device, so there are no tape-measure targets yet. <a class="inline-door" href="#fit-entry">Type fit numbers</a>, or open the import link on this device.</p>
     <p class="caution" id="answer-caution" role="status" hidden></p>
     <div class="scroll">
       <table class="data" id="answer-table">
@@ -47,28 +104,6 @@
       <li>Millimeters are straight up and straight back, not along the seatpost.</li>
       <li>Wahoo names these adjustments Saddle Height, Setback, Reach and Stack Height. Its owner's manual gives no units for the scales, so measure each change with a tape, film again, and replace the Kickr Shift video.</li>
     </ul>
-    <div id="targets" hidden>
-      <h3>Targets from the fit sheet</h3>
-      <div class="row" id="target-riders" role="group" aria-label="Rider"></div>
-      <div class="scroll">
-        <table class="data" id="targets-table">
-          <caption id="targets-caption"></caption>
-          <thead>
-            <tr><th scope="col">Measure</th><th scope="col" class="num">Millimeters</th></tr>
-          </thead>
-          <tbody>
-            <tr data-key="saddleHeight"><th scope="row">Saddle height</th><td class="num"></td></tr>
-            <tr data-key="saddleBehind"><th scope="row">Saddle center behind the bottom bracket</th><td class="num"></td></tr>
-            <tr data-key="saddleAbove"><th scope="row">Saddle center above the bottom bracket</th><td class="num"></td></tr>
-            <tr data-key="hoodAhead"><th scope="row">Hood ahead of the bottom bracket</th><td class="num"></td></tr>
-            <tr data-key="hoodAbove"><th scope="row">Hood above the bottom bracket</th><td class="num"></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul class="footnotes">
-        <li>Set these on the Kickr Shift with a tape measure, from the center of the bottom bracket. The video comparison above is the check on the result.</li>
-      </ul>
-    </div>
   </section>
 
   <section id="videos" aria-labelledby="videos-title">

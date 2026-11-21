@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  analyze, compare, resolveScale, frameForCrankAngle, fitCircle, jointAngle, pickNearSide, chooseSamplingRate,
+  analyze, compare, resolveScale, frameForCrankAngle, fitCircle, jointAngle, pickNearSide, chooseSamplingRate, tapeMoves,
   readImportFragment, encodeImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
   DIRECTION, BALL_OF_FOOT_FRACTION, IMPORT_PREFIX, IMPORT_MAX_LENGTH, PEDAL_FIT_LIMIT_SHARE,
 } from '../core.js';
@@ -503,6 +503,42 @@ test('circle fit: exact on a circle, steady with a few wild points, null when it
   near(d.cx, 100, 1, 'center x with outliers'); near(d.cy, 200, 1, 'center y with outliers'); near(d.r, 50, 1, 'radius with outliers');
   assert.equal(fitCircle([[0, 0], [1, 1]]), null);
   assert.equal(fitCircle(Array.from({ length: 10 }, (_, i) => [i, 2 * i])), null);
+});
+
+// ---------- tape-measure route ----------
+
+test('tape route: each measure gets a direction word and whole millimeters toward the target', () => {
+  const target = { saddleHeight: 740, saddleBehind: 210, saddleAbove: 700, hoodAhead: 530, hoodAbove: 690, crankLength: 170 };
+  const now = { saddleHeight: 728, saddleBehind: 217.4, saddleAbove: 700.4, hoodAhead: 515, hoodAbove: 699 };
+  const moves = tapeMoves(target, now);
+  assert.deepEqual(moves.map((m) => m.key), ['saddleHeight', 'saddleBehind', 'saddleAbove', 'hoodAhead', 'hoodAbove']);
+  assert.deepEqual(moves.map((m) => [m.status, m.direction, m.millimeters]), [
+    ['move', DIRECTION.raise, 12],          // the tape reads 12 short of the target height
+    ['move', DIRECTION.forward, 7],         // the saddle sits 7.4 too far back
+    ['matches', 'Matches', null],           // 0.4 rounds to nothing
+    ['move', DIRECTION.lengthen, 15],
+    ['move', DIRECTION.lower, 9],
+  ]);
+  // The opposite readings give the opposite words.
+  const flipped = tapeMoves(now, target);
+  assert.deepEqual(flipped.map((m) => m.direction), [DIRECTION.lower, DIRECTION.back, 'Matches', DIRECTION.shorten, DIRECTION.raise]);
+  assert.deepEqual(moves.map((m) => m.target), [740, 210, 700, 530, 690]);
+});
+
+test('tape route: rounding, empty rows and measures the sheet lacks', () => {
+  const row = (target, now) => tapeMoves({ saddleHeight: target }, now === undefined ? {} : { saddleHeight: now })[0];
+  assert.deepEqual([row(700, 700).status, row(700, 700.49).status, row(700, 699.51).status], ['matches', 'matches', 'matches']);
+  assert.deepEqual([row(700, 700.5).direction, row(700, 700.5).millimeters], [DIRECTION.lower, 1]);
+  assert.deepEqual([row(700, 699.4).direction, row(700, 699.4).millimeters], [DIRECTION.raise, 1]);
+  assert.deepEqual([row(700).status, row(700).direction, row(700).millimeters, row(700).now], ['empty', null, null, null]);
+  assert.equal(row(700, 0).millimeters, 700);
+  // Nothing on the sheet for a measure: no move, whatever the tape says.
+  const none = tapeMoves({}, { saddleHeight: 700 });
+  assert.ok(none.every((m) => m.status === 'no-target' && m.direction === null && m.millimeters === null));
+  // Values that are not finite numbers count as absent.
+  assert.equal(tapeMoves({ saddleHeight: 700 }, { saddleHeight: NaN })[0].status, 'empty');
+  assert.equal(tapeMoves({ saddleHeight: '700' }, { saddleHeight: 690 })[0].status, 'no-target');
+  assert.equal(tapeMoves(null, null)[0].status, 'no-target');
 });
 
 // ---------- import link ----------

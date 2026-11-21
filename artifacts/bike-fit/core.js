@@ -45,6 +45,7 @@ export const DIRECTION = {
   lengthen: 'Lengthen reach',
   shorten: 'Shorten reach',
   none: 'No measurable difference',
+  matches: 'Matches',
 };
 
 // ---------- small numeric helpers ----------
@@ -633,6 +634,37 @@ export function compare(kickr, open, kickrCrank, openCrank) {
     return out;
   });
   return { rows, positions, adjustments, scale };
+}
+
+// ---------- the tape-measure route ----------
+
+// The fit sheet measures that can be set on the Kickr Shift with a tape, and the word for moving each
+// one up to a larger number or down to a smaller one.
+export const TAPE_MEASURES = [
+  { key: 'saddleHeight', more: DIRECTION.raise, less: DIRECTION.lower },
+  { key: 'saddleBehind', more: DIRECTION.back, less: DIRECTION.forward },
+  { key: 'saddleAbove', more: DIRECTION.raise, less: DIRECTION.lower },
+  { key: 'hoodAhead', more: DIRECTION.lengthen, less: DIRECTION.shorten },
+  { key: 'hoodAbove', more: DIRECTION.raise, less: DIRECTION.lower },
+];
+
+// target: a rider's fit sheet numbers. now: what the tape reads on the Kickr Shift today.
+// Each row comes back with a status: 'no-target' (the sheet lacks this measure), 'empty' (nothing
+// measured yet), 'matches' (the two round to the same millimeter) or 'move' with a direction word and
+// whole millimeters: how to move the Kickr Shift so its reading becomes the target.
+export function tapeMoves(target, now) {
+  const number = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  return TAPE_MEASURES.map((measure) => {
+    const out = { key: measure.key, target: number(target && target[measure.key]), now: number(now && now[measure.key]), status: 'move', direction: null, millimeters: null };
+    if (out.target === null) out.status = 'no-target';
+    else if (out.now === null) out.status = 'empty';
+    else {
+      const millimeters = Math.round(Math.abs(out.target - out.now));
+      if (millimeters === 0) { out.status = 'matches'; out.direction = DIRECTION.matches; }
+      else { out.millimeters = millimeters; out.direction = out.target > out.now ? measure.more : measure.less; }
+    }
+    return out;
+  });
 }
 
 // ---------- fit numbers arriving from outside (import link, localStorage) ----------

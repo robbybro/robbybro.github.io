@@ -3,7 +3,7 @@
 // and what is stored on the device. Nothing here talks to another origin.
 import { PoseLandmarker } from './vendor/tasks-vision/vision_bundle.mjs';
 import {
-  analyze, compare, frameForCrankAngle, chooseSamplingRate, readImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
+  analyze, compare, tapeMoves, frameForCrankAngle, chooseSamplingRate, readImportFragment, sanitizeFitSheet, sanitizeFitNumbers,
   IMPORT_PREFIX, FIT_NUMBER_KEYS, CURVE_STEP_DEGREES, SCALE_DISAGREEMENT_LIMIT_PERCENT, PEDAL_FIT_LIMIT_SHARE,
 } from './core.js';
 
@@ -47,6 +47,7 @@ const KEY_PREFIX = 'bike-fit.';
 const KEY_CRANKS = `${KEY_PREFIX}cranks`;
 const KEY_SHEET = `${KEY_PREFIX}sheet`;
 const KEY_ENTERED = `${KEY_PREFIX}entered`;
+const KEY_NOW = `${KEY_PREFIX}now`;
 
 function withStore(mode, work) {
   return new Promise((resolve, reject) => {
@@ -85,6 +86,7 @@ const validCrank = (v) => typeof v === 'number' && Number.isFinite(v) && v >= CR
 
 let sheet = null;
 let entered = [];
+let kickrNow = {};        // what the tape reads on the Kickr Shift today, typed in the targets table
 let shownRiders = [];     // which riders' fit sheet points are drawn
 let selectedRider = 0;    // whose targets and entry fields are showing
 
@@ -92,6 +94,7 @@ function loadFitNumbers() {
   sheet = sanitizeFitSheet(readStored(KEY_SHEET));
   const stored = readStored(KEY_ENTERED);
   entered = Array.isArray(stored) ? stored.slice(0, 2).map((r) => sanitizeFitNumbers(r) || {}) : [];
+  kickrNow = sanitizeFitNumbers(readStored(KEY_NOW)) || {};
   resetFitView();
 }
 
@@ -875,17 +878,42 @@ function riderButtons(container, onPick) {
   });
 }
 
+// The tape-measure route: the chosen rider's targets, what the tape reads on the Kickr Shift now, and
+// the move that turns one into the other.
 function renderTargets() {
   const all = riders();
   const rider = all[selectedRider];
-  $('targets').hidden = !all.some(hasNumbers);
+  const any = all.some(hasNumbers);
+  $('targets').hidden = !any;
+  $('targets-absent').hidden = any;
   $('targets-caption').textContent = rider.bike ? `${rider.label}, ${rider.bike}` : rider.label;
+  const moves = Object.fromEntries(tapeMoves(rider, kickrNow).map((m) => [m.key, m]));
   for (const row of $('targets-table').tBodies[0].rows) {
-    const value = rider[row.dataset.key];
-    const cell = row.cells[1];
-    cell.textContent = typeof value === 'number' ? plain(value, Number.isInteger(value) ? 0 : 1) : 'Not on the sheet';
-    cell.classList.toggle('waiting', typeof value !== 'number');
+    const key = row.dataset.key;
+    const value = rider[key];
+    const target = row.querySelector('.target');
+    target.textContent = typeof value === 'number' ? plain(value, Number.isInteger(value) ? 0 : 1) : 'Not on the sheet';
+    target.classList.toggle('waiting', typeof value !== 'number');
+    const move = moves[key];
+    if (move) row.querySelector('.move').textContent = move.status === 'move' ? `${move.direction} ${move.millimeters}` : move.status === 'matches' ? move.direction : '';
   }
+}
+
+function wireTargets() {
+  for (const row of $('targets-table').tBodies[0].rows) {
+    const input = row.querySelector('.now-input');
+    if (!input) continue;
+    const key = row.dataset.key;
+    if (typeof kickrNow[key] === 'number') input.value = String(kickrNow[key]);
+    input.addEventListener('input', () => {
+      const checked = input.value.trim() === '' ? null : sanitizeFitNumbers({ [key]: Number(input.value) });
+      if (checked) kickrNow[key] = checked[key]; else delete kickrNow[key];
+      writeStored(KEY_NOW, kickrNow);
+      renderTargets();
+      renderStored();
+    });
+  }
+  $('targets-absent').querySelector('a').addEventListener('click', () => { $('fit-entry').open = true; });
 }
 
 function renderComparison(c) {
@@ -1255,6 +1283,7 @@ function renderStored() {
   }
   if (sheet) items.push(`Fit numbers from the import link for ${listNames(sheet.riders.map((r) => r.label))}`);
   if (entered.some((e) => e && Object.keys(e).length)) items.push('Fit numbers typed on this page');
+  if (Object.keys(kickrNow).length) items.push('Tape readings typed for the Kickr Shift');
   if (Object.values(slots).some((s) => s.crank !== null)) items.push('Crank lengths');
   $('stored-list').replaceChildren(...(items.length ? items : ['Nothing is stored.']).map((t) => html('li', '', t)));
   $('delete-all').disabled = Boolean(tracking);
@@ -1264,7 +1293,7 @@ function askDelete(asking) {
   $('delete-all').hidden = asking;
   $('delete-confirm').hidden = !asking;
   $('delete-cancel').hidden = !asking;
-  $('delete-note').textContent = asking ? 'This removes both videos, their tracking, the fit numbers and the crank lengths from this device.' : '';
+  $('delete-note').textContent = asking ? 'This removes both videos, their tracking, the fit numbers, the tape readings and the crank lengths from this device.' : '';
 }
 
 async function deleteEverything() {
@@ -1289,6 +1318,8 @@ async function deleteEverything() {
   }
   sheet = null;
   entered = [];
+  kickrNow = {};
+  for (const input of document.querySelectorAll('.now-input')) input.value = '';
   resetFitView();
   buildFitControls();
   $('notice').hidden = true;
@@ -1315,6 +1346,7 @@ function renderReport() {
 function wireReport() {
   buildCharts();
   buildFitControls();
+  wireTargets();
   let figureWidth = 0;
   new ResizeObserver(([entry]) => {
     const now = Math.round(entry.contentRect.width);
