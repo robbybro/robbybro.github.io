@@ -121,6 +121,7 @@ let bothPlaying = false;
 function buildSlot(def) {
   const el = $('slot-template').content.firstElementChild.cloneNode(true);
   el.dataset.slot = def.id;
+  el.id = `slot-${def.id}`;
   const q = (selector) => el.querySelector(selector);
   const slot = {
     ...def, el,
@@ -141,6 +142,7 @@ function buildSlot(def) {
   q('.slot-title').textContent = def.title;
   q('.crank-label').textContent = `Crank length on the ${def.title}, in millimeters`;
   slot.crankInput.setAttribute('aria-label', `Crank length on the ${def.title}, in millimeters`);
+  slot.crankInput.id = `crank-${def.id}`;
   if (!def.checklist) { slot.checklist.remove(); slot.checklistRow.remove(); slot.checklist = null; slot.checklistRow = null; }
   wireSlot(slot);
   $('slots').append(el);
@@ -353,6 +355,9 @@ async function restoreSlot(slot) {
 
 // ---------- status sentences ----------
 
+// The bottom bracket wandered in the picture by more than a tenth of the crank's length.
+const cameraMoved = (slot) => slot.result.cameraDriftPixels > 0.1 * slot.result.pedalCircle.radius;
+
 function describeLost(lost) {
   const parts = lost.map(([a, b]) => (a === b ? `${a}` : `${a} to ${b}`));
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
@@ -378,7 +383,7 @@ function statusText(slot) {
     if (r.lost.length) out.push(describeLost(r.lost));
     if (slot.record.stalled) out.push(`${slot.record.stalled} ${slot.record.stalled === 1 ? 'frame' : 'frames'} did not load in time and ${slot.record.stalled === 1 ? 'counts' : 'count'} as lost.`);
     if (slot.record.truncated) out.push(`Only the first ${MAX_TRACKED_SECONDS} seconds were tracked.`);
-    if (r.cameraDriftPixels > 0.1 * r.pedalCircle.radius) out.push('The camera moved during the clip, which widens the spread; a steady phone gives tighter numbers.');
+    if (cameraMoved(slot)) out.push('The camera moved during the clip, which widens the spread; a steady phone gives tighter numbers.');
     if (slot.crank === null) out.push('Enter the crank length to get millimeters.');
   } else if (r) {
     if (r.reason === 'tracking-lost') out.push(`${r.lost.length ? describeLost(r.lost) : 'Tracking lost.'} Film again with your whole body in the picture, then replace the video.`);
@@ -771,12 +776,28 @@ function adoptSheet(next, lead) {
 
 // ---------- what to change, targets, comparison ----------
 
+// What an answer row is waiting for, and the place on the page that supplies it.
 const WAITING = {
-  'needs-open': 'Needs the Open MIN.D video',
-  'needs-kickr': 'Needs the Kickr Shift video',
-  'needs-crank': 'Needs a crank length',
-  'scale-disagrees': 'Scale disagrees between videos',
+  'needs-open': ['Needs the Open MIN.D video', '#slot-open'],
+  'needs-kickr': ['Needs the Kickr Shift video', '#slot-kickr'],
+  'needs-crank': ['Needs a crank length for the Kickr Shift', '#crank-kickr'],
+  'scale-disagrees': ['Scale disagrees between videos', '#comparison-notes'],
 };
+
+// A waiting cell is a door: a link to the slot or field that fills it.
+function door(text, target) {
+  const link = html('a', 'door', text);
+  link.href = target;
+  link.addEventListener('click', (event) => {
+    const field = document.querySelector(target);
+    if (!field || field.tagName !== 'INPUT') return;
+    event.preventDefault();
+    field.scrollIntoView({ block: 'center' });
+    field.focus({ preventScroll: true });
+  });
+  return link;
+}
+
 const MEASURE_LABELS = {
   cadence: ['Cadence', 'revolutions per minute'],
   kneeBottom: ['Knee angle at the bottom of the stroke', 'degrees'],
@@ -816,16 +837,29 @@ function renderAnswer(c) {
   for (const adj of c.adjustments) {
     const row = $('answer-table').querySelector(`tr[data-key="${adj.key}"]`);
     const waiting = WAITING[adj.status];
-    row.classList.toggle('waiting', Boolean(waiting) && adj.status !== 'scale-disagrees');
     // Greyed: the scales disagree (no numbers), or a video's scale is not checked (numbers, marked).
     const unchecked = !waiting && !adj.scaleChecked;
+    row.classList.toggle('waiting', Boolean(waiting) && adj.status !== 'scale-disagrees');
     row.classList.toggle('grey', adj.status === 'scale-disagrees' || unchecked);
     row.querySelector('.direction').textContent = adj.direction || '';
     const amount = row.querySelector('.amount');
-    amount.textContent = waiting || String(adj.millimeters);
+    if (waiting) amount.replaceChildren(door(...waiting));
+    else amount.textContent = adj.status === 'no-difference' ? '—' : String(adj.millimeters);
     if (unchecked) amount.append(html('span', 'unit', 'scale not checked'));
     row.querySelector('.spread').textContent = waiting ? '' : `± ${adj.spread}`;
   }
+  // One line above the table for anything that makes these rows less sure than they look.
+  const tracked = Object.values(slots).filter((s) => s.result && s.result.ok);
+  const videos = (list) => `${listNames(list.map((s) => s.title))} ${list.length > 1 ? 'videos' : 'video'}`;
+  const moved = tracked.filter(cameraMoved);
+  const unlevelled = tracked.filter((s) => !s.record.levelLine);
+  const poor = tracked.filter((s) => !s.result.pedalCircle.fitsWell);
+  const cautions = [];
+  if (moved.length) cautions.push(`The camera moved during the ${videos(moved)}.`);
+  if (unlevelled.length) cautions.push(`No level line is marked on the ${videos(unlevelled)}.`);
+  if (poor.length) cautions.push(`The pedal circle fits poorly on the ${videos(poor)}, so ${poor.length > 1 ? 'their scale is' : 'its scale is'} not checked.`);
+  $('answer-caution').hidden = !cautions.length;
+  $('answer-caution').textContent = cautions.length ? `Read these rows with care. ${cautions.join(' ')}` : '';
 }
 
 function riderButtons(container, onPick) {
@@ -872,7 +906,10 @@ function renderComparison(c) {
       const cell = tr.insertCell();
       cell.className = 'num';
       if (row[id]) { cell.textContent = withSpread(row[id], digits); cell.classList.toggle('grey', unchecked(id)); }
-      else { cell.textContent = !ok[id] ? 'No video yet' : 'Needs a crank length'; cell.classList.add('waiting', 'wrap'); }
+      else {
+        cell.append(!ok[id] ? door(`Needs the ${slots[id].title} video`, `#slot-${id}`) : door(`Needs a crank length for the ${slots[id].title}`, `#crank-${id}`));
+        cell.classList.add('waiting', 'wrap');
+      }
     }
     const diff = tr.insertCell();
     diff.className = 'num';

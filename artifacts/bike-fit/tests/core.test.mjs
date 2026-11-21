@@ -222,25 +222,52 @@ test('a second rider moved by planted amounts yields those four numbers and the 
   assert.deepEqual(back.adjustments.map((a) => a.direction), [DIRECTION.lower, DIRECTION.back, DIRECTION.shorten, DIRECTION.raise]);
 });
 
-test('the same video in both slots: every difference is 0 and all four rows say no change', () => {
+test('the same video in both slots: every difference is 0 and all four rows say no measurable difference', () => {
   const r = analyze(makeVideo().input);
   const c = compare(r, r, 170, 170);
   for (const row of [...c.rows, ...c.positions]) assert.equal(row.difference.value, 0, row.key);
-  assert.deepEqual(c.adjustments.map((a) => a.status), ['no-change', 'no-change', 'no-change', 'no-change']);
-  assert.ok(c.adjustments.every((a) => a.direction === DIRECTION.none && a.millimeters === 0));
+  assert.deepEqual(c.adjustments.map((a) => a.status), ['no-difference', 'no-difference', 'no-difference', 'no-difference']);
+  assert.ok(c.adjustments.every((a) => a.direction === 'No measurable difference' && a.millimeters === null && a.spread === 0));
   assert.equal(c.scale.disagreementPercent, 0);
 });
 
-test('a difference smaller than the spread between strokes reads as no change', () => {
+test('a difference no larger than the spread between strokes is not called a change, and carries no millimeters', () => {
   const a = analyze(makeVideo().input);
   const b = structuredClone(a);
   b.positionPixels.hipAbove.median += 2;   // about 4 mm at this scale
   b.positionPixels.hipAbove.spread = 4;    // about 7 mm
   const c = compare(a, b, 170, 170);
-  assert.equal(c.adjustments[0].status, 'no-change');
-  assert.equal(c.adjustments[0].direction, DIRECTION.none);
+  assert.deepEqual([c.adjustments[0].status, c.adjustments[0].direction, c.adjustments[0].millimeters, c.adjustments[0].spread], ['no-difference', DIRECTION.none, null, 7]);
   b.positionPixels.hipAbove.spread = 0.5;
-  assert.equal(compare(a, b, 170, 170).adjustments[0].direction, DIRECTION.raise);
+  assert.deepEqual([compare(a, b, 170, 170).adjustments[0].direction, compare(a, b, 170, 170).adjustments[0].millimeters], [DIRECTION.raise, 4]);
+});
+
+test('direction is decided on the rounded numbers shown: never a direction beside a number no larger than its spread', () => {
+  const a = analyze(makeVideo().input);
+  const scale = 170 / a.pedalCircle.radius;   // millimeters per pixel
+  const withDifference = (millimeters, spreadA, spreadB) => {
+    const b = structuredClone(a), k = structuredClone(a);
+    b.positionPixels.hipAbove.median += millimeters / scale;
+    k.positionPixels.hipAbove.spread = spreadA / scale;
+    b.positionPixels.hipAbove.spread = spreadB / scale;
+    return compare(k, b, 170, 170).adjustments[0];
+  };
+  // 3.4 against 2.6 is larger unrounded, but the page would show "3, ± 3".
+  assert.equal(withDifference(3.4, 2.6, 0).status, 'no-difference');
+  assert.equal(withDifference(-3.4, 2.6, 0).status, 'no-difference');
+  // 3.6 against 2.6 shows "4, ± 3".
+  assert.deepEqual([withDifference(3.6, 2.6, 0).direction, withDifference(3.6, 2.6, 0).millimeters, withDifference(3.6, 2.6, 0).spread], [DIRECTION.raise, 4, 3]);
+  assert.deepEqual([withDifference(-3.6, 2.6, 0).direction, withDifference(-3.6, 2.6, 0).millimeters], [DIRECTION.lower, 4]);
+  // The two videos' spreads combine as the root of the sum of squares: 3 and 4 make 5, not 7 and not 4.
+  assert.equal(withDifference(6, 3, 4).spread, 5);
+  assert.equal(withDifference(5.4, 3, 4).status, 'no-difference');
+  assert.equal(withDifference(5.6, 3, 4).status, 'change');
+  // Every shown row obeys the rule.
+  for (let mm = 0; mm <= 12; mm += 0.3) for (let sd = 0; sd <= 8; sd += 0.7) {
+    const row = withDifference(mm, sd, 0);
+    if (row.status === 'change') assert.ok(row.millimeters > row.spread, `${mm} against ${sd}`);
+    else assert.equal(row.millimeters, null);
+  }
 });
 
 test('answer rows say what is missing: the second video, a crank length, or agreeing scales', () => {
@@ -250,7 +277,7 @@ test('answer rows say what is missing: the second video, a crank length, or agre
   // One crank length is enough: the leg carries the scale to the other video.
   const one = compare(kickr, analyze(makeVideo({ pixelsPerMillimeter: 0.7 }).input), 170, null);
   assert.equal(one.scale.source.open, 'leg length');
-  assert.deepEqual(one.adjustments.map((a) => a.status), Array(4).fill('no-change'));
+  assert.deepEqual(one.adjustments.map((a) => a.status), Array(4).fill('no-difference'));
   // A wrong crank length (155 entered, 170 real) makes the rider's leg 9 percent shorter on that video.
   const wrong = compare(kickr, kickr, 170, 155);
   near(wrong.scale.disagreementPercent, -9.2, 0.3, 'scale disagreement');
@@ -404,7 +431,7 @@ test('a foot path that strays from its circle: that video is marked as scale not
   assert.deepEqual(mixed.scale.poorFit, { kickr: true, open: false });
   assert.deepEqual(mixed.scale.checked, { kickr: false, open: true });
   assert.ok(mixed.positions.every((p) => p.checked.kickr === false && p.checked.open === true));
-  assert.ok(mixed.adjustments.every((a) => a.scaleChecked === false && a.millimeters !== null));
+  assert.ok(mixed.adjustments.every((a) => a.scaleChecked === false && a.spread !== null));
   // Disagreeing scales: nothing is checked.
   assert.deepEqual(compare(exact, exact, 170, 155).scale.checked, { kickr: false, open: false });
 });

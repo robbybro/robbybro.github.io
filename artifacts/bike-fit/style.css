@@ -192,6 +192,9 @@ table.data td.grey { color: var(--ink-muted); }
 .footnotes { list-style: none; margin-top: 8px; font-size: 0.82rem; color: var(--ink-2); }
 .footnotes li { margin-top: 4px; }
 .section-status { font-size: 0.92rem; color: var(--ink-2); margin-bottom: 8px; }
+.caution { margin-bottom: 10px; padding: 10px 12px; border: 1px solid var(--baseline); border-left-width: 4px; border-radius: 6px; background: var(--surface-1); font-size: 0.9rem; }
+/* A waiting cell links to the place that fills it; the whole cell height is the target. */
+a.door { display: block; min-height: 48px; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Charts. Text is always ink; only marks carry a series color. */
 .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; font-size: 0.82rem; color: var(--ink-2); align-items: center; }

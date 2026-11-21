@@ -44,7 +44,7 @@ export const DIRECTION = {
   forward: 'Move forward',
   lengthen: 'Lengthen reach',
   shorten: 'Shorten reach',
-  none: 'No change; within measurement spread',
+  none: 'No measurable difference',
 };
 
 // ---------- small numeric helpers ----------
@@ -598,7 +598,10 @@ export const ADJUSTMENTS = [
 
 // kickr / open: results of analyze() or null. Returns the comparison table rows, the scale report and
 // the four adjustments that would move the Kickr Shift position onto the Open position.
-// Adjustment status: 'needs-open' | 'needs-crank' | 'scale-disagrees' | 'no-change' | 'change'.
+// Adjustment status: 'needs-open' | 'needs-kickr' | 'needs-crank' | 'scale-disagrees' | 'no-difference' | 'change'.
+// 'change' and 'no-difference' are decided on the whole millimeters the page shows, so a row can never
+// carry a direction beside a number that is equal to or smaller than its spread. 'no-difference' carries
+// no millimeters: a difference inside the spread is not known to be zero, only not measurable.
 export function compare(kickr, open, kickrCrank, openCrank) {
   const A = kickr && kickr.ok ? kickr : null, B = open && open.ok ? open : null;
   const scale = resolveScale(A, B, kickrCrank, openCrank);
@@ -617,12 +620,15 @@ export function compare(kickr, open, kickrCrank, openCrank) {
     else if (!row.difference) out.status = 'needs-crank';
     else if (!scale.agrees) out.status = 'scale-disagrees';
     else {
-      out.millimeters = Math.round(Math.abs(row.difference.value));
+      const millimeters = Math.round(Math.abs(row.difference.value));
       out.spread = Math.round(row.difference.spread);
-      if (out.millimeters === 0 || Math.abs(row.difference.value) <= row.difference.spread) {
-        out.status = 'no-change';
+      if (millimeters <= out.spread) {
+        out.status = 'no-difference';
         out.direction = DIRECTION.none;
-      } else out.direction = row.difference.value > 0 ? adj.more : adj.less;
+      } else {
+        out.millimeters = millimeters;
+        out.direction = row.difference.value > 0 ? adj.more : adj.less;
+      }
     }
     return out;
   });
