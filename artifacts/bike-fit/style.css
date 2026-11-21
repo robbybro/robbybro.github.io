@@ -122,8 +122,11 @@ input[type="range"] { width: 100%; height: 48px; margin: 0; accent-color: var(--
 .slot[data-slot="open"] { --slot-color: var(--series-open); }
 .slot-status { font-size: 0.95rem; }
 .slot-progress { width: 100%; height: 8px; accent-color: var(--ink-1); }
-.checklist, .checklist-row ol { padding-left: 1.4rem; font-size: 0.92rem; color: var(--ink-2); }
-.checklist li, .checklist-row li { margin: 4px 0; }
+.checklist { padding-left: 1.4rem; font-size: 0.92rem; color: var(--ink-2); }
+.checklist-row { margin-bottom: 12px; padding: 0 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1); }
+.checklist-row[open] { padding-bottom: 12px; }
+.slot-hint { font-size: 0.88rem; font-weight: 600; }
+.checklist li { margin: 4px 0; }
 .checklist-row summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
 .stage-wrap { display: flex; justify-content: center; background: #0b0b0b; border-radius: 8px; overflow: hidden; }
 .stage { position: relative; line-height: 0; max-width: 100%; }
@@ -194,12 +197,13 @@ a.inline-door { color: inherit; text-underline-offset: 3px; }
 /* On a phone each measure is a block: its name and definition, then target, tape reading and move in a line. */
 @media (max-width: 640px) {
   #targets-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  #targets-table tbody tr { display: grid; grid-template-columns: 4.5rem 10rem minmax(0, 1fr); gap: 6px 10px; padding: 12px; align-items: end; }
+  #targets-table tbody tr { display: grid; grid-template-columns: 3.8rem 8.8rem minmax(0, 1fr); gap: 6px 10px; padding: 12px; align-items: end; }
   #targets-table tbody tr + tr { border-top: 1px solid var(--grid); }
   #targets-table tbody th { grid-column: 1 / -1; }
   #targets-table tbody th, #targets-table tbody td { padding: 0; border-top: 0 !important; text-align: left; white-space: normal; }
   #targets-table tbody td[data-label]::before { content: attr(data-label); display: block; font-size: 0.75rem; font-weight: 400; color: var(--ink-2); }
   #targets-table tbody td:not([data-label]) { display: none; }
+  #targets-table .move { white-space: normal; }
 }
 .footnotes { list-style: none; margin-top: 8px; font-size: 0.82rem; color: var(--ink-2); }
 .footnotes li { margin-top: 4px; }

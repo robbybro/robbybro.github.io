@@ -114,12 +114,13 @@ const hasNumbers = (rider) => FIT_NUMBER_KEYS.some((k) => typeof rider[k] === 'n
 
 const SLOT_DEFINITIONS = [
   { id: 'kickr', title: 'Kickr Shift', crankNote: 'The Kickr Shift crank has pedal holes for 165, 167.5, 170, 172.5 and 175 millimeters.' },
-  { id: 'open', title: 'Open MIN.D', crankNote: '', checklist: true },
+  { id: 'open', title: 'Open MIN.D', crankNote: '' },
 ];
 const slots = {};
 let tracking = null;    // the slot being tracked; one video at a time
 let restoring = true;   // stored slots are still being read back; no new video may start until they are
 let bothPlaying = false;
+let checklistOpenFor = null;   // the "a slot still needs a video" state the checklist was last set for
 
 function buildSlot(def) {
   const el = $('slot-template').content.firstElementChild.cloneNode(true);
@@ -129,7 +130,7 @@ function buildSlot(def) {
   const slot = {
     ...def, el,
     status: q('.slot-status'), progress: q('.slot-progress'), fileInput: q('.file-input'), fileLabel: q('.file-label'), fileButton: q('.btn.file'),
-    cancel: q('.cancel'), checklist: q('.checklist'), checklistRow: q('.checklist-row'),
+    cancel: q('.cancel'), hint: q('.slot-hint'),
     stageWrap: q('.stage-wrap'), stage: q('.stage'), video: q('.video'), canvas: q('.overlay'),
     levelLayer: q('.level-layer'), handles: [...el.querySelectorAll('.handle')],
     player: q('.player'), play: q('.play'), prev: q('.prev'), next: q('.next'), scrubber: q('.scrubber'), marks: q('.scrub-marks'),
@@ -146,7 +147,6 @@ function buildSlot(def) {
   q('.crank-label').textContent = `Crank length on the ${def.title}, in millimeters`;
   slot.crankInput.setAttribute('aria-label', `Crank length on the ${def.title}, in millimeters`);
   slot.crankInput.id = `crank-${def.id}`;
-  if (!def.checklist) { slot.checklist.remove(); slot.checklistRow.remove(); slot.checklist = null; slot.checklistRow = null; }
   wireSlot(slot);
   $('slots').append(el);
   return slot;
@@ -241,6 +241,24 @@ function seekTo(video, seconds) {
 
 const CANCELLED = Symbol('cancelled');
 
+// Tracking stops if the phone's screen sleeps, so the screen is asked to stay on while it runs.
+// Browsers without the request, or that refuse it, are left to the sentence in the slot.
+let screenLock = null;
+async function holdScreen() {
+  if (screenLock || !('wakeLock' in navigator)) return;
+  try {
+    screenLock = await navigator.wakeLock.request('screen');
+    screenLock.addEventListener('release', () => { screenLock = null; });
+  } catch { screenLock = null; }
+}
+function releaseScreen() {
+  const held = screenLock;
+  screenLock = null;
+  if (held) held.release().catch(() => {});
+}
+// The browser drops the lock whenever the page is hidden; take it again on return if still tracking.
+document.addEventListener('visibilitychange', () => { if (tracking && document.visibilityState === 'visible') holdScreen(); });
+
 async function trackFile(slot, file) {
   if (tracking || restoring) return;
   tracking = slot;
@@ -255,6 +273,7 @@ async function trackFile(slot, file) {
   render();
   let landmarker = null;
   try {
+    await holdScreen();
     await videoReady(slot.video);
     const video = slot.video;
     if (!Number.isFinite(video.duration) || video.duration <= 0) throw new Problem('This video has no readable length. Choose another file.');
@@ -300,6 +319,7 @@ async function trackFile(slot, file) {
     slot.note = note;
   } finally {
     if (landmarker) landmarker.close();
+    releaseScreen();
     slot.job = null;
     tracking = null;
     slot.fileInput.value = '';
@@ -391,7 +411,7 @@ function statusText(slot) {
   } else if (r) {
     if (r.reason === 'tracking-lost') out.push(`${r.lost.length ? describeLost(r.lost) : 'Tracking lost.'} Film again with your whole body in the picture, then replace the video.`);
     else if (r.reason === 'not-side-on') out.push('Rider not side-on. Film from straight out to the side of the bike, then replace the video.');
-    else out.push('No full pedal stroke found. Film at least 10 seconds of steady pedaling, then replace the video.');
+    else out.push('No full pedal stroke found. Film at least 15 seconds of steady pedaling, then replace the video.');
   }
   if (slot.record && slot.note) out.push(slot.note);
   return out.join(' ');
@@ -658,17 +678,10 @@ function renderSlot(slot) {
   slot.fileInput.disabled = locked;
   slot.fileButton.classList.toggle('disabled', locked);
   slot.cancel.hidden = !busy;
+  slot.hint.hidden = !busy;
   slot.stageWrap.hidden = !slot.url;
   slot.player.hidden = !playable;
   slot.levelTool.hidden = !playable;
-  if (slot.checklist) {
-    // The filming checklist fills the empty slot, then folds into a row under the loaded video.
-    const loaded = Boolean(slot.record) || busy;
-    if (loaded && slot.checklist.parentElement !== slot.checklistRow) slot.checklistRow.append(slot.checklist);
-    if (!loaded && slot.checklist.parentElement === slot.checklistRow) slot.status.after(slot.checklist);
-    slot.checklist.hidden = false;
-    slot.checklistRow.hidden = !loaded;
-  }
   if (playable) {
     slot.scrubber.max = String(frameCount(slot) - 1);
     slot.marks.replaceChildren();
@@ -709,6 +722,9 @@ function renderSlot(slot) {
 
 function render() {
   for (const slot of Object.values(slots)) renderSlot(slot);
+  // The filming checklist stands open while a slot still needs a video, and folds once both have one.
+  const needsVideo = Object.values(slots).some((s) => !s.record);
+  if (needsVideo !== checklistOpenFor) { $('checklist').open = needsVideo; checklistOpenFor = needsVideo; }
   const both = bothReady() && !tracking;
   $('shared').hidden = !both;
   if (!both) stopBoth();

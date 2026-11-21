@@ -108,6 +108,18 @@
 
   <section id="videos" aria-labelledby="videos-title">
     <h2 id="videos-title">Videos</h2>
+    <details class="checklist-row" id="checklist" open>
+      <summary>Filming checklist</summary>
+      <ol class="checklist">
+        <li>Set the phone on something steady at hip height. Do not hold it.</li>
+        <li>Place it straight out to the side of the bike, far enough away that your whole body and the bike fit in the picture.</li>
+        <li>Film the same side of your body in both videos.</li>
+        <li>Ride with your hands on the hoods in both videos.</li>
+        <li>Wear the same shoes, and shorts that show your knee and hip.</li>
+        <li>Keep something level in the picture, such as the line where the floor meets the wall.</li>
+        <li>Pedal steadily at your usual cadence for 15 seconds, then stop the recording.</li>
+      </ol>
+    </details>
     <div class="shared" id="shared" hidden>
       <label for="shared-angle">Both videos at crank angle <output id="shared-angle-value" for="shared-angle">0°</output></label>
       <input type="range" id="shared-angle" min="0" max="360" step="5" value="0">
@@ -192,20 +204,12 @@
   <article class="slot">
     <h3 class="slot-title"></h3>
     <p class="slot-status" role="status"></p>
+    <p class="slot-hint" hidden>Keep this screen on until tracking finishes.</p>
     <progress class="slot-progress" hidden></progress>
     <div class="row">
       <label class="btn file"><span class="file-label">Choose video</span><input type="file" class="file-input" accept="video/*"></label>
       <button type="button" class="btn cancel" hidden>Cancel</button>
     </div>
-    <ol class="checklist" hidden>
-      <li>Set the phone on something steady at hip height. Do not hold it.</li>
-      <li>Place it straight out to the side of the bike, far enough away that your whole body and the bike fit in the picture.</li>
-      <li>Film the same side of your body as in the Kickr Shift video.</li>
-      <li>Ride with your hands on the hoods, the same as on the Kickr Shift.</li>
-      <li>Wear the same shoes, and shorts that show your knee and hip.</li>
-      <li>Keep something level in the picture, such as the line where the floor meets the wall.</li>
-      <li>Pedal steadily at your usual cadence for 15 seconds, then stop the recording.</li>
-    </ol>
     <div class="stage-wrap" hidden>
       <div class="stage">
         <video class="video" playsinline muted preload="auto"></video>
@@ -251,9 +255,6 @@
     <table class="facts" hidden>
       <tbody></tbody>
     </table>
-    <details class="checklist-row" hidden>
-      <summary>Filming checklist</summary>
-    </details>
   </article>
 </template>
 </body>
